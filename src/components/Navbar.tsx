@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { navLinks } from '@/data/navigation';
 
 export default function Navbar() {
@@ -37,13 +38,17 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-champagne to-champagne-dark flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                <span className="text-white font-heading text-lg font-bold">D</span>
-              </div>
+            <a href="/" className="flex items-center gap-2.5 group">
+              <Image
+                src="/images/logo.png"
+                alt="Paighaam"
+                width={40}
+                height={40}
+                className="rounded-full shadow-md group-hover:shadow-lg transition-shadow duration-300"
+              />
               <div className="flex flex-col">
                 <span className="font-heading text-xl font-bold text-charcoal-dark tracking-tight">
-                  Digitals
+                  Paighaam
                 </span>
                 <span className="text-[10px] uppercase tracking-[0.2em] text-champagne font-medium -mt-1">
                   Wedding Cards

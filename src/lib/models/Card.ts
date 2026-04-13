@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface ICard extends Document {
   name: string;
   slug: string;
+  card_code?: string;
   base_price: number;
   original_price?: number;
   category: "Nikkah" | "Barat" | "Valima" | "Mehndi" | "Luxury" | "Minimalist";
@@ -35,6 +36,12 @@ const CardSchema = new Schema<ICard>(
       unique: true,
       lowercase: true,
       trim: true,
+    },
+    card_code: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      sparse: true,
     },
     base_price: {
       type: Number,
@@ -97,6 +104,7 @@ const CardSchema = new Schema<ICard>(
 CardSchema.index({ category: 1 });
 CardSchema.index({ slug: 1 });
 CardSchema.index({ is_bestseller: 1 });
+CardSchema.index({ card_code: 1 }, { sparse: true });
 
 const Card: Model<ICard> =
   mongoose.models.Card || mongoose.model<ICard>("Card", CardSchema);

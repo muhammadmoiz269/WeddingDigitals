@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Digitals Wedding Cards | Premium Invitations Crafted in Karachi",
+  title: "Paighaam Wedding Cards | Premium Invitations Crafted in Karachi",
   description:
     "Karachi's finest wedding card studio. Premium Nikkah, Walima, Mehndi & Baraat invitations with transparent pricing. Starting from PKR 120/card. No hidden charges.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     "Baraat cards",
   ],
   openGraph: {
-    title: "Digitals Wedding Cards | Premium Invitations Crafted in Karachi",
+    title: "Paighaam Wedding Cards | Premium Invitations Crafted in Karachi",
     description:
       "Premium wedding invitations with transparent pricing. Starting from PKR 120/card.",
     type: "website",

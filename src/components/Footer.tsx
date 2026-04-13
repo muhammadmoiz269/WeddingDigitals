@@ -19,7 +19,7 @@ export default function Footer() {
             </p>
           </div>
           <a
-            href="https://wa.me/923001234567?text=Hi%20Digitals!%20I%27d%20like%20to%20discuss%20wedding%20cards."
+            href="https://wa.me/923001234567?text=Hi%20Paighaam!%20I%27d%20like%20to%20discuss%20wedding%20cards."
             target="_blank"
             rel="noopener noreferrer"
             className="flex-shrink-0 inline-flex items-center gap-2 px-8 py-3.5 bg-white text-champagne-dark font-semibold rounded-full hover:bg-ivory hover:shadow-lg transition-all duration-300 text-sm"
@@ -39,10 +39,10 @@ export default function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-champagne to-champagne-dark flex items-center justify-center">
-                <span className="text-white font-heading text-base font-bold">D</span>
+                <span className="text-white font-heading text-base font-bold">P</span>
               </div>
               <div>
-                <span className="font-heading text-lg font-bold text-white">Digitals</span>
+                <span className="font-heading text-lg font-bold text-white">Paighaam</span>
                 <span className="block text-[9px] uppercase tracking-[0.15em] text-champagne/80 -mt-0.5">
                   Wedding Cards
                 </span>
@@ -152,7 +152,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/30">
-            &copy; {currentYear} Digitals Wedding Cards. All rights reserved.
+            &copy; {currentYear} Paighaam Wedding Cards. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-xs text-white/30">
             <a href="#" className="hover:text-champagne transition-colors">Privacy Policy</a>

@@ -63,7 +63,7 @@ export function buildWhatsAppMessage(
   total: number,
   selectedAddOns: AddOn[] = []
 ): string {
-  let message = `Hi Digitals! I'd like to place an order:\n\n`;
+  let message = `Hi Paighaam! I'd like to place an order:\n\n`;
   message += `📋 *Card:* ${cardName}\n`;
   message += `📦 *Quantity:* ${quantity} pcs\n`;
 

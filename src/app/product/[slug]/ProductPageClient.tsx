@@ -108,6 +108,7 @@ export default function ProductPageClient({ card, relatedCards }: ProductPageCli
                   basePrice={card.base_price}
                   originalPrice={card.original_price}
                   productName={card.name}
+                  slug={card.slug}
                   addOns={card.add_ons}
                   minOrder={card.min_order}
                 />
