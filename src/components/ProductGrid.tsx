@@ -1,64 +1,71 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import type { CardProduct } from '@/types';
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import type { CardProduct } from "@/types";
 
-<<<<<<< HEAD
-const CATEGORIES = ['All', 'Nikkah', 'Barat', 'Valima', 'Mehndi', 'Luxury'] as const;
-=======
-const CATEGORIES = ['All', 'Luxury', 'Classic', 'Modern', 'Minimalist', 'Floral', 'Textured'] as const;
-
-const SORT_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'best-selling', label: 'Best Selling' },
-  { value: 'price-asc', label: 'Price, Low to High' },
-  { value: 'price-desc', label: 'Price, High to Low' },
-  { value: 'newest', label: 'Newest' },
-  { value: 'name-asc', label: 'Alphabetically, A–Z' },
-  { value: 'name-desc', label: 'Alphabetically, Z–A' },
+const CATEGORIES = [
+  "All",
+  "Luxury",
+  "Classic",
+  "Modern",
+  "Minimalist",
+  "Floral",
+  "Textured",
 ] as const;
 
-type SortValue = typeof SORT_OPTIONS[number]['value'];
+const SORT_OPTIONS = [
+  { value: "featured", label: "Featured" },
+  { value: "best-selling", label: "Best Selling" },
+  { value: "price-asc", label: "Price, Low to High" },
+  { value: "price-desc", label: "Price, High to Low" },
+  { value: "newest", label: "Newest" },
+  { value: "name-asc", label: "Alphabetically, A–Z" },
+  { value: "name-desc", label: "Alphabetically, Z–A" },
+] as const;
+
+type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
 function sortCards(cards: CardProduct[], sort: SortValue): CardProduct[] {
   const sorted = [...cards];
   switch (sort) {
-    case 'featured':
+    case "featured":
       return sorted.sort((a, b) => {
-        if (a.is_bestseller !== b.is_bestseller) return a.is_bestseller ? -1 : 1;
+        if (a.is_bestseller !== b.is_bestseller)
+          return a.is_bestseller ? -1 : 1;
         if (a.is_new !== b.is_new) return a.is_new ? -1 : 1;
         return 0;
       });
-    case 'best-selling':
-      return sorted.sort((a, b) => (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0));
-    case 'price-asc':
+    case "best-selling":
+      return sorted.sort(
+        (a, b) => (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0),
+      );
+    case "price-asc":
       return sorted.sort((a, b) => a.base_price - b.base_price);
-    case 'price-desc':
+    case "price-desc":
       return sorted.sort((a, b) => b.base_price - a.base_price);
-    case 'newest':
+    case "newest":
       return sorted; // API already returns newest first
-    case 'name-asc':
+    case "name-asc":
       return sorted.sort((a, b) => a.name.localeCompare(b.name));
-    case 'name-desc':
+    case "name-desc":
       return sorted.sort((a, b) => b.name.localeCompare(a.name));
     default:
       return sorted;
   }
 }
->>>>>>> f3b7ffc7ec9359ad4bd5bb324f3d2a180947e66b
 
 export default function ProductGrid() {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeSort, setActiveSort] = useState<SortValue>('featured');
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeSort, setActiveSort] = useState<SortValue>("featured");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [allCards, setAllCards] = useState<CardProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const sortRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/cards')
+    fetch("/api/cards")
       .then((r) => r.json())
       .then((json) => setAllCards(json.data || []))
       .catch(() => setAllCards([]))
@@ -72,13 +79,13 @@ export default function ProductGrid() {
         setIsSortOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const filtered = useMemo(() => {
     const byCategory =
-      activeCategory === 'All'
+      activeCategory === "All"
         ? allCards
         : allCards.filter((c) => c.category === activeCategory);
     return sortCards(byCategory, activeSort);
@@ -120,8 +127,8 @@ export default function ProductGrid() {
             viewport={{ once: true }}
             className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base"
           >
-            Each invitation is a masterpiece — designed, printed, and finished in our
-            Karachi studio with the finest materials.
+            Each invitation is a masterpiece — designed, printed, and finished
+            in our Karachi studio with the finest materials.
           </motion.p>
         </div>
 
@@ -141,8 +148,8 @@ export default function ProductGrid() {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
                   activeCategory === cat
-                    ? 'bg-champagne text-white shadow-md shadow-champagne/25'
-                    : 'bg-cream text-charcoal/70 hover:bg-cream-dark hover:text-charcoal border border-cream-dark'
+                    ? "bg-champagne text-white shadow-md shadow-champagne/25"
+                    : "bg-cream text-charcoal/70 hover:bg-cream-dark hover:text-charcoal border border-cream-dark"
                 }`}
               >
                 {cat}
@@ -157,21 +164,35 @@ export default function ProductGrid() {
               className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium text-charcoal/70 bg-cream hover:bg-cream-dark border border-cream-dark rounded-full transition-all duration-200 cursor-pointer"
               id="sort-dropdown-toggle"
             >
-              <svg className="w-3.5 h-3.5 text-champagne" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M9 17h6" />
+              <svg
+                className="w-3.5 h-3.5 text-champagne"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 7h18M6 12h12M9 17h6"
+                />
               </svg>
               <span className="hidden sm:inline text-charcoal/50">Sort:</span>
               <span className="text-charcoal-dark font-semibold">
                 {SORT_OPTIONS.find((o) => o.value === activeSort)?.label}
               </span>
               <svg
-                className={`w-3.5 h-3.5 text-charcoal/40 transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`}
+                className={`w-3.5 h-3.5 text-charcoal/40 transition-transform duration-200 ${isSortOpen ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 strokeWidth={2}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
 
@@ -195,15 +216,25 @@ export default function ProductGrid() {
                         }}
                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                           activeSort === option.value
-                            ? 'bg-champagne/10 text-champagne-dark font-semibold'
-                            : 'text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark'
+                            ? "bg-champagne/10 text-champagne-dark font-semibold"
+                            : "text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark"
                         }`}
                       >
                         <span className="flex items-center justify-between">
                           {option.label}
                           {activeSort === option.value && (
-                            <svg className="w-4 h-4 text-champagne" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="w-4 h-4 text-champagne"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2.5}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           )}
                         </span>
@@ -220,7 +251,10 @@ export default function ProductGrid() {
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border border-cream-dark/50">
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden border border-cream-dark/50"
+              >
                 <div className="aspect-[3/4] bg-cream animate-pulse" />
                 <div className="p-5 space-y-3">
                   <div className="h-3 bg-cream rounded w-1/3 animate-pulse" />
@@ -254,9 +288,11 @@ export default function ProductGrid() {
         {/* Empty State */}
         {!loading && filtered.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-charcoal/50 text-lg">No cards found in this category yet.</p>
+            <p className="text-charcoal/50 text-lg">
+              No cards found in this category yet.
+            </p>
             <button
-              onClick={() => setActiveCategory('All')}
+              onClick={() => setActiveCategory("All")}
               className="mt-4 btn-secondary text-sm"
             >
               View All Cards
@@ -288,7 +324,9 @@ export default function ProductGrid() {
 function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
   const discount =
     card.original_price && card.original_price > card.base_price
-      ? Math.round(((card.original_price - card.base_price) / card.original_price) * 100)
+      ? Math.round(
+          ((card.original_price - card.base_price) / card.original_price) * 100,
+        )
       : 0;
 
   const imageSrc = card.images?.[0] ?? null;
@@ -322,7 +360,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.08 }}
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: "-50px" }}
       className="group relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -339,7 +377,9 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
                 className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-5xl">🃏</div>
+              <div className="w-full h-full flex items-center justify-center text-5xl">
+                🃏
+              </div>
             )}
 
             {/* Hover Video Preview — lazy-loaded, muted, looping */}
@@ -387,7 +427,11 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
             {videoUrl && (
               <div className="absolute top-3 right-3 z-[4]">
                 <span className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-sm text-charcoal-dark rounded-full">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3 h-3"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   Video
