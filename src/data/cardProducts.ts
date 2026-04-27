@@ -51,7 +51,7 @@ export const cardProducts: CardProduct[] = [
     name: "Royal Baroque Gold Foil Card",
     base_price: 450,
     original_price: 600,
-    category: "Classic",
+    category: "Baraat",
     description:
       "Luxurious baroque-inspired design with real gold foil stamping on Italian imported textured paper. A statement of grandeur for your Barat procession.",
     images: ["/images/card-3.jpg", "/images/card-3.jpg"],
@@ -71,7 +71,7 @@ export const cardProducts: CardProduct[] = [
     slug: "pastel-garden-watercolor",
     name: "Pastel Garden Watercolor Invite",
     base_price: 180,
-    category: "Floral",
+    category: "Walima",
     description:
       "Delicate watercolor florals in soft pastels printed on handmade recycled paper. Includes RSVP card and directions insert. Perfect for elegant Valima receptions.",
     images: ["/images/card-4.jpg", "/images/card-4.jpg"],
@@ -91,7 +91,7 @@ export const cardProducts: CardProduct[] = [
     name: "Classic Urdu Calligraphy Card",
     base_price: 200,
     original_price: 280,
-    category: "Classic",
+    category: "Nikkah",
     description:
       "Traditional Nastaliq calligraphy by master calligraphers, digitally printed on satin-finish card stock with embossed border. A nod to our rich heritage.",
     images: ["/images/card-5.jpg", "/images/card-5.jpg"],
@@ -110,7 +110,7 @@ export const cardProducts: CardProduct[] = [
     slug: "modern-geometric-walima",
     name: "Modern Geometric Walima Card",
     base_price: 150,
-    category: "Modern",
+    category: "Walima",
     description:
       "Contemporary geometric patterns with metallic champagne accents. Flat-printed on thick matte stock with matching envelope liner.",
     images: ["/images/card-6.jpg", "/images/card-6.jpg"],
@@ -127,7 +127,7 @@ export const cardProducts: CardProduct[] = [
     slug: "mehndi-night-festive",
     name: "Mehndi Night Festive Card",
     base_price: 130,
-    category: "Floral",
+    category: "Mehndi",
     description:
       "Vibrant mehndi-inspired patterns in green and gold. Playful yet elegant design for your Mehndi celebration invites.",
     images: ["/images/card-7.jpg", "/images/card-7.jpg"],

@@ -14,11 +14,11 @@ export interface Product {
 export type Category =
   | "All"
   | "Luxury"
-  | "Classic"
-  | "Modern"
   | "Minimalist"
-  | "Floral"
-  | "Textured";
+  | "Nikkah"
+  | "Walima"
+  | "Mehndi"
+  | "Baraat";
 
 export interface Feature {
   id: string;
@@ -47,7 +47,7 @@ export interface CardProduct {
   name: string;
   base_price: number;
   original_price?: number;
-  category: "Luxury" | "Classic" | "Modern" | "Minimalist" | "Floral" | "Textured";
+  category: Category;
   description: string;
   images: string[];
   short_video_url?: string;
