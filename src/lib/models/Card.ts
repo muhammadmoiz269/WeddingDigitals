@@ -6,7 +6,7 @@ export interface ICard extends Document {
   card_code?: string;
   base_price: number;
   original_price?: number;
-  category: "Nikkah" | "Barat" | "Valima" | "Mehndi" | "Luxury" | "Minimalist";
+  category: "Luxury" | "Classic" | "Modern" | "Minimalist" | "Floral" | "Textured";
   description: string;
   images: string[];
   short_video_url?: string;
@@ -55,7 +55,7 @@ const CardSchema = new Schema<ICard>(
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: ["Nikkah", "Barat", "Valima", "Mehndi", "Luxury", "Minimalist"],
+      enum: ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"],
     },
     description: {
       type: String,

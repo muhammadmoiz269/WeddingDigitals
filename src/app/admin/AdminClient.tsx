@@ -30,7 +30,7 @@ interface CardDoc {
   created_at?: string;
 }
 
-const CATEGORIES = ["Nikkah", "Barat", "Valima", "Mehndi", "Luxury", "Minimalist"] as const;
+const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"] as const;
 
 const EMPTY_FORM: Omit<CardDoc, "_id" | "created_at"> = {
   slug: "",
@@ -38,7 +38,7 @@ const EMPTY_FORM: Omit<CardDoc, "_id" | "created_at"> = {
   card_code: "",
   base_price: 0,
   original_price: undefined,
-  category: "Nikkah",
+  category: "Luxury",
   description: "",
   images: [""],
   short_video_url: "",

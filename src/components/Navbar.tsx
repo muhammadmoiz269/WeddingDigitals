@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { navLinks } from '@/data/navigation';
+import SearchModal from '@/components/SearchModal';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +17,18 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Ctrl+K / Cmd+K to open search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -70,8 +84,30 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* CTA + Mobile Toggle */}
+            {/* Search + CTA + Mobile Toggle */}
             <div className="flex items-center gap-3">
+              {/* Search Button */}
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-cream/80 transition-colors cursor-pointer"
+                aria-label="Search cards"
+                id="search-toggle"
+              >
+                <svg
+                  className="w-[18px] h-[18px] text-charcoal/70 hover:text-champagne transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              </button>
+
               <a
                 href="#collection"
                 className="hidden sm:inline-flex btn-primary text-sm !px-5 !py-2.5"
@@ -162,6 +198,9 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

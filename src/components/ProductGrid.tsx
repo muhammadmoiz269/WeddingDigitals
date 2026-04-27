@@ -1,16 +1,61 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import type { CardProduct } from '@/types';
 
+<<<<<<< HEAD
 const CATEGORIES = ['All', 'Nikkah', 'Barat', 'Valima', 'Mehndi', 'Luxury'] as const;
+=======
+const CATEGORIES = ['All', 'Luxury', 'Classic', 'Modern', 'Minimalist', 'Floral', 'Textured'] as const;
+
+const SORT_OPTIONS = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'best-selling', label: 'Best Selling' },
+  { value: 'price-asc', label: 'Price, Low to High' },
+  { value: 'price-desc', label: 'Price, High to Low' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'name-asc', label: 'Alphabetically, A–Z' },
+  { value: 'name-desc', label: 'Alphabetically, Z–A' },
+] as const;
+
+type SortValue = typeof SORT_OPTIONS[number]['value'];
+
+function sortCards(cards: CardProduct[], sort: SortValue): CardProduct[] {
+  const sorted = [...cards];
+  switch (sort) {
+    case 'featured':
+      return sorted.sort((a, b) => {
+        if (a.is_bestseller !== b.is_bestseller) return a.is_bestseller ? -1 : 1;
+        if (a.is_new !== b.is_new) return a.is_new ? -1 : 1;
+        return 0;
+      });
+    case 'best-selling':
+      return sorted.sort((a, b) => (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0));
+    case 'price-asc':
+      return sorted.sort((a, b) => a.base_price - b.base_price);
+    case 'price-desc':
+      return sorted.sort((a, b) => b.base_price - a.base_price);
+    case 'newest':
+      return sorted; // API already returns newest first
+    case 'name-asc':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case 'name-desc':
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    default:
+      return sorted;
+  }
+}
+>>>>>>> f3b7ffc7ec9359ad4bd5bb324f3d2a180947e66b
 
 export default function ProductGrid() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeSort, setActiveSort] = useState<SortValue>('featured');
+  const [isSortOpen, setIsSortOpen] = useState(false);
   const [allCards, setAllCards] = useState<CardProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/cards')
@@ -20,10 +65,24 @@ export default function ProductGrid() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered =
-    activeCategory === 'All'
-      ? allCards
-      : allCards.filter((c) => c.category === activeCategory);
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const byCategory =
+      activeCategory === 'All'
+        ? allCards
+        : allCards.filter((c) => c.category === activeCategory);
+    return sortCards(byCategory, activeSort);
+  }, [allCards, activeCategory, activeSort]);
 
   return (
     <section id="collection" className="section-padding bg-ivory">
@@ -66,27 +125,95 @@ export default function ProductGrid() {
           </motion.p>
         </div>
 
-        {/* Category Filter Pills */}
+        {/* Filter Bar — Category Pills + Sort Dropdown */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           viewport={{ once: true }}
-          className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-12"
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12"
         >
-          {CATEGORIES.map((cat) => (
+          {/* Category Pills */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
+                  activeCategory === cat
+                    ? 'bg-champagne text-white shadow-md shadow-champagne/25'
+                    : 'bg-cream text-charcoal/70 hover:bg-cream-dark hover:text-charcoal border border-cream-dark'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div ref={sortRef} className="relative shrink-0">
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
-                activeCategory === cat
-                  ? 'bg-champagne text-white shadow-md shadow-champagne/25'
-                  : 'bg-cream text-charcoal/70 hover:bg-cream-dark hover:text-charcoal border border-cream-dark'
-              }`}
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium text-charcoal/70 bg-cream hover:bg-cream-dark border border-cream-dark rounded-full transition-all duration-200 cursor-pointer"
+              id="sort-dropdown-toggle"
             >
-              {cat}
+              <svg className="w-3.5 h-3.5 text-champagne" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M9 17h6" />
+              </svg>
+              <span className="hidden sm:inline text-charcoal/50">Sort:</span>
+              <span className="text-charcoal-dark font-semibold">
+                {SORT_OPTIONS.find((o) => o.value === activeSort)?.label}
+              </span>
+              <svg
+                className={`w-3.5 h-3.5 text-charcoal/40 transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
-          ))}
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {isSortOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream-dark/50 overflow-hidden z-20"
+                >
+                  <div className="py-1">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setActiveSort(option.value);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                          activeSort === option.value
+                            ? 'bg-champagne/10 text-champagne-dark font-semibold'
+                            : 'text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark'
+                        }`}
+                      >
+                        <span className="flex items-center justify-between">
+                          {option.label}
+                          {activeSort === option.value && (
+                            <svg className="w-4 h-4 text-champagne" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
 
         {/* Loading Skeletons */}
@@ -110,7 +237,7 @@ export default function ProductGrid() {
         {!loading && (
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeCategory}
+              key={`${activeCategory}-${activeSort}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -200,8 +327,8 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Link href={`/product/${card.slug}`} className="block">
-        <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-cream-dark/50 hover:border-champagne/30">
+      <Link href={`/product/${card.slug}`} className="block h-full">
+        <div className="relative h-full flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-cream-dark/50 hover:border-champagne/30">
           {/* Image Container */}
           <div className="relative aspect-[3/4] overflow-hidden bg-cream">
             {imageSrc ? (
@@ -269,23 +396,23 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
             )}
 
             {/* Quick View Button */}
-            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[4] px-6 py-2.5 bg-white/95 backdrop-blur-sm text-charcoal-dark text-sm font-semibold rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:bg-champagne group-hover:text-white shadow-lg cursor-pointer">
+            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[4] px-4 py-1.5 bg-white/95 backdrop-blur-sm text-charcoal-dark text-xs font-semibold rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:bg-champagne group-hover:text-white shadow-lg cursor-pointer whitespace-nowrap">
               View Details
             </span>
           </div>
 
           {/* Content */}
-          <div className="p-5">
+          <div className="p-5 flex flex-col flex-1">
             <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-champagne">
               {card.category}
             </span>
-            <h3 className="font-heading text-lg font-semibold text-charcoal-dark mt-1 mb-2 leading-snug group-hover:text-champagne-dark transition-colors duration-300">
+            <h3 className="font-heading text-lg font-semibold text-charcoal-dark mt-1 mb-2 leading-snug line-clamp-2 group-hover:text-champagne-dark transition-colors duration-300">
               {card.name}
             </h3>
             <p className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4">
               {card.description}
             </p>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between mt-auto">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-charcoal-dark">
                   PKR {card.base_price.toLocaleString()}
