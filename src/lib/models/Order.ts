@@ -22,6 +22,7 @@ export interface IOrder extends Document {
     name: string;
     whatsapp: string;
     area: string;
+    address: string;
   };
 
   payment: {
@@ -67,6 +68,7 @@ const OrderSchema = new Schema<IOrder>(
       name: { type: String, required: true },
       whatsapp: { type: String, required: true },
       area: { type: String, required: true },
+      address: { type: String, default: '' },
     },
 
     payment: {

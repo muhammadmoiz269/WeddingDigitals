@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import type { CardProduct } from '@/types';
 
-const CATEGORIES = ['All', 'Nikkah', 'Barat', 'Valima', 'Mehndi', 'Luxury', 'Minimalist'] as const;
+const CATEGORIES = ['All', 'Nikkah', 'Barat', 'Valima', 'Mehndi', 'Luxury'] as const;
 
 export default function ProductGrid() {
   const [activeCategory, setActiveCategory] = useState('All');

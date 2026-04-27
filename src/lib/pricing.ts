@@ -1,4 +1,5 @@
 import { AddOn, PriceBreakdown, QuantityTier } from "@/types";
+import { WHATSAPP_NUMBER } from "./constants";
 
 /**
  * Quantity tier discounts:
@@ -85,7 +86,7 @@ export function getWhatsAppLink(
   quantity: number,
   total: number,
   selectedAddOns: AddOn[] = [],
-  phoneNumber: string = "923001234567"
+  phoneNumber: string = WHATSAPP_NUMBER
 ): string {
   const message = buildWhatsAppMessage(cardName, quantity, total, selectedAddOns);
   return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

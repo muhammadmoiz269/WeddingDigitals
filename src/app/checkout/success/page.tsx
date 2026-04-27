@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { formatPKR } from '@/lib/pricing';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 interface OrderData {
   order_id: string;
@@ -205,7 +206,7 @@ function SuccessContent() {
       {/* Pending — show WhatsApp to send receipt */}
       {!isConfirmed && (
         <a
-          href={`https://wa.me/923001234567?text=${encodeURIComponent(
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
             `Hi Paighaam! I just placed Order #${order.order_id}.\n` +
             `📋 Card: ${order.card_name}\n` +
             `📦 Quantity: ${order.quantity} pcs\n` +

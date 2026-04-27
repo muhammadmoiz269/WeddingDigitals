@@ -7,6 +7,22 @@ import Script from 'next/script';
 import type { CardProduct, AddOn } from '@/types';
 import { calculatePrice, formatPKR } from '@/lib/pricing';
 
+// ─── Urdu field config ────────────────────────────────────────────────────────
+const URDU_LABELS = {
+  groomName: 'دولہا کا نام *',
+  brideName: 'دلہن کا نام *',
+  date: 'تاریخ *',
+  venue: 'مقام *',
+  cardText: 'کارڈ کا متن',
+  livePreview: '📄 لائیو جائزہ',
+} as const;
+
+const URDU_PLACEHOLDERS = {
+  groomName: 'مثلاً احمد علی',
+  brideName: 'مثلاً فاطمہ خان',
+  venue: 'مثلاً رائل مارکی، ڈی ایچ اے',
+} as const;
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
@@ -66,18 +82,6 @@ Dinner to follow
 With love and joy,
 The [Groom Name] & [Bride Name] Families`,
   },
-  minimalist: {
-    label: 'Minimalist',
-    icon: '📐',
-    content: `[Groom Name] & [Bride Name]
-
-are getting married
-
-[Date]
-[Venue]
-
-You are cordially invited.`,
-  },
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -90,7 +94,7 @@ interface CheckoutProps {
 
 interface FormData {
   // Step 1
-  template: 'urdu' | 'english' | 'minimalist';
+  template: 'urdu' | 'english';
   content: string;
   groomName: string;
   brideName: string;
@@ -100,6 +104,7 @@ interface FormData {
   customerName: string;
   whatsapp: string;
   area: string;
+  address: string;
   quantity: number;
   // Step 3
   paymentMethod: 'full' | 'deposit';
@@ -113,6 +118,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const cloudinaryRef = useRef(false);
 
   const [selectedAddOnIds] = useState<Set<string>>(new Set(initialAddOnIds));
@@ -131,6 +137,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     customerName: '',
     whatsapp: '',
     area: '',
+    address: '',
     quantity: initialQty || 100,
     paymentMethod: 'deposit',
     receiptUrl: '',
@@ -160,17 +167,23 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     ? Math.ceil(breakdown.total / 2)
     : breakdown.total;
 
+  const isUrdu = form.template === 'urdu';
+
   // ─── Template selection ─────────────────────────────────────────────────────
 
-  const selectTemplate = useCallback((key: 'urdu' | 'english' | 'minimalist') => {
-    let content = TEMPLATES[key].content;
-    // Replace placeholders if user has already entered values
-    if (form.groomName) content = content.replace(/\[Groom Name\]/g, form.groomName);
-    if (form.brideName) content = content.replace(/\[Bride Name\]/g, form.brideName);
-    if (form.date) content = content.replace(/\[Date\]/g, form.date);
-    if (form.venue) content = content.replace(/\[Venue\]/g, form.venue);
-    setForm(f => ({ ...f, template: key, content }));
-  }, [form.groomName, form.brideName, form.date, form.venue]);
+  const selectTemplate = useCallback((key: 'urdu' | 'english') => {
+    // Reset all card detail fields and load fresh template content with placeholders
+    setForm(f => ({
+      ...f,
+      template: key,
+      content: TEMPLATES[key].content,
+      groomName: '',
+      brideName: '',
+      date: '',
+      venue: '',
+    }));
+    setFieldErrors({});
+  }, []);
 
   // ─── Live preview content ───────────────────────────────────────────────────
 
@@ -185,27 +198,35 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
   // ─── Validation ─────────────────────────────────────────────────────────────
 
-  const validateStep = (s: number): string | null => {
+  const validateStep = (s: number): Record<string, string> => {
+    const errors: Record<string, string> = {};
     if (s === 1) {
-      if (!form.groomName.trim()) return 'Please enter the groom\'s name';
-      if (!form.brideName.trim()) return 'Please enter the bride\'s name';
-      if (!form.date.trim()) return 'Please enter the event date';
-      if (!form.venue.trim()) return 'Please enter the venue';
+      if (!form.groomName.trim()) errors.groomName = 'Please enter the groom\'s name';
+      if (!form.brideName.trim()) errors.brideName = 'Please enter the bride\'s name';
+      if (!form.date.trim()) errors.date = 'Please select the event date';
+      if (!form.venue.trim()) errors.venue = 'Please enter the venue';
     }
     if (s === 2) {
-      if (!form.customerName.trim()) return 'Please enter your full name';
-      if (!form.whatsapp.trim()) return 'Please enter your WhatsApp number';
-      if (!/^(\+92|0)?3\d{9}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
-        return 'Invalid WhatsApp number. Use format: 03XX-XXXXXXX';
+      if (!form.customerName.trim()) errors.customerName = 'Please enter your full name';
+      if (!form.whatsapp.trim()) {
+        errors.whatsapp = 'Please enter your WhatsApp number';
+      } else if (!/^(\+92|0)?3\d{9}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
+        errors.whatsapp = 'Invalid number. Use format: 03XX-XXXXXXX';
       }
-      if (!form.area) return 'Please select your area';
+      if (!form.area) errors.area = 'Please select your delivery area';
+      if (!form.address.trim()) errors.address = 'Please enter your delivery address';
     }
-    return null;
+    return errors;
   };
 
   const nextStep = () => {
-    const err = validateStep(step);
-    if (err) { setError(err); return; }
+    const errors = validateStep(step);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Please fill in all required fields');
+      return;
+    }
+    setFieldErrors({});
     setError('');
     setStep(s => s + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -213,6 +234,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
   const prevStep = () => {
     setError('');
+    setFieldErrors({});
     setStep(s => s - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -253,8 +275,9 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   // ─── Submit order ───────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    const err = validateStep(3);
-    if (err) { setError(err); return; }
+    const errors = validateStep(3);
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); setError('Please fill in all required fields'); return; }
+    setFieldErrors({});
     setError('');
     setSubmitting(true);
 
@@ -278,6 +301,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           name: form.customerName,
           whatsapp: form.whatsapp,
           area: form.area,
+          address: form.address,
         },
         payment: {
           method: form.paymentMethod,
@@ -383,7 +407,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
               <p className="co-step__desc">Choose a template, fill in your details, and preview your card in real-time.</p>
 
               {/* Template Buttons */}
-              <div className="co-templates">
+              <div className="co-templates" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
                 {(Object.keys(TEMPLATES) as Array<keyof typeof TEMPLATES>).map(key => (
                   <button
                     key={key}
@@ -399,49 +423,67 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
               {/* Detail Fields */}
               <div className="co-fields-grid">
                 <div className="co-field">
-                  <label className="co-label">Groom&apos;s Name *</label>
+                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                    {isUrdu ? URDU_LABELS.groomName : "Groom's Name *"}
+                  </label>
                   <input
-                    className="co-input"
-                    placeholder="e.g. Ahmed Ali"
+                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.groomName ? 'co-input--error' : ''}`}
+                    placeholder={isUrdu ? URDU_PLACEHOLDERS.groomName : 'e.g. Ahmed Ali'}
+                    dir={isUrdu ? 'rtl' : 'ltr'}
                     value={form.groomName}
-                    onChange={e => setForm(f => ({ ...f, groomName: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, groomName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.groomName; return n; }); }}
                   />
+                  {fieldErrors.groomName && <span className="co-field-error">{fieldErrors.groomName}</span>}
                 </div>
                 <div className="co-field">
-                  <label className="co-label">Bride&apos;s Name *</label>
+                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                    {isUrdu ? URDU_LABELS.brideName : "Bride's Name *"}
+                  </label>
                   <input
-                    className="co-input"
-                    placeholder="e.g. Fatima Khan"
+                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.brideName ? 'co-input--error' : ''}`}
+                    placeholder={isUrdu ? URDU_PLACEHOLDERS.brideName : 'e.g. Fatima Khan'}
+                    dir={isUrdu ? 'rtl' : 'ltr'}
                     value={form.brideName}
-                    onChange={e => setForm(f => ({ ...f, brideName: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, brideName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.brideName; return n; }); }}
                   />
+                  {fieldErrors.brideName && <span className="co-field-error">{fieldErrors.brideName}</span>}
                 </div>
                 <div className="co-field">
-                  <label className="co-label">Event Date *</label>
+                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                    {isUrdu ? URDU_LABELS.date : 'Event Date *'}
+                  </label>
                   <input
                     type="date"
-                    className="co-input"
+                    className={`co-input ${fieldErrors.date ? 'co-input--error' : ''}`}
                     value={form.date}
-                    onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, date: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.date; return n; }); }}
                   />
+                  {fieldErrors.date && <span className="co-field-error">{fieldErrors.date}</span>}
                 </div>
                 <div className="co-field">
-                  <label className="co-label">Venue *</label>
+                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                    {isUrdu ? URDU_LABELS.venue : 'Venue *'}
+                  </label>
                   <input
-                    className="co-input"
-                    placeholder="e.g. Royal Marquee, DHA"
+                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.venue ? 'co-input--error' : ''}`}
+                    placeholder={isUrdu ? URDU_PLACEHOLDERS.venue : 'e.g. Royal Marquee, DHA'}
+                    dir={isUrdu ? 'rtl' : 'ltr'}
                     value={form.venue}
-                    onChange={e => setForm(f => ({ ...f, venue: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, venue: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.venue; return n; }); }}
                   />
+                  {fieldErrors.venue && <span className="co-field-error">{fieldErrors.venue}</span>}
                 </div>
               </div>
 
               {/* Content Editor */}
               <div className="co-field">
-                <label className="co-label">Card Text</label>
+                <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                  {isUrdu ? URDU_LABELS.cardText : 'Card Text'}
+                </label>
                 <textarea
-                  className="co-textarea"
+                  className={`co-textarea ${isUrdu ? 'co-textarea--urdu' : ''}`}
                   rows={8}
+                  dir={isUrdu ? 'rtl' : 'ltr'}
                   value={form.content}
                   onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                 />
@@ -449,8 +491,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
               {/* Live Preview */}
               <div className="co-field">
-                <label className="co-label">📄 Live Preview</label>
-                <div className={`co-preview ${form.template === 'urdu' ? 'co-preview--urdu' : ''}`}>
+                <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
+                  {isUrdu ? URDU_LABELS.livePreview : '📄 Live Preview'}
+                </label>
+                <div className={`co-preview ${isUrdu ? 'co-preview--urdu' : ''}`}>
                   <div className="co-preview__corner co-preview__corner--tl" />
                   <div className="co-preview__corner co-preview__corner--tr" />
                   <div className="co-preview__corner co-preview__corner--bl" />
@@ -476,20 +520,22 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 <div className="co-field">
                   <label className="co-label">Full Name *</label>
                   <input
-                    className="co-input"
+                    className={`co-input ${fieldErrors.customerName ? 'co-input--error' : ''}`}
                     placeholder="Your full name"
                     value={form.customerName}
-                    onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, customerName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.customerName; return n; }); }}
                   />
+                  {fieldErrors.customerName && <span className="co-field-error">{fieldErrors.customerName}</span>}
                 </div>
                 <div className="co-field">
                   <label className="co-label">WhatsApp Number *</label>
                   <input
-                    className="co-input"
+                    className={`co-input ${fieldErrors.whatsapp ? 'co-input--error' : ''}`}
                     placeholder="03XX-XXXXXXX"
                     value={form.whatsapp}
-                    onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, whatsapp: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.whatsapp; return n; }); }}
                   />
+                  {fieldErrors.whatsapp && <span className="co-field-error">{fieldErrors.whatsapp}</span>}
                 </div>
               </div>
 
@@ -498,10 +544,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 <label className="co-label">Delivery Area (Karachi) *</label>
                 <div className="co-select-wrap">
                   <input
-                    className="co-input"
+                    className={`co-input ${fieldErrors.area ? 'co-input--error' : ''}`}
                     placeholder="Search area…"
                     value={areaDropdownOpen ? areaSearch : form.area || areaSearch}
-                    onChange={e => { setAreaSearch(e.target.value); setAreaDropdownOpen(true); }}
+                    onChange={e => { setAreaSearch(e.target.value); setAreaDropdownOpen(true); setFieldErrors(fe => { const n = {...fe}; delete n.area; return n; }); }}
                     onFocus={() => setAreaDropdownOpen(true)}
                   />
                   {areaDropdownOpen && (
@@ -510,7 +556,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                         <button
                           key={a}
                           className={`co-dropdown__item ${form.area === a ? 'co-dropdown__item--active' : ''}`}
-                          onClick={() => { setForm(f => ({ ...f, area: a })); setAreaSearch(''); setAreaDropdownOpen(false); }}
+                          onClick={() => { setForm(f => ({ ...f, area: a })); setAreaSearch(''); setAreaDropdownOpen(false); setFieldErrors(fe => { const n = {...fe}; delete n.area; return n; }); }}
                         >
                           {a}
                         </button>
@@ -520,6 +566,19 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                     </div>
                   )}
                 </div>
+                {fieldErrors.area && <span className="co-field-error">{fieldErrors.area}</span>}
+              </div>
+
+              {/* Delivery Address */}
+              <div className="co-field">
+                <label className="co-label">Delivery Address *</label>
+                <input
+                  className={`co-input ${fieldErrors.address ? 'co-input--error' : ''}`}
+                  placeholder="House/flat no, street, block, area"
+                  value={form.address}
+                  onChange={e => { setForm(f => ({ ...f, address: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.address; return n; }); }}
+                />
+                {fieldErrors.address && <span className="co-field-error">{fieldErrors.address}</span>}
               </div>
 
               {/* Quantity */}
@@ -674,6 +733,15 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         </AnimatePresence>
       </div>
 
+      {/* Google Fonts for Urdu Nastaliq */}
+      {isUrdu && (
+        // eslint-disable-next-line @next/next/no-page-custom-font
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+      )}
+
       <style>{`
         .co-wrapper {
           max-width: 720px;
@@ -779,13 +847,28 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           margin-bottom: 1rem;
         }
 
+        /* ── Field-level errors ── */
+        .co-field-error {
+          font-size: 0.72rem;
+          color: #dc2626;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+        .co-input--error {
+          border-color: #dc2626 !important;
+          background: rgba(220,38,38,0.02);
+        }
+        .co-input--error:focus {
+          box-shadow: 0 0 0 3px rgba(220,38,38,0.08) !important;
+        }
+
         /* ── Step ── */
         .co-step { display: flex; flex-direction: column; gap: 1.25rem; }
         .co-step__title { font-size: 1.25rem; font-weight: 700; color: #2a2018; margin: 0; }
         .co-step__desc { font-size: 0.875rem; color: #8a7a6a; margin: -0.5rem 0 0; }
 
         /* ── Templates ── */
-        .co-templates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+        .co-templates { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         .co-template-btn {
           display: flex; flex-direction: column; align-items: center; gap: 0.375rem;
           padding: 1rem; border-radius: 14px; border: 2px solid #e8e0d4;
@@ -824,7 +907,34 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           box-shadow: 0 4px 20px rgba(0,0,0,0.04);
           min-height: 200px;
         }
-        .co-preview--urdu { direction: rtl; font-size: 1rem; }
+        .co-preview--urdu {
+          direction: rtl;
+          font-family: 'Noto Nastaliq Urdu', serif;
+          font-size: 1.05rem;
+          line-height: 2.2;
+        }
+
+        /* ── Urdu-specific field styles ── */
+        .co-label--urdu {
+          font-family: 'Noto Nastaliq Urdu', serif;
+          font-size: 0.85rem;
+          direction: rtl;
+          text-align: right;
+        }
+        .co-input--urdu {
+          font-family: 'Noto Nastaliq Urdu', serif;
+          font-size: 0.95rem;
+          text-align: right;
+        }
+        .co-input--urdu::placeholder {
+          font-family: 'Noto Nastaliq Urdu', serif;
+        }
+        .co-textarea--urdu {
+          font-family: 'Noto Nastaliq Urdu', serif;
+          font-size: 0.95rem;
+          text-align: right;
+          line-height: 2.2;
+        }
         .co-preview__text { position: relative; z-index: 1; }
         .co-preview__corner {
           position: absolute; width: 20px; height: 20px;

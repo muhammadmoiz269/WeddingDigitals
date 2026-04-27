@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { WHATSAPP_NUMBER, WHATSAPP_DISPLAY, getWhatsAppChatLink } from '@/lib/constants';
 
 // ─── FAQ Knowledge Base ────────────────────────────────────────────────────────
 
@@ -11,7 +12,6 @@ interface FAQ {
   followUp?: string[];
 }
 
-const WHATSAPP_NUMBER = '923001234567';
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 
 const FAQ_DATA: FAQ[] = [
@@ -62,7 +62,7 @@ const FAQ_DATA: FAQ[] = [
   },
   {
     keywords: ['location', 'address', 'studio', 'visit', 'shop', 'kahan', 'where'],
-    answer: '📍 Our studio is at:\n**Shop #12, Tariq Road, PECHS Block 2, Karachi**\n\n🕐 **Mon-Sat: 11am - 9pm**\n📞 **+92 300 123 4567**\n\nWalk-ins welcome! See samples in person and discuss your requirements.',
+    answer: `📍 Our studio is at:\n**Shop #12, Tariq Road, PECHS Block 2, Karachi**\n\n🕐 **Mon-Sat: 11am - 9pm**\n📞 **${WHATSAPP_DISPLAY}**\n\nWalk-ins welcome! See samples in person and discuss your requirements.`,
     followUp: ['How to order?', 'Chat on WhatsApp'],
   },
   {

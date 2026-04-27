@@ -15,7 +15,7 @@ interface PriceCalculatorProps {
   minOrder: number;
 }
 
-const QUANTITY_TIERS: QuantityTier[] = [100, 250, 500];
+const QUANTITY_TIERS: number[] = [50, 100, 250, 500];
 
 export default function PriceCalculator({
   basePrice,
@@ -26,7 +26,7 @@ export default function PriceCalculator({
   minOrder,
 }: PriceCalculatorProps) {
   const router = useRouter();
-  const [quantity, setQuantity] = useState<QuantityTier>(100);
+  const [quantity, setQuantity] = useState<number>(100);
   const [selectedAddOnIds, setSelectedAddOnIds] = useState<Set<string>>(new Set());
 
   const selectedAddOns = useMemo(
@@ -83,23 +83,23 @@ export default function PriceCalculator({
         <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-charcoal/60 mb-3">
           Select Quantity
         </label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {QUANTITY_TIERS.map((tier) => (
             <button
               key={tier}
               onClick={() => setQuantity(tier)}
-              className={`relative px-4 py-3.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${
+              className={`relative px-2 py-2.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${
                 quantity === tier
                   ? 'bg-champagne text-white border-champagne shadow-md shadow-champagne/20'
                   : 'bg-white text-charcoal border-cream-dark hover:border-champagne/40'
               }`}
             >
-              <span className="block text-lg font-bold">{tier}</span>
-              <span className="block text-[10px] uppercase tracking-wider mt-0.5 opacity-70">
+              <span className="block text-base font-bold">{tier}</span>
+              <span className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-70">
                 cards
               </span>
               {tier >= 500 && (
-                <span className="absolute -top-2.5 right-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-green-500 text-white rounded-full">
+                <span className="absolute -top-2 right-1 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-green-500 text-white rounded-full">
                   -10%
                 </span>
               )}

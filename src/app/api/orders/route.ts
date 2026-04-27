@@ -77,6 +77,7 @@ export async function POST(request: Request) {
         name: body.customer.name,
         whatsapp: body.customer.whatsapp,
         area: body.customer.area,
+        address: body.customer.address || '',
       },
       payment: {
         method: body.payment.method,
