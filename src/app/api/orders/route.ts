@@ -24,9 +24,9 @@ export async function POST(request: Request) {
       }
     }
 
-    if (!body.customization?.groom_name || !body.customization?.bride_name) {
+    if (!body.customization?.main_event || !body.customization?.content) {
       return NextResponse.json(
-        { success: false, error: "Customization details are required" },
+        { success: false, error: "Customization details are required (main_event, content)" },
         { status: 400 }
       );
     }
@@ -66,12 +66,11 @@ export async function POST(request: Request) {
       add_ons: Array.isArray(body.add_ons) ? body.add_ons : [],
       total: Number(body.total),
       customization: {
-        template: body.customization.template || "custom",
-        content: body.customization.content || "",
-        groom_name: body.customization.groom_name,
-        bride_name: body.customization.bride_name,
-        date: body.customization.date || "",
-        venue: body.customization.venue || "",
+        main_event: body.customization.main_event,
+        content: body.customization.content,
+        addon_events: Array.isArray(body.customization.addon_events)
+          ? body.customization.addon_events
+          : [],
       },
       customer: {
         name: body.customer.name,

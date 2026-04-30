@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import type { AddOn, QuantityTier } from '@/types';
-import { calculatePrice, formatPKR, getWhatsAppLink } from '@/lib/pricing';
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import type { AddOn, QuantityTier } from "@/types";
+import { calculatePrice, formatPKR, getWhatsAppLink } from "@/lib/pricing";
 
 interface PriceCalculatorProps {
   basePrice: number;
@@ -15,7 +15,7 @@ interface PriceCalculatorProps {
   minOrder: number;
 }
 
-const QUANTITY_TIERS: number[] = [50, 100, 250, 500];
+const QUANTITY_TIERS: number[] = [50, 100, 250];
 
 export default function PriceCalculator({
   basePrice,
@@ -27,21 +27,25 @@ export default function PriceCalculator({
 }: PriceCalculatorProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState<number>(100);
-  const [selectedAddOnIds, setSelectedAddOnIds] = useState<Set<string>>(new Set());
+  const [rawInput, setRawInput] = useState<string>("");
+  const [selectedAddOnIds, setSelectedAddOnIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const selectedAddOns = useMemo(
     () => addOns.filter((a) => selectedAddOnIds.has(a.id)),
-    [addOns, selectedAddOnIds]
+    [addOns, selectedAddOnIds],
   );
 
   const breakdown = useMemo(
     () => calculatePrice(basePrice, quantity, selectedAddOns),
-    [basePrice, quantity, selectedAddOns]
+    [basePrice, quantity, selectedAddOns],
   );
 
   const whatsappLink = useMemo(
-    () => getWhatsAppLink(productName, quantity, breakdown.total, selectedAddOns),
-    [productName, quantity, breakdown.total, selectedAddOns]
+    () =>
+      getWhatsAppLink(productName, quantity, breakdown.total, selectedAddOns),
+    [productName, quantity, breakdown.total, selectedAddOns],
   );
 
   const toggleAddOn = (id: string) => {
@@ -70,7 +74,8 @@ export default function PriceCalculator({
         </div>
         {originalPrice && (
           <span className="inline-block mt-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-600 rounded-full">
-            Save {Math.round(((originalPrice - basePrice) / originalPrice) * 100)}%
+            Save{" "}
+            {Math.round(((originalPrice - basePrice) / originalPrice) * 100)}%
           </span>
         )}
       </div>
@@ -87,27 +92,70 @@ export default function PriceCalculator({
           {QUANTITY_TIERS.map((tier) => (
             <button
               key={tier}
-              onClick={() => setQuantity(tier)}
+              onClick={() => {
+                setQuantity(tier);
+                setRawInput("");
+              }}
               className={`relative px-2 py-2.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${
-                quantity === tier
-                  ? 'bg-champagne text-white border-champagne shadow-md shadow-champagne/20'
-                  : 'bg-white text-charcoal border-cream-dark hover:border-champagne/40'
+                quantity === tier && rawInput === ""
+                  ? "bg-champagne text-white border-champagne shadow-md shadow-champagne/20"
+                  : "bg-white text-charcoal border-cream-dark hover:border-champagne/40"
               }`}
             >
               <span className="block text-base font-bold">{tier}</span>
               <span className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-70">
                 cards
               </span>
-              {tier >= 500 && (
-                <span className="absolute -top-2 right-1 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-green-500 text-white rounded-full">
-                  -10%
-                </span>
-              )}
             </button>
           ))}
+
+          {/* Custom quantity input */}
+          <div
+            className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${
+              rawInput !== ""
+                ? "border-champagne shadow-md shadow-champagne/20 bg-champagne"
+                : "border-cream-dark bg-white"
+            }`}
+          >
+            <input
+              id="custom-quantity-input"
+              type="number"
+              min={minOrder}
+              placeholder="Own"
+              value={rawInput}
+              onChange={(e) => {
+                const val = e.target.value;
+                setRawInput(val);
+                const num = parseInt(val, 10);
+                if (!isNaN(num) && num >= minOrder) {
+                  setQuantity(num);
+                }
+              }}
+              onBlur={() => {
+                const num = parseInt(rawInput, 10);
+                if (isNaN(num) || num < minOrder) {
+                  setRawInput("");
+                  if (isNaN(num)) setQuantity(100);
+                }
+              }}
+              style={{ colorScheme: "light" }}
+              className={`w-full px-2 pt-2.5 pb-0 text-center text-base font-bold bg-transparent outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                rawInput !== ""
+                  ? "text-white placeholder-white/70"
+                  : "text-charcoal placeholder-charcoal/40"
+              }`}
+            />
+            <span
+              className={`block text-[9px] uppercase tracking-wider text-center pb-1.5 opacity-70 ${
+                rawInput !== "" ? "text-white" : "text-charcoal"
+              }`}
+            >
+              cards
+            </span>
+          </div>
         </div>
         <p className="mt-2 text-xs text-charcoal/40">
-          Min. order: {minOrder} pcs. Bulk discount: 10% off for 500+ cards.
+          Min. order: {minOrder} pcs. Bulk discount applies at 500+ cards.
         </p>
       </div>
 
@@ -126,28 +174,40 @@ export default function PriceCalculator({
                   onClick={() => toggleAddOn(addon.id)}
                   className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-300 text-left cursor-pointer ${
                     isSelected
-                      ? 'bg-champagne/5 border-champagne/40 shadow-sm'
-                      : 'bg-white border-cream-dark hover:border-champagne/25'
+                      ? "bg-champagne/5 border-champagne/40 shadow-sm"
+                      : "bg-white border-cream-dark hover:border-champagne/25"
                   }`}
                 >
                   {/* Checkbox */}
                   <div
                     className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
                       isSelected
-                        ? 'bg-champagne border-champagne'
-                        : 'border-cream-dark'
+                        ? "bg-champagne border-champagne"
+                        : "border-cream-dark"
                     }`}
                   >
                     {isSelected && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </div>
 
                   {/* Label */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${isSelected ? 'text-champagne-dark' : 'text-charcoal'}`}>
+                    <p
+                      className={`text-sm font-medium ${isSelected ? "text-champagne-dark" : "text-charcoal"}`}
+                    >
                       {addon.name}
                     </p>
                     <p className="text-[11px] text-charcoal/40 leading-snug">
@@ -156,7 +216,9 @@ export default function PriceCalculator({
                   </div>
 
                   {/* Price */}
-                  <span className={`text-sm font-semibold flex-shrink-0 ${isSelected ? 'text-champagne-dark' : 'text-charcoal/60'}`}>
+                  <span
+                    className={`text-sm font-semibold flex-shrink-0 ${isSelected ? "text-champagne-dark" : "text-charcoal/60"}`}
+                  >
                     +{formatPKR(addon.price)}
                   </span>
                 </button>
@@ -182,8 +244,12 @@ export default function PriceCalculator({
         </h4>
 
         <div className="flex justify-between text-sm">
-          <span className="text-charcoal/70">Base Price × {quantity}</span>
-          <span className="font-medium text-charcoal">{formatPKR(breakdown.subtotal)}</span>
+          <span className="text-charcoal/70">
+            {basePrice} × {quantity}
+          </span>
+          <span className="font-medium text-charcoal">
+            {formatPKR(breakdown.subtotal)}
+          </span>
         </div>
 
         {selectedAddOns.length > 0 && (
@@ -191,7 +257,9 @@ export default function PriceCalculator({
             <span className="text-charcoal/70">
               Add-ons ({selectedAddOns.length}) × {quantity}
             </span>
-            <span className="font-medium text-charcoal">+{formatPKR(breakdown.addOnsTotal)}</span>
+            <span className="font-medium text-charcoal">
+              +{formatPKR(breakdown.addOnsTotal)}
+            </span>
           </div>
         )}
 
@@ -200,32 +268,45 @@ export default function PriceCalculator({
             <span className="text-green-600 font-medium">
               Bulk Discount ({breakdown.discountPercent}%)
             </span>
-            <span className="font-medium text-green-600">-{formatPKR(breakdown.discount)}</span>
+            <span className="font-medium text-green-600">
+              -{formatPKR(breakdown.discount)}
+            </span>
           </div>
         )}
 
         <div className="pt-2.5 border-t border-champagne/20 flex justify-between">
-          <span className="text-base font-semibold text-charcoal-dark">Total</span>
+          <span className="text-base font-semibold text-charcoal-dark">
+            Total
+          </span>
           <span className="text-2xl font-bold text-gold-gradient font-heading">
             {formatPKR(breakdown.total)}
           </span>
         </div>
 
         <p className="text-[10px] text-charcoal/40 text-right">
-          {formatPKR(Math.round(breakdown.total / quantity))}/card after discount
+          {formatPKR(Math.round(breakdown.total / quantity))}/card after
+          discount
         </p>
       </motion.div>
 
       {/* Proceed to Checkout */}
       <button
         onClick={() => {
-          const addOnParam = [...selectedAddOnIds].join(',');
-          router.push(`/checkout?slug=${slug}&qty=${quantity}${addOnParam ? `&addons=${addOnParam}` : ''}`);
+          const addOnParam = [...selectedAddOnIds].join(",");
+          router.push(
+            `/checkout?slug=${slug}&qty=${quantity}${addOnParam ? `&addons=${addOnParam}` : ""}`,
+          );
         }}
         id="checkout-btn"
         className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-champagne to-champagne-dark text-white font-semibold text-base rounded-2xl shadow-lg shadow-champagne/25 hover:shadow-xl hover:shadow-champagne/35 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
         Proceed to Checkout — {formatPKR(breakdown.total)}
@@ -247,7 +328,8 @@ export default function PriceCalculator({
 
       {/* Trust note */}
       <p className="text-center text-[11px] text-charcoal/40 leading-relaxed">
-        Free delivery in Karachi for orders above 200 pcs.<br />
+        Free delivery in Karachi for orders above 200 pcs.
+        <br />
         Price includes design, printing, and packaging.
       </p>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import Link from "next/link";
 import type { CardProduct } from "@/types";
 
@@ -96,50 +96,21 @@ export default function ProductGrid() {
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-block text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4"
-          >
+          <span className="inline-block text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4">
             Our Collection
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            viewport={{ once: true }}
-            className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-charcoal-dark mb-4"
-          >
+          </span>
+          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-charcoal-dark mb-4">
             Handcrafted with Love
-          </motion.h2>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            viewport={{ once: true }}
-            className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6"
-          />
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
-            className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base"
-          >
+          </h2>
+          <div className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6" />
+          <p className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base">
             Each invitation is a masterpiece — designed, printed, and finished
             in our Karachi studio with the finest materials.
-          </motion.p>
+          </p>
         </div>
 
         {/* Filter Bar — Category Pills + Sort Dropdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          viewport={{ once: true }}
-          className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12"
-        >
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
           {/* Category Pills */}
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
             {CATEGORIES.map((cat) => (
@@ -197,15 +168,8 @@ export default function ProductGrid() {
             </button>
 
             {/* Dropdown Menu */}
-            <AnimatePresence>
-              {isSortOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream-dark/50 overflow-hidden z-20"
-                >
+            {isSortOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream-dark/50 overflow-hidden z-20">
                   <div className="py-1">
                     {SORT_OPTIONS.map((option) => (
                       <button
@@ -241,11 +205,10 @@ export default function ProductGrid() {
                       </button>
                     ))}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              </div>
+            )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Loading Skeletons */}
         {loading && (
@@ -269,20 +232,14 @@ export default function ProductGrid() {
 
         {/* Product Grid */}
         {!loading && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${activeCategory}-${activeSort}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
-            >
-              {filtered.map((card, index) => (
-                <CardGridItem key={card.slug} card={card} index={index} />
-              ))}
-            </motion.div>
-          </AnimatePresence>
+          <div
+            key={`${activeCategory}-${activeSort}`}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
+          >
+            {filtered.map((card, index) => (
+              <CardGridItem key={card.slug} card={card} index={index} />
+            ))}
+          </div>
         )}
 
         {/* Empty State */}
@@ -301,19 +258,14 @@ export default function ProductGrid() {
         )}
 
         {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-14"
-        >
+        <div className="text-center mt-14">
           <p className="text-sm text-charcoal/50 mb-4">
             Don&apos;t see what you&apos;re looking for?
           </p>
           <a href="#contact" className="btn-secondary">
             Request Custom Design
           </a>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -356,11 +308,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
-      viewport={{ once: true, margin: "-50px" }}
+    <div
       className="group relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -374,6 +322,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
               <img
                 src={imageSrc}
                 alt={card.name}
+                loading="eager"
                 className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
               />
             ) : (
@@ -475,6 +424,6 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

@@ -10,12 +10,9 @@ export interface IOrder extends Document {
   total: number;
 
   customization: {
-    template: string;
+    main_event: string;
     content: string;
-    groom_name: string;
-    bride_name: string;
-    date: string;
-    venue: string;
+    addon_events: { event_type: string; quantity: number; content: string }[];
   };
 
   customer: {
@@ -56,12 +53,15 @@ const OrderSchema = new Schema<IOrder>(
     total: { type: Number, required: true, min: 0 },
 
     customization: {
-      template: { type: String, required: true },
+      main_event: { type: String, required: true },
       content: { type: String, required: true },
-      groom_name: { type: String, required: true },
-      bride_name: { type: String, required: true },
-      date: { type: String, required: true },
-      venue: { type: String, required: true },
+      addon_events: [
+        {
+          event_type: { type: String, required: true },
+          quantity: { type: Number, required: true },
+          content: { type: String, default: '' },
+        },
+      ],
     },
 
     customer: {
@@ -85,7 +85,9 @@ const OrderSchema = new Schema<IOrder>(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-const Order: Model<IOrder> =
-  mongoose.models.Order || mongoose.model<IOrder>("Order", OrderSchema);
+// Delete cached model so schema changes apply on hot-reload in Next.js dev
+delete mongoose.models.Order;
+
+const Order: Model<IOrder> = mongoose.model<IOrder>("Order", OrderSchema);
 
 export default Order;

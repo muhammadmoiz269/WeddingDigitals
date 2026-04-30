@@ -117,15 +117,13 @@ export default function AdminClient() {
     if (activeTab === 'orders' && orders.length === 0) fetchOrders();
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { groom_name: string; bride_name: string; date: string; venue: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
+  const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
     const msg = `Assalamu Alaikum ${order.customer.name}! 🌙\n\n` +
       `Your order *#${order.order_id}* has been *confirmed!* ✅\n\n` +
       `📋 *Card:* ${order.card_name}\n` +
-      `📝 *For:* ${order.customization.groom_name} & ${order.customization.bride_name}\n` +
-      `📅 *Date:* ${order.customization.date}\n` +
-      `📍 *Venue:* ${order.customization.venue}\n` +
+      `🎉 *Event:* ${order.customization.main_event}\n` +
       `📦 *Quantity:* ${order.quantity} cards\n` +
-      `💰 *Amount:* PKR ${order.payment.amount_due.toLocaleString()}\n\n` +
+      `💰 *Amount Due:* PKR ${order.payment.amount_due.toLocaleString()}\n\n` +
       `Your cards will be designed, printed and dispatched to ${order.customer.area}, Karachi within *7-10 working days.*\n\n` +
       `We'll share a mockup for your approval before printing. Thank you for choosing Paighaam! 🤍`;
     const phone = order.customer.whatsapp.replace(/[^\d]/g, '');
@@ -675,11 +673,11 @@ export default function AdminClient() {
                 </thead>
                 <tbody>
                   {orders.map((order) => (
-                    <tr key={order.order_id || order._id} className="admin-table__row admin-table__row--clickable" onClick={() => setSelectedOrder(order)}>
+                    <tr key={order.order_id || order._id} className="admin-table__row admin-table__row--clickable" onClick={() => router.push(`/admin/orders/${order.order_id}`)}>
                       <td>
                         <div>
                           <p className="admin-card-name">{order.order_id}</p>
-                          <p className="admin-card-slug">{order.customization?.groom_name} & {order.customization?.bride_name}</p>
+                          <p className="admin-card-slug">{order.customization?.main_event} — {order.quantity} cards</p>
                         </div>
                       </td>
                       <td>
@@ -718,7 +716,7 @@ export default function AdminClient() {
                       </td>
                       <td>
                         <div className="admin-row-actions">
-                          <button className="admin-btn admin-btn--ghost" onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); }}>
+                          <button className="admin-btn admin-btn--ghost" onClick={(e) => { e.stopPropagation(); router.push(`/admin/orders/${order.order_id}`); }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                               <circle cx="12" cy="12" r="3" />
@@ -1139,236 +1137,7 @@ export default function AdminClient() {
         </div>
       )}
 
-      {/* ── Order Detail Modal ── */}
-      {selectedOrder && (
-        <div className="admin-overlay" onClick={(e) => e.target === e.currentTarget && setSelectedOrder(null)}>
-          <div className="admin-modal" style={{ maxWidth: 680 }}>
-            <div className="admin-modal__header">
-              <h2 className="admin-modal__title">
-                Order {selectedOrder.order_id}
-              </h2>
-              <button className="admin-modal__close" onClick={() => setSelectedOrder(null)} aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="admin-modal__body">
-              {/* ── Order Summary ── */}
-              <div className="od-section">
-                <h4 className="od-section__title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  Order Info
-                </h4>
-                <div className="od-grid">
-                  <div className="od-item">
-                    <span className="od-item__label">Order ID</span>
-                    <span className="od-item__value od-item__value--mono">{selectedOrder.order_id}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Card</span>
-                    <span className="od-item__value">{selectedOrder.card_name}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Quantity</span>
-                    <span className="od-item__value">{selectedOrder.quantity} cards</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Template</span>
-                    <span className="od-item__value" style={{ textTransform: 'capitalize' }}>
-                      {selectedOrder.customization?.template === 'urdu' ? '🕌 Traditional Urdu' : '✨ Modern English'}
-                    </span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Status</span>
-                    <span className={`admin-order-status admin-order-status--${selectedOrder.payment?.status || 'pending_payment'}`}>
-                      {selectedOrder.payment?.status === 'confirmed' ? '✓ Confirmed' :
-                       selectedOrder.payment?.status === 'in_production' ? '🔄 In Production' :
-                       selectedOrder.payment?.status === 'completed' ? '✅ Completed' :
-                       '⏳ Pending Payment'}
-                    </span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Ordered On</span>
-                    <span className="od-item__value">
-                      {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Wedding Details ── */}
-              <div className="od-section">
-                <h4 className="od-section__title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                  Wedding Details
-                </h4>
-                <div className="od-grid">
-                  <div className="od-item">
-                    <span className="od-item__label">Groom</span>
-                    <span className="od-item__value od-item__value--highlight">{selectedOrder.customization?.groom_name}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Bride</span>
-                    <span className="od-item__value od-item__value--highlight">{selectedOrder.customization?.bride_name}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Event Date</span>
-                    <span className="od-item__value">{selectedOrder.customization?.date || '—'}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Venue</span>
-                    <span className="od-item__value">{selectedOrder.customization?.venue || '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Card Content ── */}
-              <div className="od-section">
-                <h4 className="od-section__title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                  Card Content
-                </h4>
-                <div
-                  className="od-card-preview"
-                  style={{
-                    direction: selectedOrder.customization?.template === 'urdu' ? 'rtl' : 'ltr',
-                    fontFamily: selectedOrder.customization?.template === 'urdu' ? "'Noto Nastaliq Urdu', serif" : 'inherit',
-                    textAlign: 'center',
-                  }}
-                >
-                  {selectedOrder.customization?.content || '—'}
-                </div>
-              </div>
-
-              {/* ── Customer & Delivery ── */}
-              <div className="od-section">
-                <h4 className="od-section__title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  Customer & Delivery
-                </h4>
-                <div className="od-grid">
-                  <div className="od-item">
-                    <span className="od-item__label">Name</span>
-                    <span className="od-item__value">{selectedOrder.customer?.name}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">WhatsApp</span>
-                    <span className="od-item__value od-item__value--mono">{selectedOrder.customer?.whatsapp}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Area</span>
-                    <span className="od-item__value">{selectedOrder.customer?.area}, Karachi</span>
-                  </div>
-                  <div className="od-item od-item--full">
-                    <span className="od-item__label">Delivery Address</span>
-                    <span className="od-item__value">{selectedOrder.customer?.address || '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Payment ── */}
-              <div className="od-section">
-                <h4 className="od-section__title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  Payment
-                </h4>
-                <div className="od-grid">
-                  <div className="od-item">
-                    <span className="od-item__label">Method</span>
-                    <span className="od-item__value">
-                      {selectedOrder.payment?.method === 'full'
-                        ? '💰 Full Payment'
-                        : '💳 50% Deposit'}
-                    </span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Amount Paid</span>
-                    <span className="od-item__value od-item__value--price">PKR {selectedOrder.payment?.amount_due?.toLocaleString()}</span>
-                  </div>
-                  <div className="od-item">
-                    <span className="od-item__label">Order Total</span>
-                    <span className="od-item__value">PKR {selectedOrder.total?.toLocaleString()}</span>
-                  </div>
-                  {selectedOrder.payment?.method === 'deposit' && (
-                    <div className="od-item">
-                      <span className="od-item__label">Remaining Balance</span>
-                      <span className="od-item__value" style={{ color: '#f59e0b' }}>
-                        PKR {(selectedOrder.total - selectedOrder.payment.amount_due).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Receipt Preview */}
-                {selectedOrder.payment?.receipt_url && (
-                  <div className="od-receipt">
-                    <span className="od-item__label">Payment Receipt</span>
-                    <a href={selectedOrder.payment.receipt_url} target="_blank" rel="noopener noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={selectedOrder.payment.receipt_url}
-                        alt="Payment receipt"
-                        className="od-receipt__img"
-                      />
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Add-ons ── */}
-              {selectedOrder.add_ons && selectedOrder.add_ons.length > 0 && (
-                <div className="od-section">
-                  <h4 className="od-section__title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Add-ons
-                  </h4>
-                  <div className="od-addons">
-                    {selectedOrder.add_ons.map((addon: { name: string; price: number }, i: number) => (
-                      <div key={i} className="od-addon-row">
-                        <span>{addon.name}</span>
-                        <span className="od-item__value--price">PKR {addon.price?.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer with actions */}
-            <div className="admin-modal__footer">
-              <button className="admin-btn admin-btn--ghost" onClick={() => setSelectedOrder(null)}>
-                Close
-              </button>
-              {selectedOrder.payment?.status === 'confirmed' && (
-                <a
-                  href={getWhatsAppConfirmLink(selectedOrder)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="admin-btn admin-btn--wa"
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.8125rem' }}
-                >
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                  </svg>
-                  Send WhatsApp Confirmation
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Urdu Font for Order Detail */}
-      {selectedOrder?.customization?.template === 'urdu' && (
-        // eslint-disable-next-line @next/next/no-page-custom-font
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      )}
 
       {/* ── Scoped Styles ── */}
       <style>{`

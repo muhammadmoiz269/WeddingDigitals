@@ -6,22 +6,10 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import type { CardProduct, AddOn } from '@/types';
 import { calculatePrice, formatPKR } from '@/lib/pricing';
-
-// ─── Urdu field config ────────────────────────────────────────────────────────
-const URDU_LABELS = {
-  groomName: 'دولہا کا نام *',
-  brideName: 'دلہن کا نام *',
-  date: 'تاریخ *',
-  venue: 'مقام *',
-  cardText: 'کارڈ کا متن',
-  livePreview: '📄 لائیو جائزہ',
-} as const;
-
-const URDU_PLACEHOLDERS = {
-  groomName: 'مثلاً احمد علی',
-  brideName: 'مثلاً فاطمہ خان',
-  venue: 'مثلاً رائل مارکی، ڈی ایچ اے',
-} as const;
+import CheckoutStep1, {
+  MAIN_EVENTS, ADDON_EVENTS, ENGLISH_TEMPLATE,
+  type MainEvent, type AddOnEventData,
+} from './CheckoutStep1';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -36,54 +24,6 @@ const KARACHI_AREAS = [
   'Garden', 'Lyari', 'Kemari', 'Bin Qasim', 'Other',
 ];
 
-const QUANTITY_OPTIONS = [50, 100, 200, 500];
-
-const TEMPLATES = {
-  urdu: {
-    label: 'Traditional Urdu',
-    icon: '🕌',
-    content: `بسم اللہ الرحمن الرحیم
-
-آپ کو بخوشی مطلع کیا جاتا ہے کہ
-
-[Groom Name]
-ولد جناب _______________
-
-کا نکاح
-
-[Bride Name]
-بنت جناب _______________
-
-سے طے پایا ہے۔
-
-تاریخ: [Date]
-مقام: [Venue]
-
-آپ کی تشریف آوری کی درخواست ہے۔
-نماز و دعا کے لیے حاضر ہوں۔`,
-  },
-  english: {
-    label: 'Modern English',
-    icon: '✨',
-    content: `Together with their families
-
-[Groom Name]
-&
-[Bride Name]
-
-Request the honour of your presence
-at the celebration of their marriage
-
-Date: [Date]
-Venue: [Venue]
-
-Dinner to follow
-
-With love and joy,
-The [Groom Name] & [Bride Name] Families`,
-  },
-};
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CheckoutProps {
@@ -94,12 +34,9 @@ interface CheckoutProps {
 
 interface FormData {
   // Step 1
-  template: 'urdu' | 'english';
+  mainEvent: MainEvent;
   content: string;
-  groomName: string;
-  brideName: string;
-  date: string;
-  venue: string;
+  addOnEvents: AddOnEventData[];
   // Step 2
   customerName: string;
   whatsapp: string;
@@ -128,12 +65,14 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   );
 
   const [form, setForm] = useState<FormData>({
-    template: 'english',
-    content: TEMPLATES.english.content,
-    groomName: '',
-    brideName: '',
-    date: '',
-    venue: '',
+    mainEvent: 'Wedding',
+    content: ENGLISH_TEMPLATE,
+    addOnEvents: ADDON_EVENTS.map(eventType => ({
+      eventType,
+      enabled: false,
+      quantity: '',
+      content: ENGLISH_TEMPLATE,
+    })),
     customerName: '',
     whatsapp: '',
     area: '',
@@ -163,48 +102,48 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     [card.base_price, form.quantity, selectedAddOns]
   );
 
-  const amountDue = form.paymentMethod === 'deposit'
-    ? Math.ceil(breakdown.total / 2)
-    : breakdown.total;
+  const addonTotals = useMemo(
+    () => form.addOnEvents.map(evt => {
+      if (!evt.enabled) return 0;
+      const qty = parseInt(evt.quantity, 10);
+      return isNaN(qty) || qty < 1 ? 0 : calculatePrice(card.base_price, qty, []).total;
+    }),
+    [form.addOnEvents, card.base_price]
+  );
 
-  const isUrdu = form.template === 'urdu';
+  const grandTotal = useMemo(
+    () => breakdown.total + addonTotals.reduce((a, b) => a + b, 0),
+    [breakdown.total, addonTotals]
+  );
 
-  // ─── Template selection ─────────────────────────────────────────────────────
-
-  const selectTemplate = useCallback((key: 'urdu' | 'english') => {
-    // Reset all card detail fields and load fresh template content with placeholders
-    setForm(f => ({
-      ...f,
-      template: key,
-      content: TEMPLATES[key].content,
-      groomName: '',
-      brideName: '',
-      date: '',
-      venue: '',
-    }));
-    setFieldErrors({});
+  const updateAddonEvent = useCallback((idx: number, patch: Partial<AddOnEventData>) => {
+    setForm(f => {
+      const next = [...f.addOnEvents];
+      next[idx] = { ...next[idx], ...patch };
+      return { ...f, addOnEvents: next };
+    });
   }, []);
 
-  // ─── Live preview content ───────────────────────────────────────────────────
-
-  const previewContent = useMemo(() => {
-    let text = form.content;
-    if (form.groomName) text = text.replace(/\[Groom Name\]/g, form.groomName);
-    if (form.brideName) text = text.replace(/\[Bride Name\]/g, form.brideName);
-    if (form.date) text = text.replace(/\[Date\]/g, form.date);
-    if (form.venue) text = text.replace(/\[Venue\]/g, form.venue);
-    return text;
-  }, [form.content, form.groomName, form.brideName, form.date, form.venue]);
+  const amountDue = form.paymentMethod === 'deposit'
+    ? Math.ceil(grandTotal / 2)
+    : grandTotal;
 
   // ─── Validation ─────────────────────────────────────────────────────────────
 
   const validateStep = (s: number): Record<string, string> => {
     const errors: Record<string, string> = {};
     if (s === 1) {
-      if (!form.groomName.trim()) errors.groomName = 'Please enter the groom\'s name';
-      if (!form.brideName.trim()) errors.brideName = 'Please enter the bride\'s name';
-      if (!form.date.trim()) errors.date = 'Please select the event date';
-      if (!form.venue.trim()) errors.venue = 'Please enter the venue';
+      if (!form.content.trim()) errors.content = 'Card text cannot be empty';
+      // Validate each enabled add-on event has a valid quantity
+      form.addOnEvents.forEach((evt, idx) => {
+        if (!evt.enabled || evt.eventType === form.mainEvent) return;
+        const qty = parseInt(evt.quantity, 10);
+        if (!evt.quantity.trim() || isNaN(qty)) {
+          errors[`addon_qty_${idx}`] = `Please enter a quantity for ${evt.eventType}`;
+        } else if (qty < 50) {
+          errors[`addon_qty_${idx}`] = `Minimum quantity for ${evt.eventType} is 50`;
+        }
+      });
     }
     if (s === 2) {
       if (!form.customerName.trim()) errors.customerName = 'Please enter your full name';
@@ -282,20 +221,22 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     setSubmitting(true);
 
     try {
+      const enabledAddons = form.addOnEvents.filter(e => e.enabled && e.eventType !== form.mainEvent);
       const payload = {
         card_slug: card.slug,
         card_name: card.name,
         quantity: form.quantity,
         base_price: card.base_price,
         add_ons: selectedAddOns.map(a => ({ name: a.name, price: a.price })),
-        total: breakdown.total,
+        total: grandTotal,
         customization: {
-          template: form.template,
-          content: previewContent,
-          groom_name: form.groomName,
-          bride_name: form.brideName,
-          date: form.date,
-          venue: form.venue,
+          main_event: form.mainEvent,
+          content: form.content,
+          addon_events: enabledAddons.map(e => ({
+            event_type: e.eventType,
+            quantity: parseInt(e.quantity, 10),
+            content: e.content,
+          })),
         },
         customer: {
           name: form.customerName,
@@ -379,7 +320,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
             </div>
           </div>
           <div className="co-card-info__right">
-            <span className="co-card-info__price">{formatPKR(breakdown.total)}</span>
+            <span className="co-card-info__price">{formatPKR(grandTotal)}</span>
             <span className="co-card-info__qty">{form.quantity} cards</span>
           </div>
         </div>
@@ -402,112 +343,23 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         <AnimatePresence mode="wait">
           {/* ── STEP 1: Card Editor ── */}
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="co-step">
-              <h3 className="co-step__title">✍️ Customize Your Card</h3>
-              <p className="co-step__desc">Choose a template, fill in your details, and preview your card in real-time.</p>
-
-              {/* Template Buttons */}
-              <div className="co-templates" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                {(Object.keys(TEMPLATES) as Array<keyof typeof TEMPLATES>).map(key => (
-                  <button
-                    key={key}
-                    className={`co-template-btn ${form.template === key ? 'co-template-btn--active' : ''}`}
-                    onClick={() => selectTemplate(key)}
-                  >
-                    <span className="co-template-btn__icon">{TEMPLATES[key].icon}</span>
-                    <span>{TEMPLATES[key].label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Detail Fields */}
-              <div className="co-fields-grid">
-                <div className="co-field">
-                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                    {isUrdu ? URDU_LABELS.groomName : "Groom's Name *"}
-                  </label>
-                  <input
-                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.groomName ? 'co-input--error' : ''}`}
-                    placeholder={isUrdu ? URDU_PLACEHOLDERS.groomName : 'e.g. Ahmed Ali'}
-                    dir={isUrdu ? 'rtl' : 'ltr'}
-                    value={form.groomName}
-                    onChange={e => { setForm(f => ({ ...f, groomName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.groomName; return n; }); }}
-                  />
-                  {fieldErrors.groomName && <span className="co-field-error">{fieldErrors.groomName}</span>}
-                </div>
-                <div className="co-field">
-                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                    {isUrdu ? URDU_LABELS.brideName : "Bride's Name *"}
-                  </label>
-                  <input
-                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.brideName ? 'co-input--error' : ''}`}
-                    placeholder={isUrdu ? URDU_PLACEHOLDERS.brideName : 'e.g. Fatima Khan'}
-                    dir={isUrdu ? 'rtl' : 'ltr'}
-                    value={form.brideName}
-                    onChange={e => { setForm(f => ({ ...f, brideName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.brideName; return n; }); }}
-                  />
-                  {fieldErrors.brideName && <span className="co-field-error">{fieldErrors.brideName}</span>}
-                </div>
-                <div className="co-field">
-                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                    {isUrdu ? URDU_LABELS.date : 'Event Date *'}
-                  </label>
-                  <input
-                    type="date"
-                    className={`co-input ${fieldErrors.date ? 'co-input--error' : ''}`}
-                    value={form.date}
-                    onChange={e => { setForm(f => ({ ...f, date: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.date; return n; }); }}
-                  />
-                  {fieldErrors.date && <span className="co-field-error">{fieldErrors.date}</span>}
-                </div>
-                <div className="co-field">
-                  <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                    {isUrdu ? URDU_LABELS.venue : 'Venue *'}
-                  </label>
-                  <input
-                    className={`co-input ${isUrdu ? 'co-input--urdu' : ''} ${fieldErrors.venue ? 'co-input--error' : ''}`}
-                    placeholder={isUrdu ? URDU_PLACEHOLDERS.venue : 'e.g. Royal Marquee, DHA'}
-                    dir={isUrdu ? 'rtl' : 'ltr'}
-                    value={form.venue}
-                    onChange={e => { setForm(f => ({ ...f, venue: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.venue; return n; }); }}
-                  />
-                  {fieldErrors.venue && <span className="co-field-error">{fieldErrors.venue}</span>}
-                </div>
-              </div>
-
-              {/* Content Editor */}
-              <div className="co-field">
-                <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                  {isUrdu ? URDU_LABELS.cardText : 'Card Text'}
-                </label>
-                <textarea
-                  className={`co-textarea ${isUrdu ? 'co-textarea--urdu' : ''}`}
-                  rows={8}
-                  dir={isUrdu ? 'rtl' : 'ltr'}
-                  value={form.content}
-                  onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                />
-              </div>
-
-              {/* Live Preview */}
-              <div className="co-field">
-                <label className={`co-label ${isUrdu ? 'co-label--urdu' : ''}`}>
-                  {isUrdu ? URDU_LABELS.livePreview : '📄 Live Preview'}
-                </label>
-                <div className={`co-preview ${isUrdu ? 'co-preview--urdu' : ''}`}>
-                  <div className="co-preview__corner co-preview__corner--tl" />
-                  <div className="co-preview__corner co-preview__corner--tr" />
-                  <div className="co-preview__corner co-preview__corner--bl" />
-                  <div className="co-preview__corner co-preview__corner--br" />
-                  <div className="co-preview__text">{previewContent}</div>
-                </div>
-              </div>
-
-              <div className="co-actions">
-                <button className="co-btn co-btn--secondary" onClick={() => router.back()}>← Back to Card</button>
-                <button className="co-btn co-btn--primary" onClick={nextStep}>Continue to Details →</button>
-              </div>
-            </motion.div>
+            <CheckoutStep1
+              key="step1"
+              card={card}
+              quantity={form.quantity}
+              selectedAddOns={selectedAddOns}
+              mainEvent={form.mainEvent}
+              content={form.content}
+              addOnEvents={form.addOnEvents}
+              fieldErrors={fieldErrors}
+              mainTotal={breakdown.total}
+              onMainEventChange={evt => setForm(f => ({ ...f, mainEvent: evt }))}
+              onContentChange={c => setForm(f => ({ ...f, content: c }))}
+              onAddonChange={updateAddonEvent}
+              onClearError={field => setFieldErrors(fe => { const n = {...fe}; delete n[field]; return n; })}
+              onNext={nextStep}
+              onBack={() => router.back()}
+            />
           )}
 
           {/* ── STEP 2: Checkout Form ── */}
@@ -581,45 +433,36 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 {fieldErrors.address && <span className="co-field-error">{fieldErrors.address}</span>}
               </div>
 
-              {/* Quantity */}
-              <div className="co-field">
-                <label className="co-label">Quantity</label>
-                <div className="co-qty-grid">
-                  {QUANTITY_OPTIONS.map(q => (
-                    <button
-                      key={q}
-                      className={`co-qty-btn ${form.quantity === q ? 'co-qty-btn--active' : ''}`}
-                      onClick={() => setForm(f => ({ ...f, quantity: q }))}
-                    >
-                      <strong>{q}</strong>
-                      <span>cards</span>
-                      {q >= 500 && <span className="co-qty-btn__badge">-10%</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Summary */}
+              {/* Order Summary */}
               <div className="co-summary">
+                <div className="co-summary__section-label">🗂 Order Summary</div>
+                {/* Main Event */}
                 <div className="co-summary__row">
-                  <span>Base ({formatPKR(card.base_price)} × {form.quantity})</span>
-                  <span>{formatPKR(breakdown.subtotal)}</span>
-                </div>
-                {selectedAddOns.length > 0 && (
-                  <div className="co-summary__row">
-                    <span>Add-ons ({selectedAddOns.length})</span>
-                    <span>+{formatPKR(breakdown.addOnsTotal)}</span>
-                  </div>
-                )}
-                {breakdown.discount > 0 && (
-                  <div className="co-summary__row co-summary__row--green">
-                    <span>Bulk Discount</span>
-                    <span>-{formatPKR(breakdown.discount)}</span>
-                  </div>
-                )}
-                <div className="co-summary__total">
-                  <span>Total</span>
+                  <span>
+                    {form.mainEvent} (Main) — {form.quantity} cards
+                    {breakdown.discount > 0 && (
+                      <span className="co-summary__discount-tag"> ({breakdown.discountPercent}% bulk discount)</span>
+                    )}
+                  </span>
                   <span>{formatPKR(breakdown.total)}</span>
+                </div>
+                {/* Add-on Events */}
+                {form.addOnEvents
+                  .filter(e => e.enabled && e.eventType !== form.mainEvent)
+                  .map(evt => {
+                    const qty = parseInt(evt.quantity, 10);
+                    if (isNaN(qty) || qty < 1) return null;
+                    const t = calculatePrice(card.base_price, qty, []).total;
+                    return (
+                      <div key={evt.eventType} className="co-summary__row">
+                        <span>{evt.eventType} (Add-on) — {qty} cards</span>
+                        <span>{formatPKR(t)}</span>
+                      </div>
+                    );
+                  })}
+                <div className="co-summary__total">
+                  <span>Grand Total</span>
+                  <span>{formatPKR(grandTotal)}</span>
                 </div>
               </div>
 
@@ -645,7 +488,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                   <div className="co-pay-option__radio" />
                   <div>
                     <strong>Full Payment (Fast-Track)</strong>
-                    <span>{formatPKR(breakdown.total)}</span>
+                    <span>{formatPKR(grandTotal)}</span>
                   </div>
                 </button>
                 <button
@@ -655,7 +498,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                   <div className="co-pay-option__radio" />
                   <div>
                     <strong>50% Deposit (Secure Order)</strong>
-                    <span>{formatPKR(Math.ceil(breakdown.total / 2))}</span>
+                    <span>{formatPKR(Math.ceil(grandTotal / 2))}</span>
                   </div>
                 </button>
               </div>
@@ -733,20 +576,12 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         </AnimatePresence>
       </div>
 
-      {/* Google Fonts for Urdu Nastaliq */}
-      {isUrdu && (
-        // eslint-disable-next-line @next/next/no-page-custom-font
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      )}
 
       <style>{`
         .co-wrapper {
-          max-width: 720px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: 0 1rem 3rem;
+          padding: 0 1.5rem 3rem;
         }
 
         /* ── Progress ── */
@@ -900,41 +735,125 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
         /* ── Preview ── */
         .co-preview {
-          position: relative; padding: 2.5rem 2rem; background: #FFFDF8;
+          position: relative; padding: 2rem 1.75rem 1.5rem; background: #FFFDF8;
           border: 2px solid #e0d6c6; border-radius: 4px;
-          font-size: 0.875rem; line-height: 1.8; color: #3a2a1a;
-          text-align: center; white-space: pre-line;
+          color: #3a2a1a;
           box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-          min-height: 200px;
+          min-height: 200px; flex: 1;
+          display: flex; flex-direction: column;
+          font-family: 'Georgia', 'Times New Roman', serif;
         }
-        .co-preview--urdu {
-          direction: rtl;
-          font-family: 'Noto Nastaliq Urdu', serif;
-          font-size: 1.05rem;
-          line-height: 2.2;
+        .co-preview--compact { min-height: 160px; padding: 1.5rem 1.25rem; }
+        .co-preview__body { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
+        .co-preview__spacer { height: 0.6em; }
+        .co-preview__line { font-size: 0.75rem; line-height: 1.6; color: #4a3a2a; }
+        .co-preview__small-caps {
+          font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+          color: #5a4a3a; line-height: 1.7; font-weight: 500;
+        }
+        .co-preview__name {
+          font-size: 1.35rem; font-family: 'Georgia', serif; font-style: italic;
+          color: #2a1a0a; line-height: 1.3; margin: 0.1em 0;
+          letter-spacing: 0.01em;
+        }
+        .co-preview--compact .co-preview__name { font-size: 1rem; }
+        .co-preview__with {
+          font-size: 0.72rem; font-style: italic; color: #6a5a4a;
+          letter-spacing: 0.05em;
+        }
+        .co-preview__date {
+          font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;
+          color: #3a2a1a; border-top: 1px solid #e0d6c6; border-bottom: 1px solid #e0d6c6;
+          padding: 0.35em 1em; margin: 0.4em 0;
+        }
+        .co-preview__at {
+          font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+          color: #8a7a6a; margin-top: 0.2em;
+        }
+        .co-preview__venue {
+          font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em;
+          text-transform: uppercase; color: #2a1a0a; line-height: 1.4;
+        }
+        .co-preview__footer {
+          margin-top: 1rem; padding-top: 0.6rem; border-top: 1px solid #e0d6c6;
+          display: flex; flex-direction: column; gap: 0.15em; width: 100%;
+        }
+        .co-preview__footer-row {
+          display: flex; justify-content: space-between; align-items: flex-start;
+          font-size: 0.58rem; color: #5a4a3a; line-height: 1.7;
+          font-family: 'Georgia', serif;
+        }
+        .co-preview__footer-left { text-align: left; }
+        .co-preview__footer-right { text-align: right; }
+
+        /* ── Event pills ── */
+        .co-event-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .co-event-pill {
+          padding: 0.5rem 1.25rem; border-radius: 999px; border: 2px solid #e0d6c6;
+          background: white; font-size: 0.875rem; font-weight: 600; color: #5a4a3a;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .co-event-pill:hover { border-color: #C9A96E; }
+        .co-event-pill--active { border-color: #C9A96E; background: #C9A96E; color: white; }
+
+        /* ── Side-by-side editor ── */
+        .co-editor-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;
+        }
+        @media (max-width: 700px) { .co-editor-grid { grid-template-columns: 1fr; } }
+
+        /* ── Hint bar ── */
+        .co-hint-bar {
+          display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem;
+          padding: 0.5rem 0.75rem; background: #fef9f0; border: 1px solid #f0e6ce;
+          border-radius: 8px; font-size: 0.72rem; color: #8a7a6a; margin-bottom: 0.25rem;
+        }
+        .co-token {
+          display: inline-block; padding: 0.1rem 0.5rem; background: #C9A96E1a;
+          border: 1px solid #C9A96E50; border-radius: 4px; font-family: monospace;
+          font-size: 0.68rem; color: #96793f; font-weight: 600;
         }
 
-        /* ── Urdu-specific field styles ── */
-        .co-label--urdu {
-          font-family: 'Noto Nastaliq Urdu', serif;
-          font-size: 0.85rem;
-          direction: rtl;
-          text-align: right;
+        /* ── Add-on Events ── */
+        .co-addons-section {
+          background: #faf7f2; border: 1px solid #e8e0d4; border-radius: 16px; padding: 1.25rem;
+          display: flex; flex-direction: column; gap: 0.875rem;
         }
-        .co-input--urdu {
-          font-family: 'Noto Nastaliq Urdu', serif;
-          font-size: 0.95rem;
-          text-align: right;
+        .co-addons-title { font-size: 1rem; font-weight: 700; color: #2a2018; margin: 0; }
+        .co-addons-desc { font-size: 0.8rem; color: #8a7a6a; margin: -0.5rem 0 0; }
+        .co-addons-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .co-addon-item {
+          background: white; border: 1px solid #e8e0d4; border-radius: 12px; overflow: hidden;
         }
-        .co-input--urdu::placeholder {
-          font-family: 'Noto Nastaliq Urdu', serif;
+        .co-addon-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.75rem 1rem; gap: 1rem; flex-wrap: wrap;
         }
-        .co-textarea--urdu {
-          font-family: 'Noto Nastaliq Urdu', serif;
-          font-size: 0.95rem;
-          text-align: right;
-          line-height: 2.2;
+        .co-addon-row--disabled { opacity: 0.45; pointer-events: none; }
+        .co-addon-check-label {
+          display: flex; align-items: center; gap: 0.625rem; cursor: pointer;
+          font-size: 0.875rem; font-weight: 600; color: #2a2018;
         }
+        .co-addon-check-label input[type=checkbox] {
+          width: 18px; height: 18px; accent-color: #C9A96E; cursor: pointer;
+        }
+        .co-addon-badge {
+          font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.5rem;
+          background: #C9A96E20; color: #96793f; border-radius: 999px; border: 1px solid #C9A96E40;
+        }
+        .co-addon-qty-row {
+          display: flex; align-items: center; gap: 0.625rem; flex-wrap: wrap;
+        }
+        .co-addon-qty-label { font-size: 0.75rem; color: #8a7a6a; font-weight: 500; white-space: nowrap; }
+        .co-addon-qty-input {
+          width: 160px; padding: 0.45rem 0.75rem; border: 1px solid #e0d6c6; border-radius: 8px;
+          font-size: 0.875rem; color: #2a2018; outline: none; font-family: inherit;
+        }
+        .co-addon-qty-input:focus { border-color: #C9A96E; }
+        .co-addon-qty-input::placeholder { color: #baa88a; }
+        .co-addon-price { font-size: 0.875rem; font-weight: 700; color: #C9A96E; white-space: nowrap; }
+        .co-addon-editor { padding: 0 1rem 1rem; border-top: 1px solid #f0e6ce; }
+        .co-addon-editor > .co-editor-grid { padding-top: 1rem; }
         .co-preview__text { position: relative; z-index: 1; }
         .co-preview__corner {
           position: absolute; width: 20px; height: 20px;
@@ -983,10 +902,15 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           background: #f9f5ee; border-radius: 14px; padding: 1.25rem;
           display: flex; flex-direction: column; gap: 0.5rem;
         }
+        .co-summary__section-label {
+          font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+          color: #C9A96E; margin-bottom: 0.25rem;
+        }
         .co-summary__row {
           display: flex; justify-content: space-between; font-size: 0.8125rem; color: #5a4a3a;
         }
         .co-summary__row--green { color: #16a34a; font-weight: 500; }
+        .co-summary__discount-tag { font-size: 0.72rem; color: #16a34a; font-weight: 600; }
         .co-summary__total {
           display: flex; justify-content: space-between; font-size: 1.125rem; font-weight: 700;
           color: #2a2018; padding-top: 0.5rem; border-top: 1px solid #e0d6c6; margin-top: 0.25rem;
