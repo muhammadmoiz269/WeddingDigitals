@@ -32,12 +32,13 @@ export default function ProductPageClient({ card, relatedCards }: ProductPageCli
 
         {/* Main Product Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
-            {/* Left: Gallery */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
+            {/* Left: Gallery — sticky so it pins while right side scrolls */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
+              className="lg:sticky lg:top-24 lg:self-start"
             >
               <ProductGallery
                 images={card.images}
@@ -46,7 +47,7 @@ export default function ProductPageClient({ card, relatedCards }: ProductPageCli
               />
             </motion.div>
 
-            {/* Right: Product Info & Calculator */}
+            {/* Right: Product Info & Calculator — natural flow, taller than left */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { AddOn, QuantityTier } from "@/types";
 import { calculatePrice, formatPKR, getWhatsAppLink } from "@/lib/pricing";
+import HowToOrder from "@/components/HowToOrder";
 
 interface PriceCalculatorProps {
   basePrice: number;
@@ -325,6 +326,9 @@ export default function PriceCalculator({
         </svg>
         Or Order via WhatsApp
       </a>
+
+      {/* How to Place Order */}
+      <HowToOrder />
 
       {/* Trust note */}
       <p className="text-center text-[11px] text-charcoal/40 leading-relaxed">

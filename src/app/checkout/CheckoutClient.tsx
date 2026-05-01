@@ -3,7 +3,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Script from 'next/script';
 import type { CardProduct, AddOn } from '@/types';
 import { calculatePrice, formatPKR } from '@/lib/pricing';
 import CheckoutStep1, {
@@ -12,9 +11,6 @@ import CheckoutStep1, {
 } from './CheckoutStep1';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
 
 const KARACHI_AREAS = [
   'Gulshan-e-Iqbal', 'DHA', 'North Nazimabad', 'Clifton', 'PECHS',
@@ -43,9 +39,8 @@ interface FormData {
   area: string;
   address: string;
   quantity: number;
-  // Step 3
+  // Step 2 — payment preference
   paymentMethod: 'full' | 'deposit';
-  receiptUrl: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -56,7 +51,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const cloudinaryRef = useRef(false);
 
   const [selectedAddOnIds] = useState<Set<string>>(new Set(initialAddOnIds));
   const selectedAddOns = useMemo(
@@ -79,7 +73,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     address: '',
     quantity: initialQty || 100,
     paymentMethod: 'deposit',
-    receiptUrl: '',
   });
 
   const [areaSearch, setAreaSearch] = useState('');
@@ -124,9 +117,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     });
   }, []);
 
-  const amountDue = form.paymentMethod === 'deposit'
-    ? Math.ceil(grandTotal / 2)
-    : grandTotal;
+  const amountDue = grandTotal;
 
   // ─── Validation ─────────────────────────────────────────────────────────────
 
@@ -134,7 +125,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     const errors: Record<string, string> = {};
     if (s === 1) {
       if (!form.content.trim()) errors.content = 'Card text cannot be empty';
-      // Validate each enabled add-on event has a valid quantity
       form.addOnEvents.forEach((evt, idx) => {
         if (!evt.enabled || evt.eventType === form.mainEvent) return;
         const qty = parseInt(evt.quantity, 10);
@@ -178,43 +168,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ─── Receipt upload ─────────────────────────────────────────────────────────
-
-  const openReceiptUpload = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cld = (window as any).cloudinary;
-    if (!cld || !CLOUD_NAME || !UPLOAD_PRESET) {
-      setError('Cloudinary not configured');
-      return;
-    }
-    const widget = cld.createUploadWidget(
-      {
-        cloudName: CLOUD_NAME,
-        uploadPreset: UPLOAD_PRESET,
-        sources: ['local', 'camera'],
-        multiple: false,
-        maxFiles: 1,
-        resourceType: 'image',
-        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
-        maxFileSize: 5000000,
-        folder: 'paighaam/receipts',
-        theme: 'minimal',
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (err: any, result: any) => {
-        if (err) { setError('Upload failed'); return; }
-        if (result?.event === 'success' && result.info?.secure_url) {
-          setForm(f => ({ ...f, receiptUrl: result.info.secure_url }));
-        }
-      }
-    );
-    widget.open();
-  }, []);
-
   // ─── Submit order ───────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    const errors = validateStep(3);
+    const errors = validateStep(2);
     if (Object.keys(errors).length > 0) { setFieldErrors(errors); setError('Please fill in all required fields'); return; }
     setFieldErrors({});
     setError('');
@@ -247,7 +204,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         payment: {
           method: form.paymentMethod,
           amount_due: amountDue,
-          receipt_url: form.receiptUrl,
         },
       };
 
@@ -281,16 +237,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
   return (
     <>
-      <Script
-        src="https://upload-widget.cloudinary.com/global/all.js"
-        strategy="lazyOnload"
-        onLoad={() => { cloudinaryRef.current = true; }}
-      />
-
       <div className="co-wrapper">
         {/* Progress Bar */}
         <div className="co-progress">
-          {[1, 2, 3].map(s => (
+          {[1, 2].map(s => (
             <div key={s} className={`co-progress__step ${step >= s ? 'co-progress__step--active' : ''} ${step > s ? 'co-progress__step--done' : ''}`}>
               <div className="co-progress__circle">
                 {step > s ? (
@@ -298,12 +248,12 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 ) : s}
               </div>
               <span className="co-progress__label">
-                {s === 1 ? 'Customize' : s === 2 ? 'Details' : 'Payment'}
+                {s === 1 ? 'Customize' : 'Order Details'}
               </span>
             </div>
           ))}
           <div className="co-progress__bar">
-            <div className="co-progress__fill" style={{ width: `${((step - 1) / 2) * 100}%` }} />
+            <div className="co-progress__fill" style={{ width: `${(step - 1) * 100}%` }} />
           </div>
         </div>
 
@@ -466,99 +416,40 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 </div>
               </div>
 
-              <div className="co-actions">
-                <button className="co-btn co-btn--secondary" onClick={prevStep}>← Back</button>
-                <button className="co-btn co-btn--primary" onClick={nextStep}>Continue to Payment →</button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 3: Payment ── */}
-          {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="co-step">
-              <h3 className="co-step__title">💳 Payment</h3>
-              <p className="co-step__desc">Choose your payment option and upload your receipt.</p>
-
-              {/* Payment Options */}
-              <div className="co-pay-options">
-                <button
-                  className={`co-pay-option ${form.paymentMethod === 'full' ? 'co-pay-option--active' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, paymentMethod: 'full' }))}
-                >
-                  <div className="co-pay-option__radio" />
-                  <div>
-                    <strong>Full Payment (Fast-Track)</strong>
-                    <span>{formatPKR(grandTotal)}</span>
-                  </div>
-                </button>
-                <button
-                  className={`co-pay-option ${form.paymentMethod === 'deposit' ? 'co-pay-option--active' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, paymentMethod: 'deposit' }))}
-                >
-                  <div className="co-pay-option__radio" />
-                  <div>
-                    <strong>50% Deposit (Secure Order)</strong>
-                    <span>{formatPKR(Math.ceil(grandTotal / 2))}</span>
-                  </div>
-                </button>
-              </div>
-
-              <div className="co-disclaimer">
-                ⚠️ Because cards are custom-printed with your details, a minimum 50% deposit is required to start the design process. The remaining balance is due before delivery.
-              </div>
-
-              {/* Amount Due */}
-              <div className="co-amount-due">
-                <span>Amount to Pay Now</span>
-                <span className="co-amount-due__value">{formatPKR(amountDue)}</span>
-              </div>
-
-              {/* Payment Details */}
-              <div className="co-pay-details">
-                <h4>📱 Payment Methods</h4>
-                <div className="co-pay-methods">
-                  <div className="co-pay-method">
-                    <span className="co-pay-method__label">JazzCash</span>
-                    <span className="co-pay-method__value">0300-1234567</span>
-                  </div>
-                  <div className="co-pay-method">
-                    <span className="co-pay-method__label">EasyPaisa</span>
-                    <span className="co-pay-method__value">0300-1234567</span>
-                  </div>
-                  <div className="co-pay-method">
-                    <span className="co-pay-method__label">Raast ID</span>
-                    <span className="co-pay-method__value">PK00MEZN0000000000001234</span>
-                  </div>
-                </div>
-                <p className="co-pay-details__note">
-                  Send payment to any of the above accounts and upload a screenshot below.
-                </p>
-              </div>
-
-              {/* Receipt Upload */}
-              <div className="co-field">
-                <label className="co-label">Upload Payment Receipt</label>
-                {form.receiptUrl ? (
-                  <div className="co-receipt-preview">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={form.receiptUrl} alt="Payment receipt" className="co-receipt-preview__img" />
-                    <div className="co-receipt-preview__actions">
-                      <span className="co-receipt-preview__ok">✓ Receipt Uploaded</span>
-                      <button className="co-btn co-btn--small" onClick={openReceiptUpload}>Replace</button>
-                      <button className="co-btn co-btn--small co-btn--danger" onClick={() => setForm(f => ({ ...f, receiptUrl: '' }))}>Remove</button>
+              {/* Payment Preference */}
+              <div>
+                <label className="co-label" style={{ marginBottom: '0.5rem', display: 'block' }}>💳 Payment Preference</label>
+                <div className="co-pay-options">
+                  <button
+                    className={`co-pay-option ${form.paymentMethod === 'full' ? 'co-pay-option--active' : ''}`}
+                    onClick={() => setForm(f => ({ ...f, paymentMethod: 'full' }))}
+                  >
+                    <div className="co-pay-option__radio" />
+                    <div>
+                      <strong>Full Payment</strong>
+                      <span>{formatPKR(grandTotal)}</span>
                     </div>
-                  </div>
-                ) : (
-                  <button className="co-upload-zone" onClick={openReceiptUpload}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <span>Click to upload receipt screenshot</span>
-                    <span className="co-upload-zone__hint">JPG, PNG — max 5 MB</span>
                   </button>
-                )}
+                  <button
+                    className={`co-pay-option ${form.paymentMethod === 'deposit' ? 'co-pay-option--active' : ''}`}
+                    onClick={() => setForm(f => ({ ...f, paymentMethod: 'deposit' }))}
+                  >
+                    <div className="co-pay-option__radio" />
+                    <div>
+                      <strong>50% Deposit</strong>
+                      <span>{formatPKR(Math.ceil(grandTotal / 2))} now · {formatPKR(grandTotal - Math.ceil(grandTotal / 2))} on delivery</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* WhatsApp Handoff Notice */}
+              <div className="co-whatsapp-notice">
+                <div className="co-whatsapp-notice__icon">💬</div>
+                <div>
+                  <strong>Payment via WhatsApp</strong>
+                  <p>No online payment required right now. Once you place your order, our team will reach out to you on WhatsApp to confirm details and guide you through the payment process.</p>
+                </div>
               </div>
 
               <div className="co-actions">
@@ -568,7 +459,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                   onClick={handleSubmit}
                   disabled={submitting}
                 >
-                  {submitting ? '⏳ Placing Order…' : `✓ Place Order — ${formatPKR(amountDue)}`}
+                  {submitting ? '⏳ Placing Order…' : '✓ Place Order'}
                 </button>
               </div>
             </motion.div>
@@ -965,20 +856,15 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         .co-pay-method__value { font-weight: 700; color: #2a2018; font-family: monospace; }
         .co-pay-details__note { font-size: 0.75rem; color: #8a7a6a; margin: 0.75rem 0 0; }
 
-        /* ── Upload ── */
-        .co-upload-zone {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: 0.5rem; padding: 1.5rem; border: 2px dashed #d4c8b0; border-radius: 14px;
-          background: rgba(201,169,110,0.02); cursor: pointer; transition: all 0.2s;
-          color: #8a7a6a; font-size: 0.875rem; font-weight: 500; width: 100%;
+        /* ── WhatsApp Notice ── */
+        .co-whatsapp-notice {
+          display: flex; align-items: flex-start; gap: 0.875rem;
+          padding: 1rem 1.25rem; background: linear-gradient(135deg, #e7f7ee, #dcf5e7);
+          border: 1px solid #a7e3bf; border-radius: 14px;
         }
-        .co-upload-zone:hover { border-color: #C9A96E; background: rgba(201,169,110,0.05); }
-        .co-upload-zone__hint { font-size: 0.72rem; color: #a09080; }
-
-        .co-receipt-preview { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #f9f5ee; border-radius: 12px; }
-        .co-receipt-preview__img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid #e0d6c6; }
-        .co-receipt-preview__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-        .co-receipt-preview__ok { font-size: 0.8rem; font-weight: 600; color: #16a34a; }
+        .co-whatsapp-notice__icon { font-size: 1.75rem; flex-shrink: 0; line-height: 1; }
+        .co-whatsapp-notice strong { display: block; font-size: 0.9rem; color: #14532d; margin-bottom: 0.25rem; }
+        .co-whatsapp-notice p { font-size: 0.8rem; color: #166534; margin: 0; line-height: 1.5; }
 
         /* ── Actions ── */
         .co-actions { display: flex; justify-content: space-between; gap: 0.75rem; padding-top: 0.5rem; }

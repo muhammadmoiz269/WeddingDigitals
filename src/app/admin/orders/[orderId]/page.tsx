@@ -47,7 +47,7 @@ function buildWhatsApp(order: any) {
     `📋 *Card:* ${order.card_name}\n` +
     `🎉 *Event:* ${order.customization?.main_event}\n` +
     `📦 *Quantity:* ${order.quantity} cards\n` +
-    `💰 *Amount Due:* PKR ${order.payment?.amount_due?.toLocaleString()}\n\n` +
+    `💰 *Order Total:* PKR ${order.total?.toLocaleString()}\n\n` +
     `Your cards will be designed, printed and dispatched to ${order.customer?.area}, Karachi within *7-10 working days.*\n\n` +
     `We'll share a mockup for your approval before printing. Thank you for choosing Paighaam! 🤍`;
   return `https://wa.me/${(order.customer?.whatsapp || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
@@ -204,24 +204,10 @@ export default function OrderDetailPage() {
           {/* Payment */}
           <Section title="Payment" icon="💳">
             <div className="od-fields">
-              <Field label="Method" value={order.payment?.method === 'full' ? '💰 Full Payment' : '💳 50% Deposit'} />
-              <Field label="Amount Paid" value={`PKR ${order.payment?.amount_due?.toLocaleString()}`} highlight />
-              <Field label="Order Total" value={`PKR ${order.total?.toLocaleString()}`} />
-              {order.payment?.method === 'deposit' && (
-                <Field label="Remaining Balance" value={`PKR ${(order.total - order.payment.amount_due).toLocaleString()}`} />
-              )}
+              <Field label="Payment Preference" value={order.payment?.method === 'full' ? '💰 Full Payment' : '💳 50% Deposit'} />
+              <Field label="Order Total" value={`PKR ${order.total?.toLocaleString()}`} highlight />
             </div>
-            {order.payment?.receipt_url ? (
-              <div className="od-receipt">
-                <p className="od-field__label" style={{ marginBottom: '0.5rem' }}>Payment Receipt</p>
-                <a href={order.payment.receipt_url} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={order.payment.receipt_url} alt="Receipt" className="od-receipt__img" />
-                </a>
-              </div>
-            ) : (
-              <p className="od-hint">No receipt uploaded yet.</p>
-            )}
+            <p className="od-hint">Payment is collected manually via WhatsApp.</p>
           </Section>
 
           {/* Customer & Delivery */}
