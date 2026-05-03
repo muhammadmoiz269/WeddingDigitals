@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import RichTextEditor from "@/components/RichTextEditor";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 
@@ -868,15 +869,13 @@ export default function AdminClient() {
               {/* Description */}
               <div className="admin-field">
                 <label className="admin-label">Description <span className="admin-required">*</span></label>
-                <textarea
-                  id="field-description"
-                  className="admin-textarea"
-                  rows={3}
-                  placeholder="Brief description of the card design, material, and use…"
+                <RichTextEditor
                   value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  onChange={(html) => setForm((f) => ({ ...f, description: html }))}
+                  placeholder="Brief description of the card design, material, and use…"
+                  maxLength={5000}
+                  minRows={4}
                 />
-                <p className="admin-hint">{form.description.length}/500 chars</p>
               </div>
 
               {/* ── Images (Cloudinary Upload) ── */}

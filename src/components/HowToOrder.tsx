@@ -1,67 +1,71 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 // ─── Step data ───────────────────────────────────────────────────────────────
 
 const STEPS = [
   {
     number: 1,
-    title: 'Customize & Checkout Online',
+    title: "Customize & Checkout Online",
     body: (
       <>
-        Select your card, choose the <strong>total number of cards</strong> and any{' '}
-        <strong>add-ons</strong> (such as wax seal, inserts etc.), then proceed to checkout.
+        Select your card, choose the <strong>total number of cards</strong> and
+        any <strong>add-ons</strong> (additional event cards e.g. Valima,
+        Mehndi), then add your card content and proceed to checkout.
       </>
     ),
   },
   {
     number: 2,
-    title: 'We Create a WhatsApp Group',
+    title: "We Create a WhatsApp Group",
     body: (
       <>
-        Once your order is placed, we will create a <strong>WhatsApp group</strong> with
-        you to coordinate everything smoothly.
+        Once your order is placed, we will create a{" "}
+        <strong>WhatsApp group</strong> with you to coordinate everything
+        smoothly.
       </>
     ),
   },
   {
     number: 3,
-    title: 'Share Wedding Details',
+    title: "Confirm Wedding Details",
     body: (
       <>
-        In the WhatsApp group, you will be asked to provide your{' '}
-        <strong>wedding details</strong> for card design confirmation.
+        In the WhatsApp group, we will{" "}
+        <strong>confirm the content with you</strong> for the card design before
+        we proceed to print.
       </>
     ),
   },
   {
     number: 4,
-    title: 'Payment Transfer',
+    title: "Payment Transfer",
     body: (
       <>
-        You will also be asked to make a <strong>payment transfer</strong> and share the
-        receipt with us in the group.
+        You will also be asked to make a <strong>payment transfer</strong> and
+        share the receipt with us in the group.
+        <strong>(Full payment or 50% advance can be made)</strong>
       </>
     ),
   },
   {
     number: 5,
-    title: 'Design Approval',
+    title: "Design Approval",
     body: (
       <>
-        We will <strong>share the soft copy of the design</strong> with you for your
-        approval before printing.
+        We will <strong>share the soft copy of the design</strong> with you for
+        your approval before printing.
       </>
     ),
   },
   {
     number: 6,
-    title: 'Printing & Dispatch',
+    title: "Printing & Dispatch",
     body: (
       <>
-        Order will go into printing and will be dispatched in{' '}
-        <strong>5 to 10 working days</strong>.
+        Order will go into printing and will be dispatched in{" "}
+        <strong>5 to 7 working days</strong>.
       </>
     ),
   },
@@ -85,7 +89,7 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`acc-section${isLast ? '' : ' acc-section--bordered'}`}>
+    <div className={`acc-section${isLast ? "" : " acc-section--bordered"}`}>
       <button
         className="acc-toggle"
         onClick={() => setOpen((o) => !o)}
@@ -94,7 +98,7 @@ function AccordionSection({
         <span className="acc-toggle__icon">{icon}</span>
         <span className="acc-toggle__label">{label}</span>
         <svg
-          className={`acc-toggle__chevron${open ? ' acc-toggle__chevron--open' : ''}`}
+          className={`acc-toggle__chevron${open ? " acc-toggle__chevron--open" : ""}`}
           width="15"
           height="15"
           viewBox="0 0 24 24"
@@ -118,11 +122,20 @@ function AccordionSection({
 export default function HowToOrder() {
   return (
     <>
-      <div className="hto-card">
+      <div className="hto-card" style={{ marginTop: "30px" }}>
         {/* How to Place Order */}
         <AccordionSection
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           }
@@ -145,22 +158,40 @@ export default function HowToOrder() {
         {/* Materials */}
         <AccordionSection
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
             </svg>
           }
           label="Materials"
         >
           <p className="acc-text">
-            This is an eco-friendly product, completely <strong>compostable</strong> and{' '}
-            <strong>recycle-able</strong>.
+            This is an eco-friendly product, completely{" "}
+            <strong>compostable</strong> and <strong>recycle-able</strong>.
           </p>
         </AccordionSection>
 
         {/* Shipping */}
         <AccordionSection
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <rect x="1" y="3" width="15" height="13" rx="1" />
               <path d="M16 8h4l3 3v5h-7V8z" />
               <circle cx="5.5" cy="18.5" r="2.5" />
@@ -171,7 +202,8 @@ export default function HowToOrder() {
           isLast
         >
           <p className="acc-text">
-            Shipping is possible in <strong>10 working days</strong>, after the design is confirmed.
+            Shipping is possible within <strong>07 working days</strong>, after
+            the final design is confirmed.
           </p>
         </AccordionSection>
       </div>

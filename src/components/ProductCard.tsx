@@ -77,10 +77,15 @@ export default function ProductCard({ product, index }: ProductCardProps) {
             {product.name}
           </h3>
 
-          {/* Description */}
-          <p className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4">
-            {product.description}
-          </p>
+          {/* Description — strip HTML for compact preview */}
+          <p
+            className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4"
+            dangerouslySetInnerHTML={{
+              __html: product.description
+                ? product.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+                : ''
+            }}
+          />
 
           {/* Price & Min Order */}
           <div className="flex items-end justify-between">

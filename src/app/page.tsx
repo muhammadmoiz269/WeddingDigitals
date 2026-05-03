@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import ProductGrid from "@/components/ProductGrid";
-import PricingBanner from "@/components/PricingBanner";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 
@@ -12,9 +11,8 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         <Hero />
-        <Features />
         <ProductGrid />
-        <PricingBanner />
+        <Features />
       </main>
       <Footer />
       <ChatWidget />

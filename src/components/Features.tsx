@@ -15,7 +15,7 @@ export default function Features() {
             viewport={{ once: true }}
             className="inline-block text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4"
           >
-            Why Choose Us
+            The Paighaam Promise
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -24,7 +24,8 @@ export default function Features() {
             viewport={{ once: true }}
             className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-charcoal-dark mb-4"
           >
-            Better Than Instagram Vendors
+            Where Every Detail Tells{" "}
+            <span className="text-gold-gradient">Your Story</span>
           </motion.h2>
           <motion.div
             initial={{ scaleX: 0 }}
@@ -40,8 +41,8 @@ export default function Features() {
             viewport={{ once: true }}
             className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base"
           >
-            We combined the quality of boutique printers with the transparency of
-            modern e-commerce. Here&apos;s what sets us apart.
+            Boutique craftsmanship, transparent pricing, and a personal touch —
+            because your wedding invitation is the first chapter of your love story.
           </motion.p>
         </div>
 

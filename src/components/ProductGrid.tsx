@@ -402,9 +402,14 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
             <h3 className="font-heading text-lg font-semibold text-charcoal-dark mt-1 mb-2 leading-snug line-clamp-2 group-hover:text-champagne-dark transition-colors duration-300">
               {card.name}
             </h3>
-            <p className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4">
-              {card.description}
-            </p>
+            <p
+              className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4"
+              dangerouslySetInnerHTML={{
+                __html: card.description
+                  ? card.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+                  : ''
+              }}
+            />
             <div className="flex items-end justify-between mt-auto">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-charcoal-dark">

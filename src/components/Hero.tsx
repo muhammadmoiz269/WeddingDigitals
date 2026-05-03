@@ -74,9 +74,8 @@ export default function Hero() {
           variants={fadeUp}
           className="max-w-2xl mx-auto text-base sm:text-lg text-charcoal/70 leading-relaxed mb-10"
         >
-          Premium quality cards at transparent prices. No hidden charges, no
-          middlemen — just beautiful invitations delivered to your doorstep.
-          Starting from{" "}
+          From dream to doorstep — beautifully crafted wedding invitations,
+          printed with love in Karachi. Starting from{" "}
           <span className="font-semibold text-champagne-dark">
             PKR 120/card
           </span>
@@ -91,7 +90,7 @@ export default function Hero() {
           variants={fadeUp}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a href="#pricing" className="btn-primary text-base px-8 py-4">
+          <a href="#collection" className="btn-primary text-base px-8 py-4">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -102,13 +101,13 @@ export default function Hero() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                d="M4 6h16M4 12h16M4 18h7"
               />
             </svg>
-            Check Our Prices
+            Browse Collection
           </a>
           <a href="#collection" className="btn-secondary text-base px-8 py-4">
-            Browse Collection
+            View Designs
             <svg
               className="w-4 h-4"
               fill="none"
