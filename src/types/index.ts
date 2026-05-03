@@ -55,6 +55,9 @@ export interface CardProduct {
   is_bestseller: boolean;
   min_order: number;
   add_ons: AddOn[];
+  meta_title?: string;
+  meta_description?: string;
+  image_alt_text?: string;
 }
 
 export type QuantityTier = 100 | 250 | 500;

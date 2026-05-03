@@ -76,6 +76,9 @@ export async function POST(request: Request) {
       is_bestseller: Boolean(body.is_bestseller),
       min_order: Number(body.min_order) || 50,
       add_ons: Array.isArray(body.add_ons) ? body.add_ons : [],
+      meta_title: body.meta_title ?? "",
+      meta_description: body.meta_description ?? "",
+      image_alt_text: body.image_alt_text ?? "",
     });
 
     return NextResponse.json({ success: true, data: card }, { status: 201 });

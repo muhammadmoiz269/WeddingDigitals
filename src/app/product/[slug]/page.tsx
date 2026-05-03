@@ -35,6 +35,9 @@ async function fetchCardBySlug(slug: string): Promise<CardProduct | null> {
           price: a.price,
           description: a.description,
         })),
+        meta_title: doc.meta_title,
+        meta_description: doc.meta_description,
+        image_alt_text: doc.image_alt_text,
       } as CardProduct;
     }
   } catch (err) {
@@ -67,6 +70,9 @@ async function fetchAllCards(): Promise<CardProduct[]> {
           price: a.price,
           description: a.description,
         })),
+        meta_title: doc.meta_title,
+        meta_description: doc.meta_description,
+        image_alt_text: doc.image_alt_text,
       })) as CardProduct[];
     }
   } catch {
@@ -89,13 +95,21 @@ export async function generateMetadata({
     return { title: 'Card Not Found | Paighaam Wedding Cards' };
   }
 
+  // Extract plain text from description (if it's HTML) for SEO fallback
+  const plainTextDescription = card.description.replace(/<[^>]+>/g, '').substring(0, 160);
+
   return {
-    title: `${card.name} — PKR ${card.base_price}/card | Paighaam Wedding Cards`,
-    description: card.description,
+    title: card.meta_title || `${card.name} — PKR ${card.base_price}/card | Paighaam Wedding Cards`,
+    description: card.meta_description || plainTextDescription,
     openGraph: {
-      title: `${card.name} | Paighaam Wedding Cards`,
-      description: card.description,
-      images: card.images.length > 0 ? [card.images[0]] : [],
+      title: card.meta_title || `${card.name} | Paighaam Wedding Cards`,
+      description: card.meta_description || plainTextDescription,
+      images: card.images.length > 0 ? [
+        {
+          url: card.images[0],
+          alt: card.image_alt_text || `${card.name} Wedding Card`,
+        }
+      ] : [],
     },
   };
 }

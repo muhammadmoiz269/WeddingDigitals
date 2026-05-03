@@ -8,9 +8,10 @@ interface ProductGalleryProps {
   images: string[];
   videoUrl?: string;
   productName: string;
+  imageAltText?: string;
 }
 
-export default function ProductGallery({ images, videoUrl, productName }: ProductGalleryProps) {
+export default function ProductGallery({ images, videoUrl, productName, imageAltText }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
 
@@ -48,7 +49,7 @@ export default function ProductGallery({ images, videoUrl, productName }: Produc
             >
               <Image
                 src={images[activeIndex] || images[0]}
-                alt={`${productName} - View ${activeIndex + 1}`}
+                alt={imageAltText || `${productName} - View ${activeIndex + 1}`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"

@@ -57,6 +57,7 @@ export default function ProductPageClient({
                 images={card.images}
                 videoUrl={card.short_video_url}
                 productName={card.name}
+                imageAltText={card.image_alt_text}
               />
             </motion.div>
 

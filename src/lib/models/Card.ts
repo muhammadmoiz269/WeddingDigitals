@@ -18,6 +18,9 @@ export interface ICard extends Document {
     price: number;
     description: string;
   }[];
+  meta_title?: string;
+  meta_description?: string;
+  image_alt_text?: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -60,7 +63,7 @@ const CardSchema = new Schema<ICard>(
     description: {
       type: String,
       required: [true, "Description is required"],
-      maxlength: [500, "Description cannot exceed 500 characters"],
+      maxlength: [5000, "Description cannot exceed 5000 characters"],
     },
     images: {
       type: [String],
@@ -94,6 +97,18 @@ const CardSchema = new Schema<ICard>(
         description: { type: String, default: "" },
       },
     ],
+    meta_title: {
+      type: String,
+      trim: true,
+    },
+    meta_description: {
+      type: String,
+      trim: true,
+    },
+    image_alt_text: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

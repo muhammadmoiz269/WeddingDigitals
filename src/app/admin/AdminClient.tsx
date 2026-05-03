@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import RichTextEditor from "@/components/RichTextEditor";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,37 +26,15 @@ interface CardDoc {
   is_bestseller: boolean;
   min_order: number;
   add_ons: AddOn[];
+  meta_title?: string;
+  meta_description?: string;
+  image_alt_text?: string;
   created_at?: string;
 }
 
 const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"] as const;
 
-const EMPTY_FORM: Omit<CardDoc, "_id" | "created_at"> = {
-  slug: "",
-  name: "",
-  card_code: "",
-  base_price: 0,
-  original_price: undefined,
-  category: "Luxury",
-  description: "",
-  images: [""],
-  short_video_url: "",
-  is_new: false,
-  is_bestseller: false,
-  min_order: 50,
-  add_ons: [],
-};
 
-// ─── Slug generator ───────────────────────────────────────────────────────────
-
-function toSlug(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -67,11 +43,6 @@ interface Toast {
   message: string;
   type: "success" | "error";
 }
-
-// ─── Cloudinary config ────────────────────────────────────────────────────────
-
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -82,16 +53,10 @@ export default function AdminClient() {
   const [cards, setCards] = useState<CardDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<CardDoc | null>(null);
-  const [form, setForm] = useState<Omit<CardDoc, "_id" | "created_at">>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CardDoc | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("All");
-  const [showManualUrls, setShowManualUrls] = useState(false);
-  const cloudinaryLoaded = useRef(false);
 
   // ─── Orders state ─────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<'cards' | 'orders'>('cards');
@@ -184,180 +149,6 @@ export default function AdminClient() {
 
   // ─── Modal helpers ──────────────────────────────────────────────────────────
 
-  const openCreate = () => {
-    setEditingCard(null);
-    setForm({ ...EMPTY_FORM, images: [""], add_ons: [] });
-    setModalOpen(true);
-  };
-
-  const openEdit = (card: CardDoc) => {
-    setEditingCard(card);
-    setForm({
-      slug: card.slug,
-      name: card.name,
-      card_code: card.card_code || "",
-      base_price: card.base_price,
-      original_price: card.original_price,
-      category: card.category,
-      description: card.description,
-      images: card.images.length > 0 ? card.images : [""],
-      short_video_url: card.short_video_url || "",
-      is_new: card.is_new,
-      is_bestseller: card.is_bestseller,
-      min_order: card.min_order,
-      add_ons: card.add_ons,
-    });
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setEditingCard(null);
-  };
-
-  // ─── Form field helpers ─────────────────────────────────────────────────────
-
-  const handleNameChange = (value: string) => {
-    setForm((f) => ({
-      ...f,
-      name: value,
-      slug: editingCard ? f.slug : toSlug(value),
-    }));
-  };
-
-  const setImage = (index: number, value: string) => {
-    setForm((f) => {
-      const imgs = [...f.images];
-      imgs[index] = value;
-      return { ...f, images: imgs };
-    });
-  };
-
-  const addImage = () => setForm((f) => ({ ...f, images: [...f.images, ""] }));
-
-  const removeImage = (index: number) =>
-    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
-
-  // ─── Cloudinary upload widget ──────────────────────────────────────────────
-
-  const openCloudinaryWidget = useCallback(
-    (mode: "image" | "video") => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cloudinary = (window as any).cloudinary;
-      if (!cloudinary || !CLOUD_NAME || !UPLOAD_PRESET) {
-        addToast("Cloudinary not configured. Check NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET in .env.local", "error");
-        return;
-      }
-
-      const widget = cloudinary.createUploadWidget(
-        {
-          cloudName: CLOUD_NAME,
-          uploadPreset: UPLOAD_PRESET,
-          sources: ["local", "url", "camera"],
-          multiple: mode === "image",
-          maxFiles: mode === "image" ? 10 : 1,
-          resourceType: mode === "image" ? "image" : "video",
-          clientAllowedFormats: mode === "image" ? ["jpg", "jpeg", "png", "webp", "avif"] : ["mp4", "webm", "mov"],
-          maxFileSize: mode === "image" ? 10000000 : 50000000,
-          folder: mode === "image" ? "paighaam/cards" : "paighaam/videos",
-          cropping: mode === "image",
-          showAdvancedOptions: false,
-          theme: "minimal",
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error: any, result: any) => {
-          if (error) {
-            addToast(`Upload failed: ${error.message || "Unknown error"}`, "error");
-            return;
-          }
-          if (result?.event === "success" && result.info?.secure_url) {
-            const url: string = result.info.secure_url;
-            if (mode === "image") {
-              setForm((f) => {
-                // Replace empty slots first, then append
-                const imgs = [...f.images];
-                const emptyIdx = imgs.findIndex((u) => !u.trim());
-                if (emptyIdx >= 0) {
-                  imgs[emptyIdx] = url;
-                } else {
-                  imgs.push(url);
-                }
-                return { ...f, images: imgs };
-              });
-            } else {
-              setForm((f) => ({ ...f, short_video_url: url }));
-            }
-            addToast(`${mode === "image" ? "Image" : "Video"} uploaded!`, "success");
-          }
-        }
-      );
-      widget.open();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  const setAddOn = (index: number, field: keyof AddOn, value: string | number) => {
-    setForm((f) => {
-      const ao = [...f.add_ons];
-      ao[index] = { ...ao[index], [field]: value };
-      return { ...f, add_ons: ao };
-    });
-  };
-
-  const addAddOn = () =>
-    setForm((f) => ({
-      ...f,
-      add_ons: [...f.add_ons, { name: "", price: 0, description: "" }],
-    }));
-
-  const removeAddOn = (index: number) =>
-    setForm((f) => ({ ...f, add_ons: f.add_ons.filter((_, i) => i !== index) }));
-
-  // ─── Save (create/update) ───────────────────────────────────────────────────
-
-  const handleSave = async () => {
-    if (!form.name.trim() || !form.base_price || !form.category || !form.description.trim()) {
-      addToast("Please fill in all required fields", "error");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const payload = {
-        ...form,
-        images: form.images.filter((u) => u.trim() !== ""),
-        original_price: form.original_price || undefined,
-        short_video_url: form.short_video_url?.trim() || undefined,
-        card_code: form.card_code?.trim() || undefined,
-      };
-
-      const url = editingCard ? `/api/cards/${editingCard.slug}` : "/api/cards";
-      const method = editingCard ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Unknown error");
-      }
-
-      addToast(editingCard ? "Card updated successfully!" : "Card created successfully!", "success");
-      closeModal();
-      fetchCards();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Save failed";
-      addToast(msg, "error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // ─── Delete ─────────────────────────────────────────────────────────────────
 
   const handleDelete = async () => {
@@ -403,12 +194,6 @@ export default function AdminClient() {
 
   return (
     <>
-      {/* Cloudinary Upload Widget Script */}
-      <Script
-        src="https://upload-widget.cloudinary.com/global/all.js"
-        strategy="lazyOnload"
-        onLoad={() => { cloudinaryLoaded.current = true; }}
-      />
       {/* ── Toasts ── */}
       <div className="admin-toasts">
         {toasts.map((t) => (
@@ -483,7 +268,7 @@ export default function AdminClient() {
                 {loading ? "Loading…" : `${cards.length} card${cards.length !== 1 ? "s" : ""} in database`}
               </p>
             </div>
-            <button id="admin-add-card-btn" className="admin-btn admin-btn--primary" onClick={openCreate}>
+            <button id="admin-add-card-btn" className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -537,7 +322,7 @@ export default function AdminClient() {
               </svg>
               <p>{search || filterCat !== "All" ? "No cards match your filters." : "No cards yet. Add your first card!"}</p>
               {!search && filterCat === "All" && (
-                <button className="admin-btn admin-btn--primary" onClick={openCreate}>
+                <button className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
                   Add First Card
                 </button>
               )}
@@ -594,7 +379,7 @@ export default function AdminClient() {
                           <button
                             id={`edit-${card.slug}`}
                             className="admin-btn admin-btn--ghost"
-                            onClick={() => openEdit(card)}
+                            onClick={() => router.push(`/admin/cards/${card.slug}/edit`)}
                           >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -751,363 +536,7 @@ export default function AdminClient() {
         </main>
       </div>
 
-      {/* ── Add/Edit Modal Overlay ── */}
-      {modalOpen && (
-        <div className="admin-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-          <div className="admin-modal">
-            <div className="admin-modal__header">
-              <h2 className="admin-modal__title">
-                {editingCard ? `Edit: ${editingCard.name}` : "Add New Card"}
-              </h2>
-              <button className="admin-modal__close" onClick={closeModal} aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="admin-modal__body">
-              {/* Row 1: Name + Code */}
-              <div className="admin-form-grid admin-form-grid--2">
-                <div className="admin-field">
-                  <label className="admin-label">Card Name <span className="admin-required">*</span></label>
-                  <input
-                    id="field-name"
-                    type="text"
-                    className="admin-input"
-                    placeholder="e.g. Royal Mughal Velvet Card"
-                    value={form.name}
-                    onChange={(e) => handleNameChange(e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label className="admin-label">Card Code</label>
-                  <input
-                    id="field-card-code"
-                    type="text"
-                    className="admin-input"
-                    placeholder="e.g. WC-001"
-                    value={form.card_code || ""}
-                    onChange={(e) => setForm((f) => ({ ...f, card_code: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* Slug */}
-              <div className="admin-field">
-                <label className="admin-label">Slug <span className="admin-required">*</span></label>
-                <input
-                  id="field-slug"
-                  type="text"
-                  className="admin-input admin-input--mono"
-                  placeholder="auto-generated from name"
-                  value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") }))}
-                />
-                <p className="admin-hint">URL: /product/{form.slug || "…"}</p>
-              </div>
-
-              {/* Row 2: Category + Min Order */}
-              <div className="admin-form-grid admin-form-grid--2">
-                <div className="admin-field">
-                  <label className="admin-label">Category <span className="admin-required">*</span></label>
-                  <select
-                    id="field-category"
-                    className="admin-select"
-                    value={form.category}
-                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="admin-field">
-                  <label className="admin-label">Min Order (pcs)</label>
-                  <input
-                    id="field-min-order"
-                    type="number"
-                    className="admin-input"
-                    min={1}
-                    value={form.min_order}
-                    onChange={(e) => setForm((f) => ({ ...f, min_order: Number(e.target.value) }))}
-                  />
-                </div>
-              </div>
-
-              {/* Row 3: Prices */}
-              <div className="admin-form-grid admin-form-grid--2">
-                <div className="admin-field">
-                  <label className="admin-label">Base Price (PKR/card) <span className="admin-required">*</span></label>
-                  <input
-                    id="field-base-price"
-                    type="number"
-                    className="admin-input"
-                    min={0}
-                    placeholder="e.g. 350"
-                    value={form.base_price || ""}
-                    onChange={(e) => setForm((f) => ({ ...f, base_price: Number(e.target.value) }))}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label className="admin-label">Original Price (PKR) <span className="admin-optional">(for strikethrough)</span></label>
-                  <input
-                    id="field-original-price"
-                    type="number"
-                    className="admin-input"
-                    min={0}
-                    placeholder="e.g. 500"
-                    value={form.original_price || ""}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, original_price: e.target.value ? Number(e.target.value) : undefined }))
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="admin-field">
-                <label className="admin-label">Description <span className="admin-required">*</span></label>
-                <RichTextEditor
-                  value={form.description}
-                  onChange={(html) => setForm((f) => ({ ...f, description: html }))}
-                  placeholder="Brief description of the card design, material, and use…"
-                  maxLength={5000}
-                  minRows={4}
-                />
-              </div>
-
-              {/* ── Images (Cloudinary Upload) ── */}
-              <div className="admin-field">
-                <div className="admin-addons-header">
-                  <label className="admin-label">Card Images</label>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn--outline-sm"
-                      onClick={() => setShowManualUrls((v) => !v)}
-                    >
-                      {showManualUrls ? "Hide URLs" : "Paste URL"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Upload button */}
-                <button
-                  type="button"
-                  className="admin-upload-zone"
-                  onClick={() => openCloudinaryWidget("image")}
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <span>Click to upload images</span>
-                  <span className="admin-upload-zone__hint">JPG, PNG, WebP — max 10 MB each</span>
-                </button>
-
-                {/* Image preview grid */}
-                {form.images.filter((u) => u.trim()).length > 0 && (
-                  <div className="admin-image-grid">
-                    {form.images.map((url, i) =>
-                      url.trim() ? (
-                        <div key={i} className="admin-image-card">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={url}
-                            alt={`Card image ${i + 1}`}
-                            className="admin-image-card__img"
-                            onError={(e) => { e.currentTarget.style.display = "none"; }}
-                          />
-                          <button
-                            type="button"
-                            className="admin-image-card__remove"
-                            onClick={() => removeImage(i)}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : null
-                    )}
-                  </div>
-                )}
-
-                {/* Manual URL inputs (toggle) */}
-                {showManualUrls && (
-                  <div className="admin-url-list">
-                    {form.images.map((url, i) => (
-                      <div key={i} className="admin-url-row">
-                        <input
-                          type="url"
-                          className="admin-input"
-                          placeholder="https://res.cloudinary.com/…"
-                          value={url}
-                          onChange={(e) => setImage(i, e.target.value)}
-                        />
-                        {form.images.length > 1 && (
-                          <button type="button" className="admin-btn admin-btn--icon-danger" onClick={() => removeImage(i)}>
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <button type="button" className="admin-btn admin-btn--outline-sm" onClick={addImage}>
-                      + Add URL
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Video (Cloudinary Upload) ── */}
-              <div className="admin-field">
-                <label className="admin-label">Short Preview Video <span className="admin-optional">(optional, ~5 sec)</span></label>
-
-                {form.short_video_url ? (
-                  <div className="admin-video-preview">
-                    <video
-                      src={form.short_video_url}
-                      className="admin-video-preview__player"
-                      controls
-                      muted
-                      playsInline
-                      loop
-                    />
-                    <div className="admin-video-preview__actions">
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--outline-sm"
-                        onClick={() => openCloudinaryWidget("video")}
-                      >
-                        Replace Video
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--icon-danger"
-                        onClick={() => setForm((f) => ({ ...f, short_video_url: "" }))}
-                      >
-                        ✕ Remove
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="admin-upload-zone"
-                    onClick={() => openCloudinaryWidget("video")}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <polygon points="23 7 16 12 23 17 23 7" />
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                    <span>Click to upload video</span>
-                    <span className="admin-upload-zone__hint">MP4, WebM, MOV — max 50 MB</span>
-                  </button>
-                )}
-
-                {/* Manual URL fallback */}
-                {showManualUrls && (
-                  <input
-                    id="field-video-url"
-                    type="url"
-                    className="admin-input"
-                    placeholder="Or paste video URL manually…"
-                    value={form.short_video_url || ""}
-                    onChange={(e) => setForm((f) => ({ ...f, short_video_url: e.target.value }))}
-                    style={{ marginTop: "0.5rem" }}
-                  />
-                )}
-              </div>
-
-              {/* Toggles */}
-              <div className="admin-form-grid admin-form-grid--2">
-                <label className="admin-toggle">
-                  <input
-                    id="field-is-new"
-                    type="checkbox"
-                    checked={form.is_new}
-                    onChange={(e) => setForm((f) => ({ ...f, is_new: e.target.checked }))}
-                  />
-                  <span className="admin-toggle__track" />
-                  <span className="admin-toggle__label">Mark as New</span>
-                </label>
-                <label className="admin-toggle">
-                  <input
-                    id="field-is-bestseller"
-                    type="checkbox"
-                    checked={form.is_bestseller}
-                    onChange={(e) => setForm((f) => ({ ...f, is_bestseller: e.target.checked }))}
-                  />
-                  <span className="admin-toggle__track" />
-                  <span className="admin-toggle__label">Mark as Bestseller</span>
-                </label>
-              </div>
-
-              {/* Add-ons */}
-              <div className="admin-field">
-                <div className="admin-addons-header">
-                  <label className="admin-label">Add-ons</label>
-                  <button type="button" className="admin-btn admin-btn--outline-sm" onClick={addAddOn}>
-                    + Add Row
-                  </button>
-                </div>
-                {form.add_ons.length === 0 && (
-                  <p className="admin-hint">No add-ons yet. Click "+ Add Row" to add one.</p>
-                )}
-                {form.add_ons.map((ao, i) => (
-                  <div key={i} className="admin-addon-row">
-                    <input
-                      type="text"
-                      className="admin-input"
-                      placeholder="Name (e.g. Gold Foil)"
-                      value={ao.name}
-                      onChange={(e) => setAddOn(i, "name", e.target.value)}
-                    />
-                    <input
-                      type="number"
-                      className="admin-input admin-input--sm"
-                      placeholder="Price"
-                      min={0}
-                      value={ao.price}
-                      onChange={(e) => setAddOn(i, "price", Number(e.target.value))}
-                    />
-                    <input
-                      type="text"
-                      className="admin-input"
-                      placeholder="Description"
-                      value={ao.description}
-                      onChange={(e) => setAddOn(i, "description", e.target.value)}
-                    />
-                    <button type="button" className="admin-btn admin-btn--icon-danger" onClick={() => removeAddOn(i)}>
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="admin-modal__footer">
-              <button className="admin-btn admin-btn--ghost" onClick={closeModal} disabled={saving}>
-                Cancel
-              </button>
-              <button id="admin-save-btn" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>
-                {saving ? (
-                  <>
-                    <span className="admin-spinner" />
-                    Saving…
-                  </>
-                ) : editingCard ? (
-                  "Save Changes"
-                ) : (
-                  "Create Card"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Delete Confirm Dialog ── */}
       {deleteTarget && (
