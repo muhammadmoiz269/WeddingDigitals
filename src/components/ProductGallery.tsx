@@ -18,7 +18,7 @@ export default function ProductGallery({ images, videoUrl, productName, imageAlt
   return (
     <div className="space-y-4">
       {/* Main Display */}
-      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-cream border border-cream-dark/50">
+      <div className="relative rounded-2xl overflow-hidden bg-cream border border-cream-dark/50">
         <AnimatePresence mode="wait">
           {showVideo && videoUrl ? (
             <motion.div
@@ -26,11 +26,11 @@ export default function ProductGallery({ images, videoUrl, productName, imageAlt
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0"
+              className="w-full"
             >
               <video
                 src={videoUrl}
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-contain"
                 controls
                 autoPlay
                 muted
@@ -45,14 +45,16 @@ export default function ProductGallery({ images, videoUrl, productName, imageAlt
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className="absolute inset-0"
+              className="w-full"
             >
               <Image
                 src={images[activeIndex] || images[0]}
                 alt={imageAltText || `${productName} - View ${activeIndex + 1}`}
-                fill
-                className="object-cover"
+                width={1200}
+                height={1200}
+                className="w-full h-auto object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                quality={100}
                 priority
               />
             </motion.div>

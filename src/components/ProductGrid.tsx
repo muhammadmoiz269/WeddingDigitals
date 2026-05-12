@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-
+import Image from "next/image";
 import Link from "next/link";
 import type { CardProduct } from "@/types";
 
@@ -26,6 +26,8 @@ const SORT_OPTIONS = [
 ] as const;
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+
+const ITEMS_PER_PAGE = 12; // 4 rows × 3 columns
 
 function sortCards(cards: CardProduct[], sort: SortValue): CardProduct[] {
   const sorted = [...cards];
@@ -62,7 +64,9 @@ export default function ProductGrid() {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [allCards, setAllCards] = useState<CardProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const sortRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/cards")
@@ -83,6 +87,11 @@ export default function ProductGrid() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Reset to page 1 when filter/sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, activeSort]);
+
   const filtered = useMemo(() => {
     const byCategory =
       activeCategory === "All"
@@ -90,6 +99,20 @@ export default function ProductGrid() {
         : allCards.filter((c) => c.category === activeCategory);
     return sortCards(byCategory, activeSort);
   }, [allCards, activeCategory, activeSort]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedCards = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(start, start + ITEMS_PER_PAGE);
+  }, [filtered, currentPage]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of grid
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   return (
     <section id="collection" className="section-padding bg-ivory">
@@ -170,50 +193,61 @@ export default function ProductGrid() {
             {/* Dropdown Menu */}
             {isSortOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream-dark/50 overflow-hidden z-20">
-                  <div className="py-1">
-                    {SORT_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setActiveSort(option.value);
-                          setIsSortOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                          activeSort === option.value
-                            ? "bg-champagne/10 text-champagne-dark font-semibold"
-                            : "text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark"
-                        }`}
-                      >
-                        <span className="flex items-center justify-between">
-                          {option.label}
-                          {activeSort === option.value && (
-                            <svg
-                              className="w-4 h-4 text-champagne"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              strokeWidth={2.5}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          )}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                <div className="py-1">
+                  {SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setActiveSort(option.value);
+                        setIsSortOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                        activeSort === option.value
+                          ? "bg-champagne/10 text-champagne-dark font-semibold"
+                          : "text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark"
+                      }`}
+                    >
+                      <span className="flex items-center justify-between">
+                        {option.label}
+                        {activeSort === option.value && (
+                          <svg
+                            className="w-4 h-4 text-champagne"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2.5}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
 
+        {/* Results count */}
+        {!loading && filtered.length > 0 && (
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-charcoal/50">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+              {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of{" "}
+              {filtered.length} designs
+            </p>
+          </div>
+        )}
+
         {/* Loading Skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {[...Array(8)].map((_, i) => (
+            {[...Array(12)].map((_, i) => (
               <div
                 key={i}
                 className="rounded-2xl overflow-hidden border border-cream-dark/50"
@@ -230,13 +264,14 @@ export default function ProductGrid() {
           </div>
         )}
 
-        {/* Product Grid */}
+        {/* Product Grid — 4 columns on large screens */}
         {!loading && (
           <div
+            ref={gridRef}
             key={`${activeCategory}-${activeSort}`}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
           >
-            {filtered.map((card, index) => (
+            {paginatedCards.map((card, index) => (
               <CardGridItem key={card.slug} card={card} index={index} />
             ))}
           </div>
@@ -257,6 +292,15 @@ export default function ProductGrid() {
           </div>
         )}
 
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
+
         {/* Bottom CTA */}
         <div className="text-center mt-14">
           <p className="text-sm text-charcoal/50 mb-4">
@@ -268,6 +312,112 @@ export default function ProductGrid() {
         </div>
       </div>
     </section>
+  );
+}
+
+// ─── Pagination Component ──────────────────────────────────────────────────────
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  // Build page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <nav
+      aria-label="Pagination"
+      className="mt-14 flex items-center justify-center gap-2"
+    >
+      {/* Previous */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-full transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
+        aria-label="Previous page"
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        <span className="hidden sm:inline">Previous</span>
+      </button>
+
+      {/* Page Numbers */}
+      <div className="flex items-center gap-1">
+        {getPageNumbers().map((page, idx) =>
+          page === "..." ? (
+            <span
+              key={`ellipsis-${idx}`}
+              className="w-10 h-10 flex items-center justify-center text-charcoal/40 text-sm"
+            >
+              …
+            </span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => onPageChange(page)}
+              className={`w-10 h-10 flex items-center justify-center text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
+                currentPage === page
+                  ? "bg-champagne text-white shadow-md shadow-champagne/25"
+                  : "bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
+              }`}
+              aria-label={`Page ${page}`}
+              aria-current={currentPage === page ? "page" : undefined}
+            >
+              {page}
+            </button>
+          ),
+        )}
+      </div>
+
+      {/* Next */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-full transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
+        aria-label="Next page"
+      >
+        <span className="hidden sm:inline">Next</span>
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </nav>
   );
 }
 
@@ -318,12 +468,14 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
           {/* Image Container */}
           <div className="relative aspect-[3/4] overflow-hidden bg-cream">
             {imageSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={imageSrc}
-                alt={card.name}
-                loading="eager"
-                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                alt={card.image_alt_text || card.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                quality={100}
+                priority={index < 4}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-5xl">
@@ -406,8 +558,11 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
               className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-4"
               dangerouslySetInnerHTML={{
                 __html: card.description
-                  ? card.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-                  : ''
+                  ? card.description
+                      .replace(/<[^>]*>/g, " ")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                  : "",
               }}
             />
             <div className="flex items-end justify-between mt-auto">

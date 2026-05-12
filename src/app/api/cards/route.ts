@@ -20,12 +20,37 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit");
 
     await connectToDatabase();
 
     const query = category && category !== "All" ? { category } : {};
-    const cards = await Card.find(query).sort({ created_at: -1 }).lean();
 
+    // If pagination params are provided, paginate
+    if (page && limit) {
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 12));
+      const skip = (pageNum - 1) * limitNum;
+
+      const [cards, total] = await Promise.all([
+        Card.find(query).sort({ created_at: -1 }).skip(skip).limit(limitNum).lean(),
+        Card.countDocuments(query),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        data: cards,
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        source: "db",
+      });
+    }
+
+    // No pagination — return all (backward-compatible)
+    const cards = await Card.find(query).sort({ created_at: -1 }).lean();
     return NextResponse.json({ success: true, data: cards, source: "db" });
   } catch (error) {
     console.error("Error fetching cards:", error);
