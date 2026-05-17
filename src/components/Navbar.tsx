@@ -8,13 +8,10 @@ import SearchModal from '@/components/SearchModal';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -31,22 +28,28 @@ export default function Navbar() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  useEffect(() => {
-    if (isMobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [isMobileOpen]);
+  const searchIcon = (
+    <svg
+      className="w-[18px] h-[18px] text-charcoal/70 hover:text-champagne transition-colors"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      />
+    </svg>
+  );
 
   return (
     <>
+      {/* ── Desktop Navbar (md+) ───────────────────────────────────────────── */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'glass shadow-lg shadow-champagne/5'
-            : 'bg-transparent'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 hidden md:block ${
+          isScrolled ? 'glass shadow-lg shadow-champagne/5' : 'bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,8 +73,8 @@ export default function Navbar() {
               </div>
             </a>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-1">
+            {/* Nav Links */}
+            <div className="flex items-center gap-1">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
@@ -84,120 +87,61 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Search + CTA + Mobile Toggle */}
+            {/* Search + CTA */}
             <div className="flex items-center gap-3">
-              {/* Search Button */}
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-cream/80 transition-colors cursor-pointer"
                 aria-label="Search cards"
                 id="search-toggle"
               >
-                <svg
-                  className="w-[18px] h-[18px] text-charcoal/70 hover:text-champagne transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
+                {searchIcon}
               </button>
-
-              <a
-                href="#collection"
-                className="hidden sm:inline-flex btn-primary text-sm !px-5 !py-2.5"
-              >
+              <a href="#collection" className="btn-primary text-sm !px-5 !py-2.5">
                 Get a Quote
               </a>
-
-              {/* Mobile Hamburger */}
-              <button
-                onClick={() => setIsMobileOpen(!isMobileOpen)}
-                className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-cream transition-colors"
-                aria-label="Toggle menu"
-                id="mobile-menu-toggle"
-              >
-                <div className="w-5 h-4 flex flex-col justify-between">
-                  <span
-                    className={`block h-0.5 bg-charcoal rounded-full transition-all duration-300 origin-center ${
-                      isMobileOpen ? 'rotate-45 translate-y-[7px]' : ''
-                    }`}
-                  />
-                  <span
-                    className={`block h-0.5 bg-charcoal rounded-full transition-all duration-300 ${
-                      isMobileOpen ? 'opacity-0 scale-0' : ''
-                    }`}
-                  />
-                  <span
-                    className={`block h-0.5 bg-charcoal rounded-full transition-all duration-300 origin-center ${
-                      isMobileOpen ? '-rotate-45 -translate-y-[7px]' : ''
-                    }`}
-                  />
-                </div>
-              </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-charcoal-dark/40 backdrop-blur-sm md:hidden"
-            onClick={() => setIsMobileOpen(false)}
-          >
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 bottom-0 w-[280px] bg-ivory shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-col h-full pt-24 px-6 pb-8">
-                <div className="flex flex-col gap-1">
-                  {navLinks.map((link, i) => (
-                    <motion.a
-                      key={link.href}
-                      href={link.href}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + i * 0.05 }}
-                      onClick={() => setIsMobileOpen(false)}
-                      className="px-4 py-3 text-base font-medium text-charcoal hover:text-champagne hover:bg-cream/60 rounded-lg transition-colors"
-                    >
-                      {link.label}
-                    </motion.a>
-                  ))}
-                </div>
+      {/* ── Mobile Navbar (< md): Logo left, Search right ─────────────────── */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 md:hidden ${
+          isScrolled ? 'glass shadow-md shadow-champagne/5' : 'bg-ivory/80 backdrop-blur-sm'
+        }`}
+      >
+        <div className="flex items-center justify-between h-16 px-4">
+          {/* Logo */}
+          <a href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/images/logo.png"
+              alt="Paighaam"
+              width={36}
+              height={36}
+              className="rounded-full shadow-sm"
+            />
+            <div className="flex flex-col">
+              <span className="font-heading text-base font-bold text-charcoal-dark tracking-tight leading-tight">
+                Paighaam
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.18em] text-champagne font-medium -mt-0.5">
+                Wedding Cards
+              </span>
+            </div>
+          </a>
 
-                <div className="mt-auto pt-6 border-t border-cream-dark">
-                  <a
-                    href="#collection"
-                    className="btn-primary w-full text-center"
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    Get a Quote
-                  </a>
-                  <p className="mt-4 text-xs text-charcoal/50 text-center">
-                    Karachi&apos;s Premium Wedding Cards
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Search icon */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-cream transition-colors cursor-pointer"
+            aria-label="Search cards"
+            id="search-toggle-mobile"
+          >
+            {searchIcon}
+          </button>
+        </div>
+      </nav>
 
       {/* Search Modal */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

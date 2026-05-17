@@ -58,15 +58,15 @@ export default function PriceCalculator({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Price Header */}
       <div>
-        <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-bold text-charcoal-dark font-heading">
+        <div className="flex items-baseline gap-2 sm:gap-3">
+          <span className="text-2xl sm:text-3xl font-bold text-charcoal-dark font-heading">
             {formatPKR(basePrice)}
           </span>
           {originalPrice && (
-            <span className="text-lg text-charcoal/40 line-through">
+            <span className="text-base sm:text-lg text-charcoal/40 line-through">
               {formatPKR(originalPrice)}
             </span>
           )}
@@ -154,8 +154,8 @@ export default function PriceCalculator({
             </span>
           </div>
         </div>
-        <p className="mt-2 text-xs text-charcoal/40">
-          Min. order: {minOrder} pcs. Bulk discount applies at 500+ cards.
+        <p className="mt-2 text-[10px] sm:text-xs text-charcoal/40">
+          Min. {minOrder} pcs. Bulk discount at 500+ cards.
         </p>
       </div>
 
@@ -243,9 +243,9 @@ export default function PriceCalculator({
           Price Breakdown
         </h4>
 
-        <div className="flex justify-between text-sm">
+        <div className="flex flex-col xs:flex-row justify-between gap-0.5 xs:gap-0 text-sm">
           <span className="text-charcoal/70">
-            {basePrice} × {quantity}
+            {formatPKR(breakdown.basePrice)}/card &times; {quantity} cards
           </span>
           <span className="font-medium text-charcoal">
             {formatPKR(breakdown.subtotal)}
@@ -289,6 +289,19 @@ export default function PriceCalculator({
         </p>
       </motion.div>
 
+      {/* Sample Card Notice */}
+      <div className="flex items-start gap-3 p-4 bg-champagne/8 border border-champagne/20 rounded-xl">
+        <span className="text-lg leading-none mt-0.5">💌</span>
+        <div>
+          <p className="text-[11px] font-bold text-champagne-dark uppercase tracking-wider mb-0.5">
+            Want to see it before you order?
+          </p>
+          <p className="text-[11px] text-charcoal/60 leading-relaxed">
+            Request a <span className="font-semibold text-charcoal/80">sample card</span> delivered to your door — you only pay the delivery charges. Once you confirm your full order, <span className="font-semibold text-champagne-dark">delivery is on us</span>.
+          </p>
+        </div>
+      </div>
+
       {/* Proceed to Checkout */}
       <button
         onClick={() => {
@@ -300,16 +313,7 @@ export default function PriceCalculator({
         id="checkout-btn"
         className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-champagne to-champagne-dark text-white font-semibold text-base rounded-2xl shadow-lg shadow-champagne/25 hover:shadow-xl hover:shadow-champagne/35 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-        Proceed to Checkout — {formatPKR(breakdown.total)}
+        Proceed to checkout
       </button>
 
       {/* WhatsApp Order (secondary) */}

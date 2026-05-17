@@ -80,7 +80,13 @@ export default function AdminClient() {
   };
 
   useEffect(() => {
-    if (activeTab === 'orders' && orders.length === 0) fetchOrders();
+    // Fetch orders eagerly on mount so the sidebar badge is always up-to-date
+    fetchOrders();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // Re-fetch if the user manually opens the tab and the list might be stale
+    if (activeTab === 'orders') fetchOrders();
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
@@ -231,8 +237,8 @@ export default function AdminClient() {
                 <line x1="16" y1="17" x2="8" y2="17" />
               </svg>
               Orders
-              {orders.filter(o => o.payment?.status === 'confirmed').length > 0 && (
-                <span className="admin-nav__badge">{orders.filter(o => o.payment?.status === 'confirmed').length}</span>
+              {orders.filter(o => !['confirmed', 'in_production', 'completed'].includes(o.payment?.status)).length > 0 && (
+                <span className="admin-nav__badge">{orders.filter(o => !['confirmed', 'in_production', 'completed'].includes(o.payment?.status)).length}</span>
               )}
             </button>
           </nav>

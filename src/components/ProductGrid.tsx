@@ -1,80 +1,113 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { CardProduct } from "@/types";
+import {
+  CATEGORIES,
+  SORT_OPTIONS,
+  ITEMS_PER_PAGE,
+  getWhatsAppChatLink,
+  type SortValue,
+} from "@/lib/constants";
+import Pagination from "@/components/Pagination";
 
-const CATEGORIES = [
-  "All",
-  "Luxury",
-  "Classic",
-  "Modern",
-  "Minimalist",
-  "Floral",
-  "Textured",
-] as const;
-
-const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "best-selling", label: "Best Selling" },
-  { value: "price-asc", label: "Price, Low to High" },
-  { value: "price-desc", label: "Price, High to Low" },
-  { value: "newest", label: "Newest" },
-  { value: "name-asc", label: "Alphabetically, A–Z" },
-  { value: "name-desc", label: "Alphabetically, Z–A" },
-] as const;
-
-type SortValue = (typeof SORT_OPTIONS)[number]["value"];
-
-const ITEMS_PER_PAGE = 12; // 4 rows × 3 columns
-
-function sortCards(cards: CardProduct[], sort: SortValue): CardProduct[] {
-  const sorted = [...cards];
-  switch (sort) {
-    case "featured":
-      return sorted.sort((a, b) => {
-        if (a.is_bestseller !== b.is_bestseller)
-          return a.is_bestseller ? -1 : 1;
-        if (a.is_new !== b.is_new) return a.is_new ? -1 : 1;
-        return 0;
-      });
-    case "best-selling":
-      return sorted.sort(
-        (a, b) => (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0),
-      );
-    case "price-asc":
-      return sorted.sort((a, b) => a.base_price - b.base_price);
-    case "price-desc":
-      return sorted.sort((a, b) => b.base_price - a.base_price);
-    case "newest":
-      return sorted; // API already returns newest first
-    case "name-asc":
-      return sorted.sort((a, b) => a.name.localeCompare(b.name));
-    case "name-desc":
-      return sorted.sort((a, b) => b.name.localeCompare(a.name));
-    default:
-      return sorted;
-  }
+// Cache key: "category::sort::page"
+function cacheKey(category: string, sort: string, page: number) {
+  return `${category}::${sort}::${page}`;
 }
 
-export default function ProductGrid() {
+export default function ProductGrid({
+  initialPage = 1,
+}: {
+  initialPage?: number;
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeSort, setActiveSort] = useState<SortValue>("featured");
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [allCards, setAllCards] = useState<CardProduct[]>([]);
+
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentPageCards, setCurrentPageCards] = useState<CardProduct[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // In-memory page cache — persists for the lifetime of this component instance.
+  // Keys: cacheKey(category, sort, page) → CardProduct[]
+  // Totals keys: "category::sort" → { total, totalPages }
+  const pageCache = useRef<Map<string, CardProduct[]>>(new Map());
+  const totalsCache = useRef<
+    Map<string, { total: number; totalPages: number }>
+  >(new Map());
+
   const sortRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
+  // ── Fetch (or serve from cache) one page of cards ──────────────────────────
+  const fetchPage = useCallback(
+    async (page: number, category: string, sort: string) => {
+      const key = cacheKey(category, sort, page);
+      const totKey = `${category}::${sort}`;
+
+      // Cache hit — show immediately, no loading flash
+      if (pageCache.current.has(key)) {
+        setCurrentPageCards(pageCache.current.get(key)!);
+        const totals = totalsCache.current.get(totKey);
+        if (totals) {
+          setTotalCount(totals.total);
+          setTotalPages(totals.totalPages);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Cache miss — fetch from API
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(ITEMS_PER_PAGE),
+          sort,
+          ...(category !== "All" && { category }),
+        });
+        const res = await fetch(`/api/cards?${params}`);
+        const json = await res.json();
+        const cards: CardProduct[] = json.data ?? [];
+
+        // Persist in cache
+        pageCache.current.set(key, cards);
+        totalsCache.current.set(totKey, {
+          total: json.total ?? 0,
+          totalPages: json.totalPages ?? 0,
+        });
+
+        setCurrentPageCards(cards);
+        setTotalCount(json.total ?? 0);
+        setTotalPages(json.totalPages ?? 0);
+      } catch {
+        setCurrentPageCards([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  // Initial fetch on mount + whenever page / category / sort changes
   useEffect(() => {
-    fetch("/api/cards")
-      .then((r) => r.json())
-      .then((json) => setAllCards(json.data || []))
-      .catch(() => setAllCards([]))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchPage(currentPage, activeCategory, activeSort);
+  }, [currentPage, activeCategory, activeSort, fetchPage]);
+
+  // When the server re-renders page.tsx with a new ?page= param (breadcrumb /
+  // browser back), sync the new initialPage into local state.
+  useEffect(() => {
+    setCurrentPage(initialPage);
+  }, [initialPage]);
 
   // Close sort dropdown on outside click
   useEffect(() => {
@@ -87,32 +120,40 @@ export default function ProductGrid() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Reset to page 1 when filter/sort changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory, activeSort]);
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const filtered = useMemo(() => {
-    const byCategory =
-      activeCategory === "All"
-        ? allCards
-        : allCards.filter((c) => c.category === activeCategory);
-    return sortCards(byCategory, activeSort);
-  }, [allCards, activeCategory, activeSort]);
-
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedCards = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filtered.slice(start, start + ITEMS_PER_PAGE);
-  }, [filtered, currentPage]);
-
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-    // Scroll to top of grid
-    if (gridRef.current) {
-      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  const handleCategoryChange = useCallback((cat: string) => {
+    setActiveCategory(cat);
+    setCurrentPage(1); // React 18 batches both into one re-render
   }, []);
+
+  const handleSortChange = useCallback((sort: SortValue) => {
+    setActiveSort(sort);
+    setCurrentPage(1);
+    setIsSortOpen(false);
+  }, []);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      const params = new URLSearchParams(searchParams.toString());
+      if (page === 1) {
+        params.delete("page");
+      } else {
+        params.set("page", String(page));
+      }
+      const qs = params.toString();
+      router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+      if (gridRef.current) {
+        gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    },
+    [router, searchParams],
+  );
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  console.log("currentPageCards", currentPageCards);
 
   return (
     <section id="collection" className="section-padding bg-ivory">
@@ -132,14 +173,14 @@ export default function ProductGrid() {
           </p>
         </div>
 
-        {/* Filter Bar — Category Pills + Sort Dropdown */}
+        {/* Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
           {/* Category Pills */}
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => handleCategoryChange(cat)}
                 className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
                   activeCategory === cat
                     ? "bg-champagne text-white shadow-md shadow-champagne/25"
@@ -190,17 +231,13 @@ export default function ProductGrid() {
               </svg>
             </button>
 
-            {/* Dropdown Menu */}
             {isSortOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream-dark/50 overflow-hidden z-20">
                 <div className="py-1">
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => {
-                        setActiveSort(option.value);
-                        setIsSortOpen(false);
-                      }}
+                      onClick={() => handleSortChange(option.value)}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                         activeSort === option.value
                           ? "bg-champagne/10 text-champagne-dark font-semibold"
@@ -234,12 +271,12 @@ export default function ProductGrid() {
         </div>
 
         {/* Results count */}
-        {!loading && filtered.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-charcoal/50">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-              {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of{" "}
-              {filtered.length} designs
+              {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+              {totalCount} designs
             </p>
           </div>
         )}
@@ -247,7 +284,7 @@ export default function ProductGrid() {
         {/* Loading Skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
               <div
                 key={i}
                 className="rounded-2xl overflow-hidden border border-cream-dark/50"
@@ -264,27 +301,32 @@ export default function ProductGrid() {
           </div>
         )}
 
-        {/* Product Grid — 4 columns on large screens */}
-        {!loading && (
+        {/* Product Grid */}
+        {!loading && currentPageCards.length > 0 && (
           <div
             ref={gridRef}
-            key={`${activeCategory}-${activeSort}`}
+            key={`${activeCategory}-${activeSort}-${currentPage}`}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
           >
-            {paginatedCards.map((card, index) => (
-              <CardGridItem key={card.slug} card={card} index={index} />
+            {currentPageCards.map((card, index) => (
+              <CardGridItem
+                key={card.slug}
+                card={card}
+                index={index}
+                currentPage={currentPage}
+              />
             ))}
           </div>
         )}
 
         {/* Empty State */}
-        {!loading && filtered.length === 0 && (
+        {!loading && currentPageCards.length === 0 && (
           <div className="text-center py-20">
             <p className="text-charcoal/50 text-lg">
               No cards found in this category yet.
             </p>
             <button
-              onClick={() => setActiveCategory("All")}
+              onClick={() => handleCategoryChange("All")}
               className="mt-4 btn-secondary text-sm"
             >
               View All Cards
@@ -306,7 +348,14 @@ export default function ProductGrid() {
           <p className="text-sm text-charcoal/50 mb-4">
             Don&apos;t see what you&apos;re looking for?
           </p>
-          <a href="#contact" className="btn-secondary">
+          <a
+            href={getWhatsAppChatLink(
+              "Hi! I\'m interested in a custom wedding card design. Can you help me with that?",
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary"
+          >
             Request Custom Design
           </a>
         </div>
@@ -315,115 +364,17 @@ export default function ProductGrid() {
   );
 }
 
-// ─── Pagination Component ──────────────────────────────────────────────────────
-
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  // Build page numbers to display
-  const getPageNumbers = () => {
-    const pages: (number | "...")[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push("...");
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - 2) pages.push("...");
-      pages.push(totalPages);
-    }
-    return pages;
-  };
-
-  return (
-    <nav
-      aria-label="Pagination"
-      className="mt-14 flex items-center justify-center gap-2"
-    >
-      {/* Previous */}
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-full transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
-        aria-label="Previous page"
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        <span className="hidden sm:inline">Previous</span>
-      </button>
-
-      {/* Page Numbers */}
-      <div className="flex items-center gap-1">
-        {getPageNumbers().map((page, idx) =>
-          page === "..." ? (
-            <span
-              key={`ellipsis-${idx}`}
-              className="w-10 h-10 flex items-center justify-center text-charcoal/40 text-sm"
-            >
-              …
-            </span>
-          ) : (
-            <button
-              key={page}
-              onClick={() => onPageChange(page)}
-              className={`w-10 h-10 flex items-center justify-center text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
-                currentPage === page
-                  ? "bg-champagne text-white shadow-md shadow-champagne/25"
-                  : "bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
-              }`}
-              aria-label={`Page ${page}`}
-              aria-current={currentPage === page ? "page" : undefined}
-            >
-              {page}
-            </button>
-          ),
-        )}
-      </div>
-
-      {/* Next */}
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-full transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-cream text-charcoal/70 hover:bg-cream-dark border border-cream-dark hover:border-champagne/30"
-        aria-label="Next page"
-      >
-        <span className="hidden sm:inline">Next</span>
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </nav>
-  );
-}
-
 // ─── Card item with hover video preview ──────────────────────────────────────
 
-function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
+function CardGridItem({
+  card,
+  index,
+  currentPage,
+}: {
+  card: CardProduct;
+  index: number;
+  currentPage: number;
+}) {
   const discount =
     card.original_price && card.original_price > card.base_price
       ? Math.round(
@@ -463,7 +414,10 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Link href={`/product/${card.slug}`} className="block h-full">
+      <Link
+        href={`/product/${card.slug}${currentPage > 1 ? `?from=${currentPage}` : ""}`}
+        className="block h-full"
+      >
         <div className="relative h-full flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-cream-dark/50 hover:border-champagne/30">
           {/* Image Container */}
           <div className="relative aspect-[3/4] overflow-hidden bg-cream">
@@ -474,7 +428,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
-                quality={100}
+                quality={95}
                 priority={index < 4}
               />
             ) : (
@@ -483,7 +437,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
               </div>
             )}
 
-            {/* Hover Video Preview — lazy-loaded, muted, looping */}
+            {/* Hover Video Preview */}
             {videoUrl && (
               <div
                 className="absolute inset-0 z-[2] transition-opacity duration-500"
@@ -524,7 +478,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
               )}
             </div>
 
-            {/* Video indicator badge */}
+            {/* Video badge */}
             {videoUrl && (
               <div className="absolute top-3 right-3 z-[4]">
                 <span className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-sm text-charcoal-dark rounded-full">
@@ -540,7 +494,7 @@ function CardGridItem({ card, index }: { card: CardProduct; index: number }) {
               </div>
             )}
 
-            {/* Quick View Button */}
+            {/* Quick View */}
             <span className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[4] px-4 py-1.5 bg-white/95 backdrop-blur-sm text-charcoal-dark text-xs font-semibold rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:bg-champagne group-hover:text-white shadow-lg cursor-pointer whitespace-nowrap">
               View Details
             </span>

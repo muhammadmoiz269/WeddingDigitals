@@ -13,7 +13,7 @@ export const features: Feature[] = [
     icon: "✨",
     title: "Premium Quality",
     description:
-      "Imported card stocks, real gold foil, and precision printing. Every card is crafted to make a lasting first impression.",
+      "Imported card stocks and precision printing. Every card is crafted to make a lasting first impression.",
   },
   {
     id: "fast-delivery",

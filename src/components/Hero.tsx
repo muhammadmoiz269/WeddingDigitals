@@ -133,9 +133,9 @@ export default function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-10"
         >
           {[
-            { value: "5,000+", label: "Happy Couples" },
-            { value: "200+", label: "Designs" },
-            { value: "4.9★", label: "Rating" },
+            { value: "5,00+", label: "Happy Couples" },
+            { value: "100+", label: "Designs" },
+            { value: "4.8★", label: "Rating" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl sm:text-3xl font-heading font-bold text-gold-gradient">

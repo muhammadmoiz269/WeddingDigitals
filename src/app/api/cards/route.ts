@@ -13,28 +13,44 @@ function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Map the client-side SortValue to a MongoDB sort spec. */
+function buildMongoSort(sort: string): Record<string, 1 | -1> {
+  switch (sort) {
+    case "best-selling": return { is_bestseller: -1, created_at: -1 };
+    case "price-asc":    return { base_price: 1 };
+    case "price-desc":   return { base_price: -1 };
+    case "newest":       return { created_at: -1 };
+    case "name-asc":     return { name: 1 };
+    case "name-desc":    return { name: -1 };
+    case "featured":
+    default:             return { is_bestseller: -1, is_new: -1, created_at: -1 };
+  }
+}
+
 // ─── GET /api/cards ──────────────────────────────────────────────────────────
-// Returns all cards from MongoDB (with optional ?category= filter).
+// Returns cards from MongoDB with optional ?category=, ?sort=, ?page=, ?limit=.
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
-    const page = searchParams.get("page");
-    const limit = searchParams.get("limit");
+    const sort     = searchParams.get("sort") ?? "featured";
+    const page     = searchParams.get("page");
+    const limit    = searchParams.get("limit");
 
     await connectToDatabase();
 
-    const query = category && category !== "All" ? { category } : {};
+    const query    = category && category !== "All" ? { category } : {};
+    const mongoSort = buildMongoSort(sort);
 
     // If pagination params are provided, paginate
     if (page && limit) {
-      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const pageNum  = Math.max(1, parseInt(page, 10) || 1);
       const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 12));
-      const skip = (pageNum - 1) * limitNum;
+      const skip     = (pageNum - 1) * limitNum;
 
       const [cards, total] = await Promise.all([
-        Card.find(query).sort({ created_at: -1 }).skip(skip).limit(limitNum).lean(),
+        Card.find(query).sort(mongoSort).skip(skip).limit(limitNum).lean(),
         Card.countDocuments(query),
       ]);
 
@@ -49,8 +65,8 @@ export async function GET(request: Request) {
       });
     }
 
-    // No pagination — return all (backward-compatible)
-    const cards = await Card.find(query).sort({ created_at: -1 }).lean();
+    // No pagination — return all (backward-compatible, e.g. admin)
+    const cards = await Card.find(query).sort(mongoSort).lean();
     return NextResponse.json({ success: true, data: cards, source: "db" });
   } catch (error) {
     console.error("Error fetching cards:", error);

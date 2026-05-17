@@ -5,13 +5,19 @@ import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 
-export default function Home() {
+interface HomeProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const initialPage = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   return (
     <>
       <Navbar />
       <main className="flex-1">
         <Hero />
-        <ProductGrid />
+        <ProductGrid initialPage={initialPage} />
         <Features />
       </main>
       <Footer />

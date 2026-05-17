@@ -538,6 +538,8 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           color: #a09080;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          text-align: center;
+          white-space: nowrap;
         }
         .co-progress__step--active .co-progress__label { color: #2a2018; }
 

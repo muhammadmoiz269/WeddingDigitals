@@ -127,11 +127,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[12vh] px-4"
+          className="fixed inset-0 z-[100] flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:pt-[12vh] sm:px-4"
           onClick={onClose}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-charcoal-dark/50 backdrop-blur-sm" />
+          {/* Backdrop — visible on sm+ only */}
+          <div className="absolute inset-0 bg-charcoal-dark/50 backdrop-blur-sm hidden sm:block" />
 
           {/* Modal */}
           <motion.div
@@ -139,14 +139,25 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-ivory rounded-2xl shadow-2xl border border-cream-dark/60 overflow-hidden"
+            className="relative w-full sm:max-w-2xl bg-ivory sm:rounded-2xl shadow-2xl sm:border border-cream-dark/60 overflow-hidden flex flex-col flex-1 sm:flex-none"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-cream-dark/50">
-              {/* Search Icon */}
+            <div className="flex items-center gap-3 px-4 sm:px-5 py-4 border-b border-cream-dark/50">
+              {/* Mobile: close / back button */}
+              <button
+                onClick={onClose}
+                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-dark/60 text-charcoal/60 hover:text-charcoal transition-colors shrink-0 cursor-pointer"
+                aria-label="Close search"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Search Icon — desktop only */}
               <svg
-                className="w-5 h-5 text-champagne shrink-0"
+                className="hidden sm:block w-5 h-5 text-champagne shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -190,14 +201,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 </button>
               ) : null}
 
-              {/* Shortcut hint */}
+              {/* Shortcut hint — desktop only */}
               <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-semibold text-charcoal/40 bg-cream rounded border border-cream-dark shrink-0">
                 ESC
               </kbd>
             </div>
 
             {/* Results Panel */}
-            <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+            <div className="flex-1 sm:flex-none sm:max-h-[60vh] overflow-y-auto overscroll-contain">
               {/* Results */}
               {results.length > 0 && (
                 <div className="p-3">

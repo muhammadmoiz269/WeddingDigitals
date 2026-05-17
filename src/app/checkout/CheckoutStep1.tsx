@@ -102,10 +102,16 @@ function classifyLine(
   // AT
   if (/^AT$/.test(t)) return "at";
   // Footer rows
-  if (/Awaiting|Programme|Family Members|Arrival|Dinner|Contact|Rukhsati/i.test(t))
+  if (
+    /Awaiting|Programme|Family Members|Arrival|Dinner|Contact|Rukhsati/i.test(t)
+  )
     return "footer";
   // Small-caps: REQUESTS / Mrs. / Mr. & Mrs. / D/O. / S/O. / OF HER / OF THEIR / OF HIS
-  if (/^(REQUESTS?|Mrs?\.|Mr\. & Mrs\.|D\/O\.|S\/O\.|OF HER|OF THEIR|OF HIS)/i.test(t))
+  if (
+    /^(REQUESTS?|Mrs?\.|Mr\. & Mrs\.|D\/O\.|S\/O\.|OF HER|OF THEIR|OF HIS)/i.test(
+      t,
+    )
+  )
     return "small-caps";
   // Venue tokens
   if (/^\[Venue/i.test(t)) return "venue";
