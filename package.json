@@ -1,9 +1,11 @@
 {
-  "name": "paighaam",
+  "name": "shahi-bulawa",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:seo": "tsx src/scripts/build-seo-data.ts",
+    "prebuild": "npm run build:seo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

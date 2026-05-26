@@ -77,7 +77,7 @@ const FAQ_DATA: FAQ[] = [
   },
   {
     keywords: ['hi', 'hello', 'hey', 'salam', 'assalam', 'aoa'],
-    answer: "Assalamu Alaikum! 👋 Welcome to **Paighaam Wedding Cards**. I'm here to help you with any questions about our cards, pricing, or ordering process. How can I assist you?",
+    answer: "Assalamu Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I'm here to help you with any questions about our cards, pricing, or ordering process. How can I assist you?",
     followUp: ['Show me categories', 'What are the prices?', 'How to order?'],
   },
   {
@@ -170,7 +170,7 @@ export default function ChatWidget() {
         {
           id: idCounter.current++,
           role: 'bot',
-          text: "Assalamu Alaikum! 👋 Welcome to **Paighaam Wedding Cards**. I can help you with pricing, ordering, delivery, and more. What would you like to know?",
+          text: "Assalamu Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I can help you with pricing, ordering, delivery, and more. What would you like to know?",
           followUp: ['💰 Pricing', '📋 How to Order', '🎨 Custom Design'],
         },
       ]);
@@ -210,7 +210,7 @@ export default function ChatWidget() {
 
       // Handle WhatsApp redirect
       if (msg.toLowerCase().includes('whatsapp') || msg === 'Chat on WhatsApp') {
-        window.open(`${WHATSAPP_URL}?text=Hi%20Paighaam!%20I%20have%20a%20query.`, '_blank');
+        window.open(`${WHATSAPP_URL}?text=Hi%20Shahi%20Bulawa!%20I%20have%20a%20query.`, '_blank');
         return;
       }
 
@@ -298,7 +298,7 @@ export default function ChatWidget() {
               <div className="chat-header__info">
                 <div className="chat-header__avatar">P</div>
                 <div>
-                  <h3 className="chat-header__name">Paighaam Assistant</h3>
+                  <h3 className="chat-header__name">Shahi Bulawa Assistant</h3>
                   <span className="chat-header__status">
                     <span className="chat-header__status-dot" />
                     Online
@@ -377,7 +377,7 @@ export default function ChatWidget() {
 
             {/* WhatsApp banner */}
             <a
-              href={`${WHATSAPP_URL}?text=Hi%20Paighaam!%20I%20have%20a%20query.`}
+              href={`${WHATSAPP_URL}?text=Hi%20Shahi%20Bulawa!%20I%20have%20a%20query.`}
               target="_blank"
               rel="noopener noreferrer"
               className="chat-wa-banner"

@@ -15,7 +15,7 @@ export default function Features() {
             viewport={{ once: true }}
             className="inline-block text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4"
           >
-            The Paighaam Promise
+            The Shahi Bulawa Promise
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}

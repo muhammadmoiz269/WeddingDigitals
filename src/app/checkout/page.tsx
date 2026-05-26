@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import CheckoutClient from "./CheckoutClient";
 
 export const metadata: Metadata = {
-  title: "Checkout — Paighaam Wedding Cards",
+  title: "Checkout",
   description: "Customize and order your wedding cards.",
   robots: { index: false, follow: false },
 };

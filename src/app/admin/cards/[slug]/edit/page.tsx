@@ -154,6 +154,7 @@ export default function EditCardPage() {
             ? ["jpg", "jpeg", "png", "webp", "avif"]
             : ["mp4", "webm", "mov"],
         maxFileSize: mode === "image" ? 10000000 : 50000000,
+        // TODO: folder name kept for historical asset compatibility — visible brand is Shahi Bulawa
         folder: mode === "image" ? "paighaam/cards" : "paighaam/videos",
         cropping: mode === "image",
         theme: "minimal",
@@ -671,7 +672,7 @@ export default function EditCardPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, meta_title: e.target.value }))
                 }
-                placeholder="e.g. Royal Mughal Velvet Wedding Card | Paighaam"
+                placeholder="e.g. Royal Mughal Velvet Wedding Card | Shahi Bulawa"
               />
             </div>
 

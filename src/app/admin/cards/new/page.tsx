@@ -35,6 +35,7 @@ export default function NewCardPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cld = (window as any).cloudinary;
     if (!cld||!CLOUD_NAME||!UPLOAD_PRESET) { showToast('Cloudinary not configured','error'); return; }
+    // TODO: folder name kept for historical asset compatibility — visible brand is Shahi Bulawa
     const w = cld.createUploadWidget({ cloudName:CLOUD_NAME, uploadPreset:UPLOAD_PRESET, sources:['local','url','camera'], multiple:mode==='image', maxFiles:mode==='image'?10:1, resourceType:mode==='image'?'image':'video', clientAllowedFormats:mode==='image'?['jpg','jpeg','png','webp','avif']:['mp4','webm','mov'], maxFileSize:mode==='image'?10000000:50000000, folder:mode==='image'?'paighaam/cards':'paighaam/videos', cropping:mode==='image', theme:'minimal' },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err:any,res:any)=>{ if(err){showToast(`Upload failed: ${err.message||'error'}`,'error');return;} if(res?.event==='success'&&res.info?.secure_url){ const url:string=res.info.secure_url; if(mode==='image') setForm(f=>{const imgs=[...f.images];const idx=imgs.findIndex(u=>!u.trim());if(idx>=0)imgs[idx]=url;else imgs.push(url);return{...f,images:imgs};}); else setForm(f=>({...f,short_video_url:url})); showToast('Uploaded!','success'); }});
@@ -193,7 +194,7 @@ export default function NewCardPage() {
 
             <div className="ec-field">
               <label className="ec-label">SEO Meta Title <span className="ec-opt">(optional)</span></label>
-              <input className="ec-input" value={form.meta_title||''} onChange={e=>setForm(f=>({...f,meta_title:e.target.value}))} placeholder="e.g. Royal Mughal Velvet Wedding Card | Paighaam" />
+              <input className="ec-input" value={form.meta_title||''} onChange={e=>setForm(f=>({...f,meta_title:e.target.value}))} placeholder="e.g. Royal Mughal Velvet Wedding Card | Shahi Bulawa" />
             </div>
 
             <div className="ec-field">

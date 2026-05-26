@@ -57,15 +57,15 @@ export default function Navbar() {
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 group">
               <Image
-                src="/images/logo.png"
-                alt="Paighaam"
-                width={40}
-                height={40}
+                src="/images/logo.jpeg"
+                alt="Shahi Bulawa"
+                width={50}
+                height={50}
                 className="rounded-full shadow-md group-hover:shadow-lg transition-shadow duration-300"
               />
               <div className="flex flex-col">
                 <span className="font-heading text-xl font-bold text-charcoal-dark tracking-tight">
-                  Paighaam
+                  Shahi Bulawa
                 </span>
                 <span className="text-[10px] uppercase tracking-[0.2em] text-champagne font-medium -mt-1">
                   Wedding Cards
@@ -115,15 +115,15 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 group">
             <Image
-              src="/images/logo.png"
-              alt="Paighaam"
+              src="/images/logo.jpeg"
+              alt="Shahi Bulawa"
               width={36}
               height={36}
               className="rounded-full shadow-sm"
             />
             <div className="flex flex-col">
               <span className="font-heading text-base font-bold text-charcoal-dark tracking-tight leading-tight">
-                Paighaam
+                Shahi Bulawa
               </span>
               <span className="text-[9px] uppercase tracking-[0.18em] text-champagne font-medium -mt-0.5">
                 Wedding Cards

@@ -97,7 +97,7 @@ export default function AdminClient() {
       `📦 *Quantity:* ${order.quantity} cards\n` +
       `💰 *Amount Due:* PKR ${order.payment.amount_due.toLocaleString()}\n\n` +
       `Your cards will be designed, printed and dispatched to ${order.customer.area}, Karachi within *7-10 working days.*\n\n` +
-      `We'll share a mockup for your approval before printing. Thank you for choosing Paighaam! 🤍`;
+      `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
     const phone = order.customer.whatsapp.replace(/[^\d]/g, '');
     const fullPhone = phone.startsWith('0') ? '92' + phone.slice(1) : phone.startsWith('92') ? phone : '92' + phone;
     return `https://wa.me/${fullPhone}?text=${encodeURIComponent(msg)}`;
@@ -215,7 +215,7 @@ export default function AdminClient() {
           <div className="admin-logo">
             <span className="admin-logo__mark">P</span>
             <div>
-              <p className="admin-logo__brand">Paighaam</p>
+              <p className="admin-logo__brand">Shahi Bulawa</p>
               <p className="admin-logo__sub">Admin Panel</p>
             </div>
           </div>

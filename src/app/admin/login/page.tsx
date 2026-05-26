@@ -148,7 +148,7 @@ export default function AdminLoginPage() {
           </form>
 
           <p className="login-footer">
-            Paighaam Wedding Cards — Admin Access Only
+            Shahi Bulawa Wedding Cards — Admin Access Only
           </p>
         </div>
       </div>

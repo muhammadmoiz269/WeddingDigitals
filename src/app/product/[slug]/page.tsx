@@ -92,17 +92,17 @@ export async function generateMetadata({
   const card = await fetchCardBySlug(slug);
 
   if (!card) {
-    return { title: 'Card Not Found | Paighaam Wedding Cards' };
+    return { title: 'Card Not Found | Shahi Bulawa' };
   }
 
   // Extract plain text from description (if it's HTML) for SEO fallback
   const plainTextDescription = card.description.replace(/<[^>]+>/g, '').substring(0, 160);
 
   return {
-    title: card.meta_title || `${card.name} — PKR ${card.base_price}/card | Paighaam Wedding Cards`,
+    title: card.meta_title || `${card.name} — PKR ${card.base_price}/card | Shahi Bulawa`,
     description: card.meta_description || plainTextDescription,
     openGraph: {
-      title: card.meta_title || `${card.name} | Paighaam Wedding Cards`,
+      title: card.meta_title || `${card.name} | Shahi Bulawa`,
       description: card.meta_description || plainTextDescription,
       images: card.images.length > 0 ? [
         {

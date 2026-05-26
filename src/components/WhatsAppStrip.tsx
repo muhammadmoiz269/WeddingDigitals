@@ -66,7 +66,7 @@ export default function WhatsAppStrip() {
 
               {/* WhatsApp message button */}
               <a
-                href={getWhatsAppChatLink("Hi Paighaam! I saw your website and I'm interested in wedding cards. Can you help me?")}
+                href={getWhatsAppChatLink("Hi Shahi Bulawa! I saw your website and I'm interested in wedding cards. Can you help me?")}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="whatsapp-strip-chat-btn"

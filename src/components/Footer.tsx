@@ -6,6 +6,7 @@ import {
   WHATSAPP_DISPLAY,
   getWhatsAppChatLink,
 } from "@/lib/constants";
+import Image from "next/image";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -44,7 +45,7 @@ export default function Footer() {
             {/* WhatsApp chat button */}
             <a
               href={getWhatsAppChatLink(
-                "Hi Paighaam! I'd like to discuss wedding cards.",
+                "Hi Shahi Bulawa! I'd like to discuss wedding cards.",
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -67,13 +68,17 @@ export default function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-champagne to-champagne-dark flex items-center justify-center">
-                <span className="text-white font-heading text-base font-bold">
-                  P
-                </span>
+                <Image
+                  src="/images/logo.jpeg"
+                  alt="Shahi Bulawa"
+                  width={40}
+                  height={40}
+                  className="rounded-full shadow-md group-hover:shadow-lg transition-shadow duration-300"
+                />
               </div>
               <div>
                 <span className="font-heading text-lg font-bold text-white">
-                  Paighaam
+                  Shahi Bulawa
                 </span>
                 <span className="block text-[9px] uppercase tracking-[0.15em] text-champagne/80 -mt-0.5">
                   Wedding Cards
@@ -216,7 +221,8 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/30">
-            &copy; {currentYear} Paighaam Wedding Cards. All rights reserved.
+            &copy; {currentYear} Shahi Bulawa Wedding Cards. All rights
+            reserved.
           </p>
           <div className="flex items-center gap-6 text-xs text-white/30">
             <a href="#" className="hover:text-champagne transition-colors">

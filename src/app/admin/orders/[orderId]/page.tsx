@@ -49,7 +49,7 @@ function buildWhatsApp(order: any) {
     `📦 *Quantity:* ${order.quantity} cards\n` +
     `💰 *Order Total:* PKR ${order.total?.toLocaleString()}\n\n` +
     `Your cards will be designed, printed and dispatched to ${order.customer?.area}, Karachi within *7-10 working days.*\n\n` +
-    `We'll share a mockup for your approval before printing. Thank you for choosing Paighaam! 🤍`;
+    `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
   return `https://wa.me/${(order.customer?.whatsapp || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
 }
 

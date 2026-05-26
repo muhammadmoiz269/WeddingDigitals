@@ -1,13 +1,11 @@
-/**
- * Central place for site-wide constants.
- * Change the phone number here and it will propagate everywhere.
- */
+// Brand + URL re-exported from the single source of truth
+export { BRAND, SITE_URL } from '@/lib/site';
 
 // International format (without +) for WhatsApp API links
-export const WHATSAPP_NUMBER = '923443457239';
+export const WHATSAPP_NUMBER = '923078656300';
 
 // Display-friendly format shown on the website
-export const WHATSAPP_DISPLAY = '+92 344 345 7239';
+export const WHATSAPP_DISPLAY = '+92 307 8656300';
 
 // Pre-built WhatsApp base URL
 export const WHATSAPP_BASE_URL = `https://wa.me/${WHATSAPP_NUMBER}`;

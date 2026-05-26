@@ -1,5 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { BRAND, SITE_URL, GSC_VERIFICATION, BING_VERIFICATION } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
+import { organizationLd, localBusinessLd, websiteLd } from "@/lib/jsonld";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -15,25 +19,86 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Paighaam Wedding Cards | Premium Invitations Crafted in Karachi",
-  description:
-    "Karachi's finest wedding card studio. Premium Nikkah, Walima, Mehndi & Baraat invitations with transparent pricing. Starting from PKR 120/card. No hidden charges.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${BRAND.name} | Premium Wedding Cards in Karachi`,
+    template: `%s | ${BRAND.name}`,
+  },
+  description: BRAND.description,
+  applicationName: BRAND.name,
   keywords: [
     "wedding cards Karachi",
-    "Nikkah invitation cards",
-    "Walima cards Pakistan",
+    "shadi cards karachi",
+    "wedding invitations pakistan",
+    "nikkah card karachi",
+    "walima card karachi",
+    "mehndi card karachi",
+    "baraat card",
+    "luxury wedding cards pakistan",
     "premium shaadi cards",
     "wedding invitation printing Karachi",
-    "Mehndi invites",
-    "Baraat cards",
+    "shahi bulawa wedding cards",
+    "nikkah ka card",
+    "walima invitation",
+    "customized wedding card karachi",
+    "affordable shadi cards",
+    "bulk wedding cards karachi discount",
   ],
+  authors: [{ name: BRAND.legalName, url: SITE_URL }],
+  creator: BRAND.legalName,
+  publisher: BRAND.legalName,
+  formatDetection: { email: false, address: false, telephone: false },
+  alternates: {
+    canonical: "/",
+    languages: { "en-PK": "/", "x-default": "/" },
+  },
   openGraph: {
-    title: "Paighaam Wedding Cards | Premium Invitations Crafted in Karachi",
-    description:
-      "Premium wedding invitations with transparent pricing. Starting from PKR 120/card.",
     type: "website",
     locale: "en_PK",
+    url: SITE_URL,
+    siteName: BRAND.name,
+    title: `${BRAND.name} | Premium Wedding Cards in Karachi`,
+    description: BRAND.description,
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${BRAND.name} — Premium Wedding Cards in Karachi`,
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND.name} | Premium Wedding Cards in Karachi`,
+    description: BRAND.description,
+    images: ["/opengraph-image.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  icons: {
+    icon: [{ url: "/images/logo.jpeg", type: "image/jpeg" }],
+    apple: [{ url: "/images/logo.jpeg", type: "image/jpeg" }],
+    shortcut: "/favicon.ico",
+  },
+  verification: {
+    google: GSC_VERIFICATION || undefined,
+    other: BING_VERIFICATION ? { "msvalidate.01": BING_VERIFICATION } : undefined,
+  },
+  category: "shopping",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFFDF7",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -43,10 +108,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en-PK"
       className={`${playfair.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ivory text-charcoal">
+        <ServiceWorkerRegistrar />
+        <JsonLd
+          id="ld-org"
+          data={[organizationLd(), localBusinessLd(), websiteLd()]}
+        />
         {children}
       </body>
     </html>
