@@ -6,6 +6,7 @@ import connectToDatabase from '@/lib/mongodb';
 import Card from '@/lib/models/Card';
 import type { CardProduct } from '@/types';
 import { SITE_URL } from '@/lib/site';
+import { ITEMS_PER_PAGE } from '@/lib/constants';
 import JsonLd from '@/components/JsonLd';
 import { collectionPageLd, breadcrumbLd, faqPageLd } from '@/lib/jsonld';
 import Link from 'next/link';
@@ -46,13 +47,20 @@ export async function generateMetadata({
   };
 }
 
-async function fetchCategoryCards(category: string): Promise<CardProduct[]> {
+async function fetchCategoryCards(
+  category: string,
+): Promise<{ cards: CardProduct[]; total: number }> {
   try {
     await connectToDatabase();
-    const docs = await Card.find({ category })
-      .sort({ is_bestseller: -1, created_at: -1 })
-      .lean();
-    return docs.map((doc) => ({
+    const [docs, total] = await Promise.all([
+      Card.find({ category })
+        .sort({ is_bestseller: -1, created_at: -1 })
+        .limit(ITEMS_PER_PAGE)
+        .lean(),
+      Card.countDocuments({ category }),
+    ]);
+
+    const cards: CardProduct[] = docs.map((doc) => ({
       id: String(doc._id),
       slug: doc.slug,
       name: doc.name,
@@ -77,8 +85,10 @@ async function fetchCategoryCards(category: string): Promise<CardProduct[]> {
       meta_description: doc.meta_description,
       image_alt_text: doc.image_alt_text,
     })) as CardProduct[];
+
+    return { cards, total };
   } catch {
-    return [];
+    return { cards: [], total: 0 };
   }
 }
 
@@ -91,7 +101,7 @@ export default async function CategoryPage({
   const cat = CATEGORY_LANDING.find((c) => c.slug === slug);
   if (!cat) notFound();
 
-  const cards = await fetchCategoryCards(cat.category);
+  const { cards, total } = await fetchCategoryCards(cat.category);
   const siblings = CATEGORY_LANDING.filter((c) => c.slug !== slug);
 
   const pageUrl = `${SITE_URL}/category/${slug}`;
@@ -153,7 +163,12 @@ export default async function CategoryPage({
           </div>
         </section>
 
-        <CategoryProductGrid cards={cards} siblings={siblings} />
+        <CategoryProductGrid
+          cards={cards}
+          total={total}
+          category={cat.category}
+          siblings={siblings}
+        />
         <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
       </main>
       <Footer />

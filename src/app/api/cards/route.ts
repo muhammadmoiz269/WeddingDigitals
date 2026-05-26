@@ -34,13 +34,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
+    const event    = searchParams.get("event");
     const sort     = searchParams.get("sort") ?? "featured";
     const page     = searchParams.get("page");
     const limit    = searchParams.get("limit");
 
     await connectToDatabase();
 
-    const query    = category && category !== "All" ? { category } : {};
+    // Build the filter query — category and event are mutually exclusive in
+    // practice but we support both independently for flexibility.
+    let query: Record<string, unknown> = {};
+    if (category && category !== "All") query = { ...query, category };
+    if (event) query = { ...query, events: event };
+
     const mongoSort = buildMongoSort(sort);
 
     // If pagination params are provided, paginate

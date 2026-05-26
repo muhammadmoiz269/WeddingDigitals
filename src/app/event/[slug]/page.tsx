@@ -7,12 +7,13 @@ import connectToDatabase from '@/lib/mongodb';
 import Card from '@/lib/models/Card';
 import type { CardProduct } from '@/types';
 import { SITE_URL } from '@/lib/site';
+import { ITEMS_PER_PAGE } from '@/lib/constants';
 import JsonLd from '@/components/JsonLd';
 import { collectionPageLd, breadcrumbLd, faqPageLd } from '@/lib/jsonld';
-import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import InfiniteCardGrid from '@/components/InfiniteCardGrid';
 
 export const revalidate = 1800;
 
@@ -45,13 +46,20 @@ export async function generateMetadata({
   };
 }
 
-async function fetchEventCards(eventName: string): Promise<CardProduct[]> {
+async function fetchEventCards(
+  eventName: string,
+): Promise<{ cards: CardProduct[]; total: number }> {
   try {
     await connectToDatabase();
-    const docs = await Card.find({ events: eventName })
-      .sort({ is_bestseller: -1, created_at: -1 })
-      .lean();
-    return docs.map((doc) => ({
+    const [docs, total] = await Promise.all([
+      Card.find({ events: eventName })
+        .sort({ is_bestseller: -1, created_at: -1 })
+        .limit(ITEMS_PER_PAGE)
+        .lean(),
+      Card.countDocuments({ events: eventName }),
+    ]);
+
+    const cards: CardProduct[] = docs.map((doc) => ({
       id: String(doc._id),
       slug: doc.slug,
       name: doc.name,
@@ -76,8 +84,10 @@ async function fetchEventCards(eventName: string): Promise<CardProduct[]> {
       meta_description: doc.meta_description,
       image_alt_text: doc.image_alt_text,
     })) as CardProduct[];
+
+    return { cards, total };
   } catch {
-    return [];
+    return { cards: [], total: 0 };
   }
 }
 
@@ -90,7 +100,7 @@ export default async function EventPage({
   const event = EVENT_LANDING.find((e) => e.slug === slug);
   if (!event) notFound();
 
-  const cards = await fetchEventCards(event.event);
+  const { cards, total } = await fetchEventCards(event.event);
   const pageUrl = `${SITE_URL}/event/${slug}`;
 
   return (
@@ -152,27 +162,23 @@ export default async function EventPage({
 
         <section className="section-padding bg-ivory">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {cards.length > 0 ? (
-              <>
-                <p className="text-sm text-charcoal/50 mb-8">
-                  {cards.length} design{cards.length !== 1 ? 's' : ''} in this collection
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-                  {cards.map((card) => (
-                    <EventCardItem key={card.slug} card={card} />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-20">
-                <p className="text-charcoal/50 text-lg mb-4">No cards in this collection yet.</p>
-                <Link href="/" className="btn-secondary text-sm">Browse All Cards</Link>
-              </div>
-            )}
+            {/*
+              InfiniteCardGrid receives server-rendered cards as initialCards so
+              crawlers index them immediately. Additional batches are fetched
+              client-side via /api/cards?event=... on scroll.
+            */}
+            <InfiniteCardGrid
+              initialCards={cards}
+              initialTotal={total}
+              filterParam="event"
+              filterValue={event.event}
+            />
 
             {/* Cross-links to categories */}
             <div className="mt-16 pt-10 border-t border-cream-dark">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4">Browse by style</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-4">
+                Browse by style
+              </p>
               <div className="flex flex-wrap gap-3">
                 {CATEGORY_LANDING.map((c) => (
                   <Link
@@ -198,8 +204,12 @@ export default async function EventPage({
               <div className="space-y-6">
                 {event.faqs.map((faq) => (
                   <div key={faq.question} className="border-b border-cream-dark pb-6">
-                    <h3 className="font-semibold text-charcoal-dark mb-2">{faq.question}</h3>
-                    <p className="text-charcoal/60 text-sm leading-relaxed">{faq.answer}</p>
+                    <h3 className="font-semibold text-charcoal-dark mb-2">
+                      {faq.question}
+                    </h3>
+                    <p className="text-charcoal/60 text-sm leading-relaxed">
+                      {faq.answer}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -209,81 +219,5 @@ export default async function EventPage({
       </main>
       <Footer />
     </>
-  );
-}
-
-function EventCardItem({ card }: { card: CardProduct }) {
-  const discount =
-    card.original_price && card.original_price > card.base_price
-      ? Math.round(
-          ((card.original_price - card.base_price) / card.original_price) * 100,
-        )
-      : 0;
-  const imageSrc = card.images?.[0] ?? null;
-
-  return (
-    <Link href={`/product/${card.slug}`} className="group block">
-      <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-cream-dark/50 hover:border-champagne/30">
-        <div className="relative aspect-[3/4] overflow-hidden bg-cream">
-          {imageSrc ? (
-            <Image
-              src={imageSrc}
-              alt={card.image_alt_text || card.name}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              quality={90}
-            />
-          ) : (
-            <div className="w-full h-full bg-cream" />
-          )}
-
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal-dark/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            {card.is_new && (
-              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-charcoal-dark text-white rounded-full">
-                New
-              </span>
-            )}
-            {card.is_bestseller && (
-              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-champagne text-white rounded-full">
-                Bestseller
-              </span>
-            )}
-            {discount > 0 && (
-              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-500 text-white rounded-full">
-                -{discount}%
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="p-5">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-champagne">
-            {card.category}
-          </span>
-          <h2 className="font-heading text-lg font-semibold text-charcoal-dark mt-1 mb-3 leading-snug line-clamp-2 group-hover:text-champagne-dark transition-colors duration-300">
-            {card.name}
-          </h2>
-          <div className="flex items-end justify-between">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-bold text-charcoal-dark">
-                PKR {card.base_price.toLocaleString()}
-              </span>
-              {card.original_price && (
-                <span className="text-sm text-charcoal/40 line-through">
-                  PKR {card.original_price.toLocaleString()}
-                </span>
-              )}
-              <span className="text-[10px] text-charcoal/50">/card</span>
-            </div>
-            <span className="text-[10px] text-charcoal/40 uppercase tracking-wider">
-              Min. {card.min_order}
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 }

@@ -19,6 +19,10 @@ export type Category =
   | "Minimalist"
   | "Floral"
   | "Textured"
+  | "Nikkah"
+  | "Walima"
+  | "Mehndi"
+  | "Baraat";
 
 export interface Feature {
   id: string;
