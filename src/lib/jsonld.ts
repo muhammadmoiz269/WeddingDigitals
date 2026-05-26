@@ -10,7 +10,7 @@ export function organizationLd(): Record<string, unknown> {
     url: SITE_URL,
     logo: {
       '@type': 'ImageObject',
-      url: `${SITE_URL}/images/logo.jpeg`,
+      url: `${SITE_URL}/images/logo.ico.png`,
       width: 512,
       height: 512,
     },
@@ -32,7 +32,7 @@ export function localBusinessLd(): Record<string, unknown> {
     '@type': 'LocalBusiness',
     '@id': `${SITE_URL}/#localbusiness`,
     name: BRAND.name,
-    image: `${SITE_URL}/images/logo.jpeg`,
+    image: `${SITE_URL}/images/logo.ico.png`,
     url: SITE_URL,
     telephone: NAP.phone,
     priceRange: 'PKR 120–500',

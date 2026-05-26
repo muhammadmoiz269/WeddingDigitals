@@ -84,8 +84,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [{ url: "/images/logo.jpeg", type: "image/jpeg" }],
-    apple: [{ url: "/images/logo.jpeg", type: "image/jpeg" }],
+    icon: [{ url: "/images/logo.ico.png", type: "image/png" }],
+    apple: [{ url: "/images/logo.ico.png", type: "image/png" }],
     shortcut: "/favicon.ico",
   },
   verification: {

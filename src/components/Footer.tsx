@@ -69,11 +69,11 @@ export default function Footer() {
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-champagne to-champagne-dark flex items-center justify-center">
                 <Image
-                  src="/images/logo.jpeg"
+                  src="/images/logo.png"
                   alt="Shahi Bulawa"
-                  width={40}
-                  height={40}
-                  className="rounded-full shadow-md group-hover:shadow-lg transition-shadow duration-300"
+                  width={50}
+                  height={50}
+                  className="rounded"
                 />
               </div>
               <div>

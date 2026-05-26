@@ -57,11 +57,11 @@ export default function Navbar() {
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 group">
               <Image
-                src="/images/logo.jpeg"
-                alt="Shahi Bulawa"
-                width={50}
-                height={50}
-                className="rounded-full shadow-md group-hover:shadow-lg transition-shadow duration-300"
+                src="/images/logo.ico.png"
+                alt="Shahi Bulawa logo"
+                width={60}
+                height={60}
+                className='pt-2'
               />
               <div className="flex flex-col">
                 <span className="font-heading text-xl font-bold text-charcoal-dark tracking-tight">
@@ -115,11 +115,11 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 group">
             <Image
-              src="/images/logo.jpeg"
-              alt="Shahi Bulawa"
-              width={36}
-              height={36}
-              className="rounded-full shadow-sm"
+              src="/images/logo.ico.png"
+              alt="Shahi Bulawa logo"
+              width={40}
+              height={40}
+              className="pt-2"
             />
             <div className="flex flex-col">
               <span className="font-heading text-base font-bold text-charcoal-dark tracking-tight leading-tight">
