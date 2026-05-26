@@ -14,11 +14,11 @@ export interface Product {
 export type Category =
   | "All"
   | "Luxury"
+  | "Classic"
+  | "Modern"
   | "Minimalist"
-  | "Nikkah"
-  | "Walima"
-  | "Mehndi"
-  | "Baraat";
+  | "Floral"
+  | "Textured"
 
 export interface Feature {
   id: string;
@@ -58,6 +58,7 @@ export interface CardProduct {
   meta_title?: string;
   meta_description?: string;
   image_alt_text?: string;
+  events?: ('Nikkah' | 'Valima' | 'Mehndi' | 'Baraat' | 'Engagement')[];
 }
 
 export type QuantityTier = 100 | 250 | 500;

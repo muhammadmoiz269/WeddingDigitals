@@ -93,6 +93,29 @@ export function breadcrumbLd(
   };
 }
 
+export function collectionPageLd(opts: {
+  name: string;
+  description: string;
+  url: string;
+  itemUrls: string[];
+}): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: opts.name,
+    description: opts.description,
+    url: opts.url,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: opts.itemUrls.map((url, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url,
+      })),
+    },
+  };
+}
+
 export function faqPageLd(
   faqs: { question: string; answer: string }[]
 ): Record<string, unknown> {

@@ -18,6 +18,7 @@ export interface ICard extends Document {
     price: number;
     description: string;
   }[];
+  events?: ('Nikkah' | 'Valima' | 'Mehndi' | 'Baraat' | 'Engagement')[];
   meta_title?: string;
   meta_description?: string;
   image_alt_text?: string;
@@ -97,6 +98,12 @@ const CardSchema = new Schema<ICard>(
         description: { type: String, default: "" },
       },
     ],
+    events: {
+      type: [String],
+      enum: ['Nikkah', 'Valima', 'Mehndi', 'Baraat', 'Engagement'],
+      default: [],
+      index: true,
+    },
     meta_title: {
       type: String,
       trim: true,

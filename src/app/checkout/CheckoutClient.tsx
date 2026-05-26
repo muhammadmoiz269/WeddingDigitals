@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { CardProduct, AddOn } from '@/types';
 import { calculatePrice, formatPKR } from '@/lib/pricing';
+import { beginCheckout } from '@/lib/analytics';
 import CheckoutStep1, {
-  MAIN_EVENTS, ADDON_EVENTS, ENGLISH_TEMPLATE,
+  ADDON_EVENTS, ENGLISH_TEMPLATE,
   type MainEvent, type AddOnEventData,
 } from './CheckoutStep1';
 
@@ -206,6 +207,8 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           amount_due: amountDue,
         },
       };
+
+      beginCheckout(card.slug, form.quantity, grandTotal);
 
       const res = await fetch('/api/orders', {
         method: 'POST',

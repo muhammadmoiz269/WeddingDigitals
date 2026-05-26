@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import JsonLd from "@/components/JsonLd";
 
 // ─── Step data ───────────────────────────────────────────────────────────────
 
@@ -119,9 +120,37 @@ function AccordionSection({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
+const howToLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: 'How to Order Wedding Cards from Shahi Bulawa',
+  description: 'Order custom wedding cards in Karachi in 3 simple steps via WhatsApp.',
+  step: [
+    {
+      '@type': 'HowToStep',
+      position: 1,
+      name: 'Browse & Choose Your Design',
+      text: 'Explore our collection of floral, luxury, minimalist and classic wedding card designs. Filter by category or event type to find the perfect match for your occasion.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 2,
+      name: 'Customise via WhatsApp',
+      text: 'Message us on WhatsApp with your preferred card, event details, guest names and any customisation requests. We will send a free digital proof within 24 hours.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 3,
+      name: 'Approve Proof & Receive Delivery',
+      text: 'Review and approve your digital proof, then confirm your order. Cards are printed and dispatched within 3–7 business days. We deliver across Karachi and nationwide.',
+    },
+  ],
+};
+
 export default function HowToOrder() {
   return (
     <>
+      <JsonLd id="ld-howto-order" data={howToLd} />
       <div className="hto-card" style={{ marginTop: "30px" }}>
         {/* How to Place Order */}
         <AccordionSection

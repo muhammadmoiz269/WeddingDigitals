@@ -27,7 +27,7 @@ const CardSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ["Nikkah", "Barat", "Valima", "Mehndi", "Luxury", "Minimalist"],
+      enum: ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"],
     },
     description: { type: String, required: true },
     images: { type: [String], required: true },
@@ -87,7 +87,7 @@ const seedCards = [
     slug: "minimalist-nikkah-invite",
     name: "Minimalist Nikkah Invite",
     base_price: 120,
-    category: "Nikkah",
+    category: "Minimalist",
     description:
       "Clean, modern design with elegant Urdu typography on premium 300gsm cotton card stock. Perfect for intimate Nikkah ceremonies. Simplicity at its finest.",
     images: ["/images/card-2.jpg", "/images/card-2.jpg"],
@@ -105,7 +105,7 @@ const seedCards = [
     name: "Royal Baroque Gold Foil Card",
     base_price: 450,
     original_price: 600,
-    category: "Barat",
+    category: "Luxury",
     description:
       "Luxurious baroque-inspired design with real gold foil stamping on Italian imported textured paper. A statement of grandeur for your Barat procession.",
     images: ["/images/card-3.jpg", "/images/card-3.jpg"],
@@ -123,7 +123,7 @@ const seedCards = [
     slug: "pastel-garden-watercolor",
     name: "Pastel Garden Watercolor Invite",
     base_price: 180,
-    category: "Valima",
+    category: "Floral",
     description:
       "Delicate watercolor florals in soft pastels printed on handmade recycled paper. Includes RSVP card and directions insert. Perfect for elegant Valima receptions.",
     images: ["/images/card-4.jpg", "/images/card-4.jpg"],
@@ -141,7 +141,7 @@ const seedCards = [
     name: "Classic Urdu Calligraphy Card",
     base_price: 200,
     original_price: 280,
-    category: "Nikkah",
+    category: "Classic",
     description:
       "Traditional Nastaliq calligraphy by master calligraphers, digitally printed on satin-finish card stock with embossed border. A nod to our rich heritage.",
     images: ["/images/card-5.jpg", "/images/card-5.jpg"],
@@ -158,7 +158,7 @@ const seedCards = [
     slug: "modern-geometric-walima",
     name: "Modern Geometric Walima Card",
     base_price: 150,
-    category: "Valima",
+    category: "Modern",
     description:
       "Contemporary geometric patterns with metallic champagne accents. Flat-printed on thick matte stock with matching envelope liner.",
     images: ["/images/card-6.jpg", "/images/card-6.jpg"],
@@ -174,7 +174,7 @@ const seedCards = [
     slug: "mehndi-night-festive",
     name: "Mehndi Night Festive Card",
     base_price: 130,
-    category: "Mehndi",
+    category: "Textured",
     description:
       "Vibrant mehndi-inspired patterns in green and gold. Playful yet elegant design for your Mehndi celebration invites.",
     images: ["/images/card-7.jpg", "/images/card-7.jpg"],

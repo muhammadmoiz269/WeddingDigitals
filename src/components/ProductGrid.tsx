@@ -13,6 +13,7 @@ import {
   type SortValue,
 } from "@/lib/constants";
 import Pagination from "@/components/Pagination";
+import { whatsappClick } from "@/lib/analytics";
 
 // Cache key: "category::sort::page"
 function cacheKey(category: string, sort: string, page: number) {
@@ -355,6 +356,7 @@ export default function ProductGrid({
             target="_blank"
             rel="noopener noreferrer"
             className="btn-secondary"
+            onClick={() => whatsappClick('collection_cta')}
           >
             Request Custom Design
           </a>

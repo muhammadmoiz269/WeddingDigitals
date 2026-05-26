@@ -63,9 +63,6 @@ export default function AdminClient() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-
   const fetchOrders = async () => {
     setOrdersLoading(true);
     try {
@@ -82,12 +79,12 @@ export default function AdminClient() {
   useEffect(() => {
     // Fetch orders eagerly on mount so the sidebar badge is always up-to-date
     fetchOrders();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Re-fetch if the user manually opens the tab and the list might be stale
     if (activeTab === 'orders') fetchOrders();
-  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
     const msg = `Assalamu Alaikum ${order.customer.name}! 🌙\n\n` +
@@ -557,7 +554,7 @@ export default function AdminClient() {
             </div>
             <h3 className="admin-dialog__title">Delete Card?</h3>
             <p className="admin-dialog__body">
-              You are about to permanently delete <strong>"{deleteTarget.name}"</strong>. This cannot be undone.
+              You are about to permanently delete <strong>&ldquo;{deleteTarget.name}&rdquo;</strong>. This cannot be undone.
             </p>
             <div className="admin-dialog__actions">
               <button className="admin-btn admin-btn--ghost" onClick={() => setDeleteTarget(null)} disabled={deleting}>

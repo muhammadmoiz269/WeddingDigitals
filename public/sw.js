@@ -1,8 +1,6 @@
 // Minimal service worker — satisfies Chrome PWA installability requirement.
 // Network-first with no precaching to avoid install failures in dev/SSR.
 
-const CACHE = 'shahi-bulawa-v1';
-
 self.addEventListener('install', () => {
   self.skipWaiting();
 });

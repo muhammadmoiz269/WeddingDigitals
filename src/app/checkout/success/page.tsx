@@ -2,11 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { formatPKR } from '@/lib/pricing';
-import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { generateLead } from '@/lib/analytics';
 
 interface OrderData {
   order_id: string;
@@ -36,17 +37,21 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId') || '';
   const [order, setOrder] = useState<OrderData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(!!orderId);
+  const [error, setError] = useState(orderId ? '' : 'No order ID provided.');
 
   useEffect(() => {
-    if (!orderId) { setLoading(false); setError('No order ID provided.'); return; }
+    if (!orderId) return;
 
     fetch(`/api/orders/${orderId}`)
       .then(r => r.json())
       .then(json => {
-        if (json.success) setOrder(json.data);
-        else setError(json.error || 'Order not found');
+        if (json.success) {
+          setOrder(json.data);
+          generateLead(json.data.order_id, json.data.total);
+        } else {
+          setError(json.error || 'Order not found');
+        }
       })
       .catch(() => setError('Failed to load order details'))
       .finally(() => setLoading(false));
@@ -69,7 +74,7 @@ function SuccessContent() {
         <div className="success-icon success-icon--error">✕</div>
         <h1 className="success-title">Something went wrong</h1>
         <p className="success-desc">{error || 'Order not found.'}</p>
-        <a href="/" className="success-btn success-btn--secondary">Go Home</a>
+        <Link href="/" className="success-btn success-btn--secondary">Go Home</Link>
       </div>
     );
   }
@@ -216,7 +221,7 @@ function SuccessContent() {
         </div>
       )}
 
-      <a href="/" className="success-btn success-btn--secondary">← Back to Home</a>
+      <Link href="/" className="success-btn success-btn--secondary">← Back to Home</Link>
     </motion.div>
   );
 }

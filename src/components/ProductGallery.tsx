@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cld } from '@/lib/cloudinary';
 
 interface ProductGalleryProps {
   images: string[];
@@ -48,13 +49,13 @@ export default function ProductGallery({ images, videoUrl, productName, imageAlt
               className="w-full"
             >
               <Image
-                src={images[activeIndex] || images[0]}
+                src={cld(images[activeIndex] || images[0])}
                 alt={imageAltText || `${productName} - View ${activeIndex + 1}`}
                 width={1200}
                 height={1200}
                 className="w-full h-auto object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                quality={100}
+                quality={90}
                 priority
               />
             </motion.div>
@@ -100,7 +101,7 @@ export default function ProductGallery({ images, videoUrl, productName, imageAlt
             }`}
           >
             <Image
-              src={img}
+              src={cld(img)}
               alt={`${productName} thumbnail ${idx + 1}`}
               fill
               className="object-cover"

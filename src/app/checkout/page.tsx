@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import connectToDatabase from "@/lib/mongodb";
 import Card from "@/lib/models/Card";
 import type { CardProduct } from "@/types";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CheckoutClient from "./CheckoutClient";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   title: "Checkout",
   description: "Customize and order your wedding cards.",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/checkout" },
 };
 
 export const dynamic = "force-dynamic";
@@ -72,16 +74,16 @@ export default async function CheckoutPage({
       <main className="flex-1 pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
           <nav className="flex items-center gap-2 text-xs text-charcoal/50">
-            <a href="/" className="hover:text-champagne transition-colors">
+            <Link href="/" className="hover:text-champagne transition-colors">
               Home
-            </a>
+            </Link>
             <span>/</span>
-            <a
+            <Link
               href={`/product/${slug}`}
               className="hover:text-champagne transition-colors"
             >
               {card.name}
-            </a>
+            </Link>
             <span>/</span>
             <span className="text-charcoal font-medium">Checkout</span>
           </nav>

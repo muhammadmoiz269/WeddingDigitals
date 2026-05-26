@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
-import { BRAND, SITE_URL, GSC_VERIFICATION, BING_VERIFICATION } from "@/lib/site";
+import { BRAND, SITE_URL, GSC_VERIFICATION, BING_VERIFICATION, GA_MEASUREMENT_ID } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
 import { organizationLd, localBusinessLd, websiteLd } from "@/lib/jsonld";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     "shadi cards karachi",
     "wedding invitations pakistan",
     "nikkah card karachi",
-    "walima card karachi",
+    "valima card karachi",
     "mehndi card karachi",
     "baraat card",
     "luxury wedding cards pakistan",
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
     "wedding invitation printing Karachi",
     "shahi bulawa wedding cards",
     "nikkah ka card",
-    "walima invitation",
+    "valima invitation",
     "customized wedding card karachi",
     "affordable shadi cards",
     "bulk wedding cards karachi discount",
@@ -111,13 +113,19 @@ export default function RootLayout({
       lang="en-PK"
       className={`${playfair.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ivory text-charcoal">
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+      </head>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-ivory text-charcoal">
         <ServiceWorkerRegistrar />
         <JsonLd
           id="ld-org"
           data={[organizationLd(), localBusinessLd(), websiteLd()]}
         />
         {children}
+        <SpeedInsights />
+        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
       </body>
     </html>
   );

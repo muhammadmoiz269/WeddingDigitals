@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import type { AddOn, QuantityTier } from "@/types";
+import type { AddOn } from "@/types";
 import { calculatePrice, formatPKR, getWhatsAppLink } from "@/lib/pricing";
 
 interface PriceCalculatorProps {

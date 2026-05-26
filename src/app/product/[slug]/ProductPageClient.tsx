@@ -10,15 +10,26 @@ import Footer from "@/components/Footer";
 import ProductGallery from "@/components/ProductGallery";
 import PriceCalculator from "@/components/PriceCalculator";
 import HowToOrder from "@/components/HowToOrder";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { categoryToSlug } from "@/lib/categories";
+import { eventToSlug } from "@/lib/events";
+
+interface SeoProps {
+  h1: string;
+  description: string;
+  imageAlt?: string;
+}
 
 interface ProductPageClientProps {
   card: CardProduct;
   relatedCards: CardProduct[];
+  seo?: SeoProps | null;
 }
 
 export default function ProductPageClient({
   card,
   relatedCards,
+  seo,
 }: ProductPageClientProps) {
   const searchParams = useSearchParams();
   const fromPage = parseInt(searchParams.get("from") ?? "1", 10);
@@ -41,19 +52,17 @@ export default function ProductPageClient({
           </Link>
 
           {/* Desktop: breadcrumb */}
-          <nav className="hidden md:flex items-center gap-2 text-xs text-charcoal/50">
-            <Link href="/" className="hover:text-champagne transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href={backUrl} className="hover:text-champagne transition-colors">
-              Collection
-            </Link>
-            <span>/</span>
-            <span className="text-charcoal font-medium truncate">
-              {card.name}
-            </span>
-          </nav>
+          <div className="hidden md:block">
+            <Breadcrumbs
+              items={[
+                { label: 'Home', href: '/' },
+                ...(categoryToSlug(card.category)
+                  ? [{ label: card.category, href: `/category/${categoryToSlug(card.category)}` }]
+                  : [{ label: 'Collection', href: '/' }]),
+                { label: card.name },
+              ]}
+            />
+          </div>
         </div>
 
         {/* Main Product Section */}
@@ -70,7 +79,7 @@ export default function ProductPageClient({
                 images={card.images}
                 videoUrl={card.short_video_url}
                 productName={card.name}
-                imageAltText={card.image_alt_text}
+                imageAltText={seo?.imageAlt ?? card.image_alt_text ?? card.name}
               />
             </motion.div>
 
@@ -100,7 +109,7 @@ export default function ProductPageClient({
 
               {/* Title */}
               <h1 className="font-heading text-3xl sm:text-4xl font-bold text-charcoal-dark leading-tight">
-                {card.name}
+                {seo?.h1 ?? card.name}
               </h1>
 
               {/* Description — render rich HTML */}
@@ -108,6 +117,16 @@ export default function ProductPageClient({
                 className="text-charcoal/60 leading-relaxed rte-render"
                 dangerouslySetInnerHTML={{ __html: card.description }}
               />
+
+              {/* SEO long-form description section */}
+              {seo?.description && (
+                <section aria-labelledby="about-this-card" className="mt-6 prose prose-sm max-w-none text-charcoal/70">
+                  <h2 id="about-this-card" className="font-heading text-lg font-semibold text-charcoal-dark mb-3">About This Card</h2>
+                  {seo.description.split(/\n{2,}|---/).filter(Boolean).map((p, i) => (
+                    <p key={i} className="mb-3 leading-relaxed">{p.trim()}</p>
+                  ))}
+                </section>
+              )}
 
               {/* Specs */}
               <div className="flex flex-wrap gap-4 text-xs text-charcoal/50">
@@ -232,6 +251,41 @@ export default function ProductPageClient({
                   </motion.div>
                 ))}
               </div>
+
+              {/* View all in category CTA */}
+              {categoryToSlug(card.category) && (
+                <div className="text-center mt-10">
+                  <Link
+                    href={`/category/${categoryToSlug(card.category)}`}
+                    className="btn-secondary text-sm"
+                  >
+                    View all {card.category} cards
+                  </Link>
+                </div>
+              )}
+
+              {/* Also perfect for — event cross-links */}
+              {card.events && card.events.length > 0 && (
+                <div className="mt-10 pt-8 border-t border-cream-dark">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne mb-3 text-center">
+                    Also perfect for
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {card.events.map((ev) => {
+                      const slug = eventToSlug(ev);
+                      return slug ? (
+                        <Link
+                          key={ev}
+                          href={`/event/${slug}`}
+                          className="px-5 py-2 text-sm font-medium bg-cream text-charcoal/70 hover:bg-champagne hover:text-white rounded-full border border-cream-dark transition-all duration-300"
+                        >
+                          {ev} Cards
+                        </Link>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}

@@ -62,7 +62,8 @@ export function buildWhatsAppMessage(
   cardName: string,
   quantity: number,
   total: number,
-  selectedAddOns: AddOn[] = []
+  selectedAddOns: AddOn[] = [],
+  source?: string
 ): string {
   let message = `Hi Shahi Bulawa! I'd like to place an order:\n\n`;
   message += `📋 *Card:* ${cardName}\n`;
@@ -75,19 +76,21 @@ export function buildWhatsAppMessage(
   message += `💰 *Total:* ${formatPKR(total)}\n\n`;
   message += `Please confirm availability and delivery timeline. Thank you!`;
 
+  if (source) {
+    message += `\n\n— via shahibulawa.com (${source})`;
+  }
+
   return message;
 }
 
-/**
- * Generate a WhatsApp deeplink URL
- */
 export function getWhatsAppLink(
   cardName: string,
   quantity: number,
   total: number,
   selectedAddOns: AddOn[] = [],
-  phoneNumber: string = WHATSAPP_NUMBER
+  phoneNumber: string = WHATSAPP_NUMBER,
+  source?: string
 ): string {
-  const message = buildWhatsAppMessage(cardName, quantity, total, selectedAddOns);
+  const message = buildWhatsAppMessage(cardName, quantity, total, selectedAddOns, source);
   return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 }

@@ -4,7 +4,7 @@ export const BRAND = {
   name: 'Shahi Bulawa',
   legalName: 'Shahi Bulawa Wedding Cards',
   description:
-    'Premium wedding cards crafted in Karachi. Nikkah, Walima, Mehndi & Baraat invitations with transparent pricing from PKR 120/card.',
+    'Premium wedding cards crafted in Karachi. Nikkah, Valima, Mehndi & Baraat invitations with transparent pricing from PKR 120/card.',
   foundingYear: 2026,
 } as const;
 
@@ -23,6 +23,7 @@ export const NAP = {
 
 export const SOCIAL = {
   instagram: 'https://www.instagram.com/shahi_bulawa',
+  facebook: 'https://www.facebook.com/share/1DA3WXbR65/',
 } as const;
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '';

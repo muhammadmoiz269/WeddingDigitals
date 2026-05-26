@@ -11,6 +11,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.6",
+    "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^12.38.0",
     "mongoose": "^9.4.1",
