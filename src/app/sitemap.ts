@@ -8,9 +8,15 @@ import { EVENT_LANDING } from '@/lib/events';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  await connectToDatabase();
-  const cards = await Card.find({}, 'slug updated_at images').lean();
   const now = new Date();
+  let cards: Array<{ slug: string; updated_at?: Date }> = [];
+
+  try {
+    await connectToDatabase();
+    cards = await Card.find({}, 'slug updated_at').lean();
+  } catch {
+    // DB unreachable — return static URLs only
+  }
 
   return [
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: 'weekly', priority: 1 },
