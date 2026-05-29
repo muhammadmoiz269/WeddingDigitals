@@ -10,8 +10,17 @@ import { FAQ_HOME } from "@/lib/faqs";
 import { faqPageLd } from "@/lib/jsonld";
 import connectToDatabase from "@/lib/mongodb";
 import Card from "@/lib/models/Card";
+import type { Metadata } from "next";
 import type { CardProduct } from "@/types";
+import { SITE_URL } from "@/lib/site";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: SITE_URL,
+    languages: { "en-PK": SITE_URL, "x-default": SITE_URL },
+  },
+};
 
 // ISR: revalidate every 30 minutes so new/updated cards appear without a
 // full redeploy while the initial HTML (with the first batch) stays cached.

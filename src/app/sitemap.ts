@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   return [
-    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: SITE_URL, lastModified: now, changeFrequency: 'weekly', priority: 1 },
 
     ...CATEGORY_LANDING.map((c) => ({
       url: `${SITE_URL}/category/${c.slug}`,
