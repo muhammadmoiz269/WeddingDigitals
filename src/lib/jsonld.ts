@@ -15,7 +15,7 @@ export function organizationLd(): Record<string, unknown> {
       height: 512,
     },
     foundingDate: String(BRAND.foundingYear),
-    sameAs: [SOCIAL.instagram],
+    sameAs: [SOCIAL.instagram, SOCIAL.facebook],
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: NAP.phone,
@@ -58,7 +58,7 @@ export function localBusinessLd(): Record<string, unknown> {
         closes: NAP.hoursClose,
       },
     ],
-    sameAs: [SOCIAL.instagram],
+    sameAs: [SOCIAL.instagram, SOCIAL.facebook],
   };
 }
 
