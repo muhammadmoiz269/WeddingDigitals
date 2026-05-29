@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,14 +27,28 @@ interface ProductPageClientProps {
   seo?: SeoProps | null;
 }
 
+function BackToCollectionLink() {
+  const searchParams = useSearchParams();
+  const fromPage = parseInt(searchParams.get("from") ?? "1", 10);
+  const backUrl = fromPage > 1 ? `/?page=${fromPage}` : `/`;
+  return (
+    <Link
+      href={backUrl}
+      className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-charcoal/70 bg-white border border-cream-dark rounded-full shadow-sm hover:border-champagne/40 hover:text-champagne transition-all duration-200 md:hidden"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Collection
+    </Link>
+  );
+}
+
 export default function ProductPageClient({
   card,
   relatedCards,
   seo,
 }: ProductPageClientProps) {
-  const searchParams = useSearchParams();
-  const fromPage = parseInt(searchParams.get("from") ?? "1", 10);
-  const backUrl = fromPage > 1 ? `/?page=${fromPage}` : `/`;
   return (
     <>
       <Navbar />
@@ -41,15 +56,21 @@ export default function ProductPageClient({
         {/* Back nav — mobile button + desktop breadcrumb */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
           {/* Mobile: pill back button */}
-          <Link
-            href={backUrl}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-charcoal/70 bg-white border border-cream-dark rounded-full shadow-sm hover:border-champagne/40 hover:text-champagne transition-all duration-200 md:hidden"
+          <Suspense
+            fallback={
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-charcoal/70 bg-white border border-cream-dark rounded-full shadow-sm hover:border-champagne/40 hover:text-champagne transition-all duration-200 md:hidden"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Collection
+              </Link>
+            }
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Collection
-          </Link>
+            <BackToCollectionLink />
+          </Suspense>
 
           {/* Desktop: breadcrumb */}
           <div className="hidden md:block">
