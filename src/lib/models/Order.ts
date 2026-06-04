@@ -11,8 +11,7 @@ export interface IOrder extends Document {
 
   customization: {
     main_event: string;
-    content: string;
-    addon_events: { event_type: string; quantity: number; content: string }[];
+    addon_events: { event_type: string; quantity: number; price_per_card?: number }[];
   };
 
   customer: {
@@ -54,12 +53,11 @@ const OrderSchema = new Schema<IOrder>(
 
     customization: {
       main_event: { type: String, required: true },
-      content: { type: String, required: true },
       addon_events: [
         {
           event_type: { type: String, required: true },
           quantity: { type: Number, required: true },
-          content: { type: String, default: '' },
+          price_per_card: { type: Number, default: 0 },
         },
       ],
     },

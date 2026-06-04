@@ -8,7 +8,7 @@ import RichTextEditor from '@/components/RichTextEditor';
 interface AddOn { name: string; price: number; description: string; }
 interface CardForm {
   slug: string; name: string; card_code: string;
-  base_price: number; original_price?: number; category: string;
+  base_price: number; original_price?: number; inner_card_price?: number; category: string;
   description: string; images: string[]; short_video_url: string;
   is_new: boolean; is_bestseller: boolean; min_order: number; add_ons: AddOn[];
   meta_title?: string; meta_description?: string; image_alt_text?: string;
@@ -17,7 +17,7 @@ interface CardForm {
 const CATEGORIES = ['Luxury','Classic','Modern','Minimalist','Floral','Textured'] as const;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
-const EMPTY: CardForm = { slug:'',name:'',card_code:'',base_price:0,original_price:undefined,category:'Luxury',description:'',images:[''],short_video_url:'',is_new:false,is_bestseller:false,min_order:50,add_ons:[],meta_title:'',meta_description:'',image_alt_text:'' };
+const EMPTY: CardForm = { slug:'',name:'',card_code:'',base_price:0,original_price:undefined,inner_card_price:undefined,category:'Luxury',description:'',images:[''],short_video_url:'',is_new:false,is_bestseller:false,min_order:50,add_ons:[],meta_title:'',meta_description:'',image_alt_text:'' };
 
 function toSlug(s: string) { return s.toLowerCase().trim().replace(/[^\w\s-]/g,'').replace(/[\s_-]+/g,'-').replace(/^-+|-+$/g,''); }
 
@@ -119,6 +119,12 @@ export default function NewCardPage() {
                 <label className="ec-label">Original Price <span className="ec-opt">(strikethrough)</span></label>
                 <input className="ec-input" type="number" min={0} value={form.original_price||''} onChange={e=>setForm(f=>({...f,original_price:e.target.value?Number(e.target.value):undefined}))} placeholder="e.g. 500" />
               </div>
+            </div>
+
+            <div className="ec-field">
+              <label className="ec-label">Inner Card Price (PKR/card) <span className="ec-opt">(for extra ceremony inner cards at checkout)</span></label>
+              <input className="ec-input" type="number" min={0} value={form.inner_card_price||''} onChange={e=>setForm(f=>({...f,inner_card_price:e.target.value?Number(e.target.value):undefined}))} placeholder="e.g. 40" />
+              <p className="ec-hint">📍 Net price per inner card when customer orders extra event cards (Valima, Nikkah, etc.) during checkout. Not related to product add-ons.</p>
             </div>
 
             <div className="ec-field">

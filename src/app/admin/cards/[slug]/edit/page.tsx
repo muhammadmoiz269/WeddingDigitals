@@ -17,6 +17,8 @@ interface CardDoc {
   card_code?: string;
   base_price: number;
   original_price?: number;
+  /** Per-card price for small inner cards added for extra ceremonies */
+  inner_card_price?: number;
   category: string;
   description: string;
   images: string[];
@@ -46,6 +48,7 @@ const EMPTY: Omit<CardDoc, "_id"> = {
   card_code: "",
   base_price: 0,
   original_price: undefined,
+  inner_card_price: undefined,
   category: "Luxury",
   description: "",
   images: [""],
@@ -117,6 +120,7 @@ export default function EditCardPage() {
           card_code: c.card_code || "",
           base_price: c.base_price,
           original_price: c.original_price,
+          inner_card_price: c.inner_card_price,
           category: c.category,
           description: c.description,
           images: c.images.length > 0 ? c.images : [""],
@@ -198,7 +202,9 @@ export default function EditCardPage() {
       const payload = {
         ...form,
         images: form.images.filter((u) => u.trim() !== ""),
-        original_price: form.original_price || undefined,
+        // Send null explicitly so JSON.stringify keeps the key and the API can $unset it
+        original_price: form.original_price || null,
+        inner_card_price: form.inner_card_price || null,
         short_video_url: form.short_video_url?.trim() || undefined,
         card_code: form.card_code?.trim() || undefined,
         meta_title: form.meta_title?.trim() || "",
@@ -453,6 +459,30 @@ export default function EditCardPage() {
                   placeholder="e.g. 500"
                 />
               </div>
+            </div>
+
+            {/* Inner Card Price */}
+            <div className="ec-field">
+              <label className="ec-label">
+                Inner Card Price (PKR/card){" "}
+                <span className="ec-opt">(for extra ceremony inner cards at checkout)</span>
+              </label>
+              <input
+                className="ec-input"
+                type="number"
+                min={0}
+                value={form.inner_card_price || ""}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    inner_card_price: e.target.value ? Number(e.target.value) : undefined,
+                  }))
+                }
+                placeholder="e.g. 40"
+              />
+              <p className="ec-hint">
+                📍 Net price per inner card when customer orders extra event cards (Valima, Nikkah, etc.) during checkout. Not related to product add-ons.
+              </p>
             </div>
 
             {/* Description */}

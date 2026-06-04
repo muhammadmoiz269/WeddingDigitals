@@ -65,14 +65,14 @@ export default function PriceCalculator({
           <span className="text-2xl sm:text-3xl font-bold text-charcoal-dark font-heading">
             {formatPKR(basePrice)}
           </span>
-          {originalPrice && (
+          {originalPrice && originalPrice > basePrice && (
             <span className="text-base sm:text-lg text-charcoal/40 line-through">
               {formatPKR(originalPrice)}
             </span>
           )}
           <span className="text-sm text-charcoal/50">/card</span>
         </div>
-        {originalPrice && (
+        {originalPrice && originalPrice > basePrice && (
           <span className="inline-block mt-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-600 rounded-full">
             Save{" "}
             {Math.round(((originalPrice - basePrice) / originalPrice) * 100)}%
@@ -96,11 +96,10 @@ export default function PriceCalculator({
                 setQuantity(tier);
                 setRawInput("");
               }}
-              className={`relative px-2 py-2.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${
-                quantity === tier && rawInput === ""
+              className={`relative px-2 py-2.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${quantity === tier && rawInput === ""
                   ? "bg-champagne text-white border-champagne shadow-md shadow-champagne/20"
                   : "bg-white text-charcoal border-cream-dark hover:border-champagne/40"
-              }`}
+                }`}
             >
               <span className="block text-base font-bold">{tier}</span>
               <span className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-70">
@@ -111,17 +110,16 @@ export default function PriceCalculator({
 
           {/* Custom quantity input */}
           <div
-            className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${
-              rawInput !== ""
+            className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${rawInput !== ""
                 ? "border-champagne shadow-md shadow-champagne/20 bg-champagne"
                 : "border-cream-dark bg-white"
-            }`}
+              }`}
           >
             <input
               id="custom-quantity-input"
               type="number"
               min={minOrder}
-              placeholder="Own"
+              placeholder="Custom"
               value={rawInput}
               onChange={(e) => {
                 const val = e.target.value;
@@ -132,23 +130,23 @@ export default function PriceCalculator({
                 }
               }}
               onBlur={() => {
+                if (rawInput === "") return;
                 const num = parseInt(rawInput, 10);
-                if (isNaN(num) || num < minOrder) {
+                if (isNaN(num) || num < 1) {
+                  // Clear only if non-numeric or zero
                   setRawInput("");
-                  if (isNaN(num)) setQuantity(100);
                 }
+                // Any valid positive number: keep exactly as typed
               }}
               style={{ colorScheme: "light" }}
-              className={`w-full px-2 pt-2.5 pb-0 text-center text-base font-bold bg-transparent outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
-                rawInput !== ""
+              className={`w-full px-2 pt-2.5 pb-0 text-center text-base font-bold bg-transparent outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${rawInput !== ""
                   ? "text-white placeholder-white/70"
                   : "text-charcoal placeholder-charcoal/40"
-              }`}
+                }`}
             />
             <span
-              className={`block text-[9px] uppercase tracking-wider text-center pb-1.5 opacity-70 ${
-                rawInput !== "" ? "text-white" : "text-charcoal"
-              }`}
+              className={`block text-[9px] uppercase tracking-wider text-center pb-1.5 opacity-70 ${rawInput !== "" ? "text-white" : "text-charcoal"
+                }`}
             >
               cards
             </span>
@@ -172,19 +170,17 @@ export default function PriceCalculator({
                 <button
                   key={addon.id}
                   onClick={() => toggleAddOn(addon.id)}
-                  className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-300 text-left cursor-pointer ${
-                    isSelected
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-300 text-left cursor-pointer ${isSelected
                       ? "bg-champagne/5 border-champagne/40 shadow-sm"
                       : "bg-white border-cream-dark hover:border-champagne/25"
-                  }`}
+                    }`}
                 >
                   {/* Checkbox */}
                   <div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                      isSelected
+                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected
                         ? "bg-champagne border-champagne"
                         : "border-cream-dark"
-                    }`}
+                      }`}
                   >
                     {isSelected && (
                       <svg

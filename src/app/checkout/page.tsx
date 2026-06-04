@@ -28,6 +28,7 @@ async function fetchCard(slug: string): Promise<CardProduct | null> {
       name: doc.name,
       base_price: doc.base_price,
       original_price: doc.original_price,
+      inner_card_price: doc.inner_card_price,
       category: doc.category,
       description: doc.description,
       images: doc.images,

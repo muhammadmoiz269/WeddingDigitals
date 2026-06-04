@@ -114,7 +114,10 @@ export async function POST(request: Request) {
       slug,
       card_code: body.card_code || undefined,
       base_price: Number(body.base_price),
-      original_price: body.original_price ? Number(body.original_price) : undefined,
+      original_price: (body.original_price !== null && body.original_price !== undefined && body.original_price !== "")
+        ? Number(body.original_price) : undefined,
+      inner_card_price: (body.inner_card_price !== null && body.inner_card_price !== undefined && body.inner_card_price !== "")
+        ? Number(body.inner_card_price) : undefined,
       category: body.category,
       description: body.description,
       images: Array.isArray(body.images) ? body.images.filter(Boolean) : [],
