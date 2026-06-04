@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { CardProduct, AddOn } from '@/types';
 import { calculatePrice, calculateAddonEventPrice, formatPKR } from '@/lib/pricing';
-import { beginCheckout } from '@/lib/analytics';
+import { beginCheckout, purchase } from '@/lib/analytics';
 import CheckoutStep1, {
   ADDON_EVENTS, ADDON_MIN_QTY,
   type MainEvent, type AddOnEventData,
@@ -51,6 +51,12 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Fire InitiateCheckout on mount
+  useEffect(() => {
+    beginCheckout(card.slug, initialQty, card.base_price * initialQty);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [selectedAddOnIds] = useState<Set<string>>(new Set(initialAddOnIds));
   const selectedAddOns = useMemo(
@@ -217,6 +223,9 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
       if (!res.ok || !json.success) {
         throw new Error(json.error || 'Failed to place order');
       }
+
+      // Fire Purchase event with confirmed order details
+      purchase(json.data.order_id, card.slug, form.quantity, grandTotal);
 
       router.push(`/checkout/success?orderId=${json.data.order_id}`);
     } catch (e: unknown) {

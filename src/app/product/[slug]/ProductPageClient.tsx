@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,6 +14,7 @@ import HowToOrder from "@/components/HowToOrder";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { categoryToSlug } from "@/lib/categories";
 import { eventToSlug } from "@/lib/events";
+import { viewContent } from "@/lib/analytics";
 
 interface SeoProps {
   h1: string;
@@ -49,6 +50,17 @@ export default function ProductPageClient({
   relatedCards,
   seo,
 }: ProductPageClientProps) {
+  // Fire ViewContent on mount for Meta Pixel + GA
+  useEffect(() => {
+    viewContent({
+      slug: card.slug,
+      name: card.name,
+      category: card.category,
+      base_price: card.base_price,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card.slug]);
+
   return (
     <>
       <Navbar />
