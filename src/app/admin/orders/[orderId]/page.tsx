@@ -48,7 +48,11 @@ function buildWhatsApp(order: any) {
     `🎉 *Event:* ${order.customization?.main_event}\n` +
     `📦 *Quantity:* ${order.quantity} cards\n` +
     `💰 *Order Total:* PKR ${order.total?.toLocaleString()}\n\n` +
-    `Your cards will be designed, printed and dispatched to ${order.customer?.area}, Karachi within *7-10 working days.*\n\n` +
+    `Please share the following details so we can design your card:\n` +
+    `• Names (bride & groom)\n` +
+    `• Date, time & venue of each event\n` +
+    `• Contact numbers to print on card\n\n` +
+    `Your cards will be designed, printed and dispatched to ${order.customer?.area}, Karachi within *7-10 working days* after design approval.\n\n` +
     `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
   return `https://wa.me/${(order.customer?.whatsapp || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
 }
@@ -112,7 +116,7 @@ export default function OrderDetailPage() {
     </div>
   );
 
-  const addonEvents: { event_type: string; quantity: number; content: string }[] =
+  const addonEvents: { event_type: string; quantity: number; price_per_card?: number }[] =
     order.customization?.addon_events ?? [];
 
   return (
@@ -158,21 +162,19 @@ export default function OrderDetailPage() {
             </div>
           </Section>
 
-          {/* Card Content — Main Event */}
-          <Section title={`Card Text — ${order.customization?.main_event}`} icon="✍️">
-            <div className="od-content-box">
-              {order.customization?.content || '—'}
-            </div>
-          </Section>
-
-          {/* Add-on Events */}
-          {addonEvents.length > 0 && addonEvents.map((evt, i) => (
-            <Section key={i} title={`Add-on: ${evt.event_type} — ${evt.quantity} cards`} icon="🎴">
-              <div className="od-content-box">
-                {evt.content || '—'}
+          {/* Add-on Events (if any) */}
+          {addonEvents.length > 0 && (
+            <Section title="Additional Event Cards" icon="🎴">
+              <div className="od-addons-list">
+                {addonEvents.map((evt, i) => (
+                  <div key={i} className="od-addon-row">
+                    <span>{evt.event_type}</span>
+                    <span className="od-field__value--highlight">{evt.quantity} cards{evt.price_per_card ? ` × PKR ${evt.price_per_card.toLocaleString()}/card` : ''}</span>
+                  </div>
+                ))}
               </div>
             </Section>
-          ))}
+          )}
 
         </div>
 

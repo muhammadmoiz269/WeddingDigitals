@@ -13,6 +13,29 @@ export function getQuantityDiscount(quantity: number): number {
 }
 
 /**
+ * Returns the per-card price for add-on event inner cards.
+ * This is set explicitly in the admin panel (inner_card_price field).
+ * Returns 0 if the admin hasn't configured it yet.
+ */
+export function getAddonEventCardPrice(addonCardPrice: number | undefined): number {
+  return addonCardPrice ?? 0;
+}
+
+/**
+ * Calculate the total for an add-on event card order.
+ * Uses the card's inner_card_price × quantity, with bulk discount applied.
+ */
+export function calculateAddonEventPrice(
+  addonCardPrice: number,
+  quantity: number
+): number {
+  const discountPercent = getQuantityDiscount(quantity);
+  const subtotal = addonCardPrice * quantity;
+  const discount = Math.round((subtotal * discountPercent) / 100);
+  return subtotal - discount;
+}
+
+/**
  * Calculate the full price breakdown for a card order.
  *
  * Formula: (Base Price × Quantity) + (Add-on Prices × Quantity) - Discount

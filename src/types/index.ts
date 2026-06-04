@@ -51,6 +51,8 @@ export interface CardProduct {
   name: string;
   base_price: number;
   original_price?: number;
+  /** Per-card price for small inner cards added for extra ceremonies (e.g. Valima, Nikkah) */
+  inner_card_price?: number;
   category: Category;
   description: string;
   images: string[];

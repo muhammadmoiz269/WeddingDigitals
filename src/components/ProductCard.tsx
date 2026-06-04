@@ -8,8 +8,10 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  // Only show strikethrough discount when original price is strictly higher than current price
+  const showDiscount = product.originalPrice != null && product.originalPrice > product.price;
+  const discount = showDiscount
+    ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
 
   return (
@@ -57,7 +59,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-end justify-between">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-charcoal-dark">PKR {product.price}</span>
-                {product.originalPrice && (
+                {showDiscount && (
                   <span className="text-sm text-charcoal/40 line-through">PKR {product.originalPrice}</span>
                 )}
                 <span className="text-[10px] text-charcoal/50">/card</span>

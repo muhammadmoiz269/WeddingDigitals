@@ -62,12 +62,11 @@ export async function PUT(
       }
     }
 
-    const updateData = {
+    const updateData: Record<string, unknown> = {
       name: body.name,
       slug: newSlug,
       card_code: body.card_code || undefined,
       base_price: Number(body.base_price),
-      original_price: body.original_price ? Number(body.original_price) : undefined,
       category: body.category,
       description: body.description,
       images: Array.isArray(body.images) ? body.images.filter(Boolean) : [],
@@ -81,9 +80,29 @@ export async function PUT(
       image_alt_text: body.image_alt_text ?? "",
     };
 
+    // Fields that can be explicitly cleared (null = remove from document)
+    const unsetFields: Record<string, 1> = {};
+
+    if (body.original_price !== null && body.original_price !== undefined && body.original_price !== "") {
+      updateData.original_price = Number(body.original_price);
+    } else {
+      unsetFields.original_price = 1;
+    }
+
+    if (body.inner_card_price !== null && body.inner_card_price !== undefined && body.inner_card_price !== "") {
+      updateData.inner_card_price = Number(body.inner_card_price);
+    } else {
+      unsetFields.inner_card_price = 1;
+    }
+
+    const mongoUpdate: Record<string, unknown> = { $set: updateData };
+    if (Object.keys(unsetFields).length > 0) {
+      mongoUpdate.$unset = unsetFields;
+    }
+
     const updated = await Card.findOneAndUpdate(
       { slug },
-      { $set: updateData },
+      mongoUpdate,
       { new: true, runValidators: true }
     ).lean();
 

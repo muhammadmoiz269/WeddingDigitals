@@ -4,10 +4,10 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { CardProduct, AddOn } from '@/types';
-import { calculatePrice, formatPKR } from '@/lib/pricing';
-import { beginCheckout } from '@/lib/analytics';
+import { calculatePrice, calculateAddonEventPrice, formatPKR } from '@/lib/pricing';
+import { beginCheckout, purchase } from '@/lib/analytics';
 import CheckoutStep1, {
-  ADDON_EVENTS, ENGLISH_TEMPLATE,
+  ADDON_EVENTS, ADDON_MIN_QTY,
   type MainEvent, type AddOnEventData,
 } from './CheckoutStep1';
 
@@ -32,7 +32,6 @@ interface CheckoutProps {
 interface FormData {
   // Step 1
   mainEvent: MainEvent;
-  content: string;
   addOnEvents: AddOnEventData[];
   // Step 2
   customerName: string;
@@ -53,6 +52,12 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  // Fire InitiateCheckout on mount
+  useEffect(() => {
+    beginCheckout(card.slug, initialQty, card.base_price * initialQty);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [selectedAddOnIds] = useState<Set<string>>(new Set(initialAddOnIds));
   const selectedAddOns = useMemo(
     () => card.add_ons.filter((a: AddOn) => selectedAddOnIds.has(a.id)),
@@ -61,12 +66,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
   const [form, setForm] = useState<FormData>({
     mainEvent: 'Wedding',
-    content: ENGLISH_TEMPLATE,
     addOnEvents: ADDON_EVENTS.map(eventType => ({
       eventType,
       enabled: false,
       quantity: '',
-      content: ENGLISH_TEMPLATE,
     })),
     customerName: '',
     whatsapp: '',
@@ -100,9 +103,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     () => form.addOnEvents.map(evt => {
       if (!evt.enabled) return 0;
       const qty = parseInt(evt.quantity, 10);
-      return isNaN(qty) || qty < 1 ? 0 : calculatePrice(card.base_price, qty, []).total;
+      const addonCardPrice = card.inner_card_price ?? 0;
+      return isNaN(qty) || qty < 1 ? 0 : calculateAddonEventPrice(addonCardPrice, qty);
     }),
-    [form.addOnEvents, card.base_price]
+    [form.addOnEvents, card.inner_card_price]
   );
 
   const grandTotal = useMemo(
@@ -125,14 +129,13 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const validateStep = (s: number): Record<string, string> => {
     const errors: Record<string, string> = {};
     if (s === 1) {
-      if (!form.content.trim()) errors.content = 'Card text cannot be empty';
       form.addOnEvents.forEach((evt, idx) => {
         if (!evt.enabled || evt.eventType === form.mainEvent) return;
         const qty = parseInt(evt.quantity, 10);
         if (!evt.quantity.trim() || isNaN(qty)) {
           errors[`addon_qty_${idx}`] = `Please enter a quantity for ${evt.eventType}`;
-        } else if (qty < 50) {
-          errors[`addon_qty_${idx}`] = `Minimum quantity for ${evt.eventType} is 50`;
+        } else if (qty < ADDON_MIN_QTY) {
+          errors[`addon_qty_${idx}`] = `Minimum quantity for ${evt.eventType} is ${ADDON_MIN_QTY}`;
         }
       });
     }
@@ -185,15 +188,15 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         card_name: card.name,
         quantity: form.quantity,
         base_price: card.base_price,
+        inner_card_price: card.inner_card_price ?? 0,
         add_ons: selectedAddOns.map(a => ({ name: a.name, price: a.price })),
         total: grandTotal,
         customization: {
           main_event: form.mainEvent,
-          content: form.content,
           addon_events: enabledAddons.map(e => ({
             event_type: e.eventType,
             quantity: parseInt(e.quantity, 10),
-            content: e.content,
+            price_per_card: card.inner_card_price ?? 0,
           })),
         },
         customer: {
@@ -220,6 +223,9 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
       if (!res.ok || !json.success) {
         throw new Error(json.error || 'Failed to place order');
       }
+
+      // Fire Purchase event with confirmed order details
+      purchase(json.data.order_id, card.slug, form.quantity, grandTotal);
 
       router.push(`/checkout/success?orderId=${json.data.order_id}`);
     } catch (e: unknown) {
@@ -251,7 +257,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 ) : s}
               </div>
               <span className="co-progress__label">
-                {s === 1 ? 'Customize' : 'Order Details'}
+                {s === 1 ? 'Event Cards' : 'Your Details'}
               </span>
             </div>
           ))}
@@ -302,12 +308,10 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
               quantity={form.quantity}
               selectedAddOns={selectedAddOns}
               mainEvent={form.mainEvent}
-              content={form.content}
               addOnEvents={form.addOnEvents}
               fieldErrors={fieldErrors}
               mainTotal={breakdown.total}
               onMainEventChange={evt => setForm(f => ({ ...f, mainEvent: evt }))}
-              onContentChange={c => setForm(f => ({ ...f, content: c }))}
               onAddonChange={updateAddonEvent}
               onClearError={field => setFieldErrors(fe => { const n = {...fe}; delete n[field]; return n; })}
               onNext={nextStep}
@@ -405,11 +409,12 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                   .map(evt => {
                     const qty = parseInt(evt.quantity, 10);
                     if (isNaN(qty) || qty < 1) return null;
-                    const t = calculatePrice(card.base_price, qty, []).total;
+                    const addonCardPrice = card.inner_card_price ?? 0;
+                    const t = calculateAddonEventPrice(addonCardPrice, qty);
                     return (
                       <div key={evt.eventType} className="co-summary__row">
-                        <span>{evt.eventType} (Add-on) — {qty} cards</span>
-                        <span>{formatPKR(t)}</span>
+                        <span>{evt.eventType} (Inner card) — {qty} × {addonCardPrice > 0 ? formatPKR(addonCardPrice) : '?'}/card</span>
+                        <span>{addonCardPrice > 0 ? formatPKR(t) : 'TBD'}</span>
                       </div>
                     );
                   })}
@@ -861,7 +866,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         .co-pay-method__value { font-weight: 700; color: #2a2018; font-family: monospace; }
         .co-pay-details__note { font-size: 0.75rem; color: #8a7a6a; margin: 0.75rem 0 0; }
 
-        /* ── WhatsApp Notice ── */
+        /* ── WhatsApp Notice (checkout step 2) ── */
         .co-whatsapp-notice {
           display: flex; align-items: flex-start; gap: 0.875rem;
           padding: 1rem 1.25rem; background: linear-gradient(135deg, #e7f7ee, #dcf5e7);
@@ -870,6 +875,43 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         .co-whatsapp-notice__icon { font-size: 1.75rem; flex-shrink: 0; line-height: 1; }
         .co-whatsapp-notice strong { display: block; font-size: 0.9rem; color: #14532d; margin-bottom: 0.25rem; }
         .co-whatsapp-notice p { font-size: 0.8rem; color: #166534; margin: 0; line-height: 1.5; }
+
+        /* ── Step 1 WhatsApp Banner (green, top of step) ── */
+        .co-wa-notice {
+          display: flex; align-items: flex-start; gap: 0.875rem;
+          padding: 0.875rem 1.125rem; background: #f0fdf4;
+          border: 1px solid #bbf7d0; border-radius: 14px;
+        }
+        .co-wa-notice__icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1.2; }
+        .co-wa-notice strong { display: block; font-size: 0.85rem; color: #14532d; margin-bottom: 0.2rem; }
+        .co-wa-notice p { font-size: 0.78rem; color: #166534; margin: 0; line-height: 1.5; }
+
+        /* ── Step hint (below event selector) ── */
+        .co-step__hint { font-size: 0.78rem; color: #8a7a6a; margin-top: 0.5rem; }
+        .co-step__hint strong { color: #C9A96E; }
+
+        /* ── Add-ons section header row ── */
+        .co-addons-header {
+          display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        }
+        .co-addons-price-badge {
+          display: inline-flex; align-items: center;
+          padding: 0.25rem 0.75rem; border-radius: 999px;
+          background: rgba(201,169,110,0.12); color: #96793f;
+          border: 1px solid rgba(201,169,110,0.3); font-size: 0.75rem; font-weight: 700;
+          white-space: nowrap;
+        }
+        .co-addons-price-badge--warn {
+          background: rgba(234,179,8,0.1); color: #92400e;
+          border-color: rgba(234,179,8,0.25);
+        }
+
+        /* ── Addon per-card price info ── */
+        .co-addon-price-info {
+          display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem;
+          white-space: nowrap;
+        }
+        .co-addon-unit-price { font-size: 0.72rem; color: #8a7a6a; }
 
         /* ── Actions ── */
         .co-actions { display: flex; justify-content: space-between; gap: 0.75rem; padding-top: 0.5rem; }

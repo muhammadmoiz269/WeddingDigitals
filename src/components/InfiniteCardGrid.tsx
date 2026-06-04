@@ -209,7 +209,7 @@ function InfiniteCardItem({
               <span className="text-xl font-bold text-charcoal-dark">
                 PKR {card.base_price.toLocaleString()}
               </span>
-              {card.original_price && (
+              {card.original_price && card.original_price > card.base_price && (
                 <span className="text-sm text-charcoal/40 line-through">
                   PKR {card.original_price.toLocaleString()}
                 </span>

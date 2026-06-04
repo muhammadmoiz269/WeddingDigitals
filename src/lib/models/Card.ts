@@ -6,6 +6,8 @@ export interface ICard extends Document {
   card_code?: string;
   base_price: number;
   original_price?: number;
+  /** Per-card price for small inner cards added for extra ceremonies (e.g. Valima, Nikkah) during checkout */
+  inner_card_price?: number;
   category: "Luxury" | "Classic" | "Modern" | "Minimalist" | "Floral" | "Textured";
   description: string;
   images: string[];
@@ -53,6 +55,10 @@ const CardSchema = new Schema<ICard>(
       min: [0, "Price cannot be negative"],
     },
     original_price: {
+      type: Number,
+      min: [0, "Price cannot be negative"],
+    },
+    inner_card_price: {
       type: Number,
       min: [0, "Price cannot be negative"],
     },

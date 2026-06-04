@@ -24,9 +24,10 @@ export async function POST(request: Request) {
       }
     }
 
-    if (!body.customization?.main_event || !body.customization?.content) {
+    // content is no longer required — collected via WhatsApp after order
+    if (!body.customization?.main_event) {
       return NextResponse.json(
-        { success: false, error: "Customization details are required (main_event, content)" },
+        { success: false, error: "Customization details are required (main_event)" },
         { status: 400 }
       );
     }
@@ -67,7 +68,6 @@ export async function POST(request: Request) {
       total: Number(body.total),
       customization: {
         main_event: body.customization.main_event,
-        content: body.customization.content,
         addon_events: Array.isArray(body.customization.addon_events)
           ? body.customization.addon_events
           : [],

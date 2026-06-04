@@ -93,7 +93,11 @@ export default function AdminClient() {
       `🎉 *Event:* ${order.customization.main_event}\n` +
       `📦 *Quantity:* ${order.quantity} cards\n` +
       `💰 *Amount Due:* PKR ${order.payment.amount_due.toLocaleString()}\n\n` +
-      `Your cards will be designed, printed and dispatched to ${order.customer.area}, Karachi within *7-10 working days.*\n\n` +
+      `Please share the following details so we can design your card:\n` +
+      `• Names (bride & groom)\n` +
+      `• Date, time & venue of each event\n` +
+      `• Contact numbers to print on card\n\n` +
+      `Your cards will be designed, printed and dispatched to ${order.customer.area}, Karachi within *7-10 working days* after design approval.\n\n` +
       `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
     const phone = order.customer.whatsapp.replace(/[^\d]/g, '');
     const fullPhone = phone.startsWith('0') ? '92' + phone.slice(1) : phone.startsWith('92') ? phone : '92' + phone;
@@ -210,7 +214,13 @@ export default function AdminClient() {
         {/* ── Sidebar ── */}
         <aside className="admin-sidebar">
           <div className="admin-logo">
-            <span className="admin-logo__mark">P</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="Shahi Bulawa"
+              className="admin-logo__mark"
+              style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, background: 'transparent' }}
+            />
             <div>
               <p className="admin-logo__brand">Shahi Bulawa</p>
               <p className="admin-logo__sub">Admin Panel</p>
@@ -262,279 +272,271 @@ export default function AdminClient() {
         {/* ── Main ── */}
         <main className="admin-main">
           {activeTab === 'cards' ? (
-          <>
-          {/* Header */}
-          <header className="admin-header">
-            <div>
-              <h1 className="admin-header__title">Wedding Cards</h1>
-              <p className="admin-header__sub">
-                {loading ? "Loading…" : `${cards.length} card${cards.length !== 1 ? "s" : ""} in database`}
-              </p>
-            </div>
-            <button id="admin-add-card-btn" className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add New Card
-            </button>
-          </header>
-
-          {/* Filters */}
-          <div className="admin-filters">
-            <div className="admin-search">
-              <svg className="admin-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                id="admin-search"
-                type="text"
-                placeholder="Search by name or code…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="admin-search__input"
-              />
-            </div>
-            <div className="admin-filter-cats">
-              {["All", ...CATEGORIES].map((cat) => (
-                <button
-                  key={cat}
-                  className={`admin-cat-pill${filterCat === cat ? " admin-cat-pill--active" : ""}`}
-                  onClick={() => setFilterCat(cat)}
-                >
-                  {cat}
+            <>
+              {/* Header */}
+              <header className="admin-header">
+                <div>
+                  <h1 className="admin-header__title">Wedding Cards</h1>
+                  <p className="admin-header__sub">
+                    {loading ? "Loading…" : `${cards.length} card${cards.length !== 1 ? "s" : ""} in database`}
+                  </p>
+                </div>
+                <button id="admin-add-card-btn" className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Add New Card
                 </button>
-              ))}
-            </div>
-          </div>
+              </header>
 
-          {/* Table / Empty */}
-          {loading ? (
-            <div className="admin-skeletons">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="admin-skeleton-row" />
-              ))}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="admin-empty">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 17H7A5 5 0 017 7h2" />
-                <path d="M15 7h2a5 5 0 010 10h-2" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-              </svg>
-              <p>{search || filterCat !== "All" ? "No cards match your filters." : "No cards yet. Add your first card!"}</p>
-              {!search && filterCat === "All" && (
-                <button className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
-                  Add First Card
-                </button>
+              {/* Filters */}
+              <div className="admin-filters">
+                <div className="admin-search">
+                  <svg className="admin-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    id="admin-search"
+                    type="text"
+                    placeholder="Search by name or code…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="admin-search__input"
+                  />
+                </div>
+                <div className="admin-filter-cats">
+                  {["All", ...CATEGORIES].map((cat) => (
+                    <button
+                      key={cat}
+                      className={`admin-cat-pill${filterCat === cat ? " admin-cat-pill--active" : ""}`}
+                      onClick={() => setFilterCat(cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Table / Empty */}
+              {loading ? (
+                <div className="admin-skeletons">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="admin-skeleton-row" />
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="admin-empty">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M9 17H7A5 5 0 017 7h2" />
+                    <path d="M15 7h2a5 5 0 010 10h-2" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  <p>{search || filterCat !== "All" ? "No cards match your filters." : "No cards yet. Add your first card!"}</p>
+                  {!search && filterCat === "All" && (
+                    <button className="admin-btn admin-btn--primary" onClick={() => router.push('/admin/cards/new')}>
+                      Add First Card
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Card</th>
+                        <th>Code</th>
+                        <th>Category</th>
+                        <th>Base Price</th>
+                        <th>Min Order</th>
+                        <th>Badges</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((card) => (
+                        <tr key={card.slug} className="admin-table__row">
+                          <td>
+                            <div className="admin-card-cell">
+                              {card.images?.[0] ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={card.images[0]} alt={card.name} className="admin-card-thumb" />
+                              ) : (
+                                <div className="admin-card-thumb admin-card-thumb--placeholder">🃏</div>
+                              )}
+                              <div>
+                                <p className="admin-card-name" title={card.name}>
+                                  {card.name.length > 40 ? card.name.slice(0, 40) + '…' : card.name}
+                                </p>
+                                <p className="admin-card-slug">/{card.slug}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="admin-code">{card.card_code || "—"}</span>
+                          </td>
+                          <td>
+                            <span className={`admin-cat-badge admin-cat-badge--${card.category.toLowerCase()}`}>
+                              {card.category}
+                            </span>
+                          </td>
+                          <td className="admin-price">PKR {card.base_price.toLocaleString()}</td>
+                          <td className="admin-min-order">{card.min_order} pcs</td>
+                          <td>
+                            <div className="admin-badges">
+                              {card.is_new && <span className="admin-badge admin-badge--new">New</span>}
+                              {card.is_bestseller && <span className="admin-badge admin-badge--best">Best</span>}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="admin-row-actions">
+                              <button
+                                id={`edit-${card.slug}`}
+                                className="admin-btn admin-btn--ghost"
+                                onClick={() => router.push(`/admin/cards/${card.slug}/edit`)}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                                Edit
+                              </button>
+                              <button
+                                id={`delete-${card.slug}`}
+                                className="admin-btn admin-btn--danger"
+                                onClick={() => setDeleteTarget(card)}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                  <path d="M10 11v6M14 11v6" />
+                                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                                </svg>
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
-            </div>
+            </>
           ) : (
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Card</th>
-                    <th>Code</th>
-                    <th>Category</th>
-                    <th>Base Price</th>
-                    <th>Min Order</th>
-                    <th>Badges</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((card) => (
-                    <tr key={card.slug} className="admin-table__row">
-                      <td>
-                        <div className="admin-card-cell">
-                          {card.images?.[0] ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={card.images[0]} alt={card.name} className="admin-card-thumb" />
-                          ) : (
-                            <div className="admin-card-thumb admin-card-thumb--placeholder">🃏</div>
-                          )}
-                          <div>
-                            <p className="admin-card-name">{card.name}</p>
-                            <p className="admin-card-slug">/{card.slug}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="admin-code">{card.card_code || "—"}</span>
-                      </td>
-                      <td>
-                        <span className={`admin-cat-badge admin-cat-badge--${card.category.toLowerCase()}`}>
-                          {card.category}
-                        </span>
-                      </td>
-                      <td className="admin-price">PKR {card.base_price.toLocaleString()}</td>
-                      <td className="admin-min-order">{card.min_order} pcs</td>
-                      <td>
-                        <div className="admin-badges">
-                          {card.is_new && <span className="admin-badge admin-badge--new">New</span>}
-                          {card.is_bestseller && <span className="admin-badge admin-badge--best">Best</span>}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="admin-row-actions">
-                          <button
-                            id={`edit-${card.slug}`}
-                            className="admin-btn admin-btn--ghost"
-                            onClick={() => router.push(`/admin/cards/${card.slug}/edit`)}
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                            Edit
-                          </button>
-                          <button
-                            id={`delete-${card.slug}`}
-                            className="admin-btn admin-btn--danger"
-                            onClick={() => setDeleteTarget(card)}
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                              <path d="M10 11v6M14 11v6" />
-                              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-                            </svg>
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          </>
-          ) : (
-          /* ── ORDERS TAB ── */
-          <>
-          <header className="admin-header">
-            <div>
-              <h1 className="admin-header__title">Orders</h1>
-              <p className="admin-header__sub">
-                {ordersLoading ? "Loading…" : `${orders.length} order${orders.length !== 1 ? "s" : ""} total`}
-              </p>
-            </div>
-            <button className="admin-btn admin-btn--ghost" onClick={fetchOrders} disabled={ordersLoading}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="23 4 23 10 17 10" />
-                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-              </svg>
-              Refresh
-            </button>
-          </header>
+            /* ── ORDERS TAB ── */
+            <>
+              <header className="admin-header">
+                <div>
+                  <h1 className="admin-header__title">Orders</h1>
+                  <p className="admin-header__sub">
+                    {ordersLoading ? "Loading…" : `${orders.length} order${orders.length !== 1 ? "s" : ""} total`}
+                  </p>
+                </div>
+                <button className="admin-btn admin-btn--ghost" onClick={fetchOrders} disabled={ordersLoading}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="23 4 23 10 17 10" />
+                    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                  </svg>
+                  Refresh
+                </button>
+              </header>
 
-          {ordersLoading ? (
-            <div className="admin-skeletons">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="admin-skeleton-row" />
-              ))}
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="admin-empty">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              <p>No orders yet.</p>
-            </div>
-          ) : (
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Customer</th>
-                    <th>Card</th>
-                    <th>Qty</th>
-                    <th>Amount</th>
-                    <th>Receipt</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order.order_id || order._id} className="admin-table__row admin-table__row--clickable" onClick={() => router.push(`/admin/orders/${order.order_id}`)}>
-                      <td>
-                        <div>
-                          <p className="admin-card-name">{order.order_id}</p>
-                          <p className="admin-card-slug">{order.customization?.main_event} — {order.quantity} cards</p>
-                        </div>
-                      </td>
-                      <td>
-                        <div>
-                          <p className="admin-card-name">{order.customer?.name}</p>
-                          <p className="admin-card-slug">{order.customer?.whatsapp}</p>
-                          <p className="admin-card-slug">{order.customer?.area}</p>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="admin-code">{order.card_name}</span>
-                      </td>
-                      <td className="admin-min-order">{order.quantity} pcs</td>
-                      <td className="admin-price">PKR {order.payment?.amount_due?.toLocaleString()}</td>
-                      <td>
-                        {order.payment?.receipt_url ? (
-                          <a href={order.payment.receipt_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={order.payment.receipt_url}
-                              alt="Receipt"
-                              style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', border: '1px solid rgba(201,169,110,0.2)' }}
-                            />
-                          </a>
-                        ) : (
-                          <span style={{ color: '#6a5a4a', fontSize: '0.75rem' }}>None</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`admin-order-status admin-order-status--${order.payment?.status || 'pending_payment'}`}>
-                          {order.payment?.status === 'confirmed' ? '✓ Confirmed' :
-                           order.payment?.status === 'in_production' ? '🔄 In Production' :
-                           order.payment?.status === 'completed' ? '✅ Completed' :
-                           '⏳ Pending'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="admin-row-actions">
-                          <button className="admin-btn admin-btn--ghost" onClick={(e) => { e.stopPropagation(); router.push(`/admin/orders/${order.order_id}`); }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            View
-                          </button>
-                          {order.payment?.status === 'confirmed' && (
-                            <a
-                              href={getWhatsAppConfirmLink(order)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="admin-btn admin-btn--wa"
-                              onClick={e => e.stopPropagation()}
-                            >
-                              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                              </svg>
-                              WhatsApp
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+              {ordersLoading ? (
+                <div className="admin-skeletons">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="admin-skeleton-row" />
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          </>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="admin-empty">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <p>No orders yet.</p>
+                </div>
+              ) : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Card</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((order) => (
+                        <tr key={order.order_id || order._id} className="admin-table__row admin-table__row--clickable" onClick={() => router.push(`/admin/orders/${order.order_id}`)}>
+                          <td>
+                            <div>
+                              <p className="admin-card-name">{order.order_id}</p>
+                              <p className="admin-card-slug">{order.customization?.main_event} — {order.quantity} cards</p>
+                            </div>
+                          </td>
+                          <td>
+                            <div>
+                              <p className="admin-card-name">{order.customer?.name}</p>
+                              <p className="admin-card-slug">{order.customer?.whatsapp}</p>
+                              <p className="admin-card-slug">{order.customer?.area}</p>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="admin-code" title={order.card_name}>
+                              {order.card_name && order.card_name.length > 40
+                                ? order.card_name.slice(0, 40) + '…'
+                                : order.card_name}
+                            </span>
+                          </td>
+                          <td className="admin-min-order">{order.quantity} pcs</td>
+                          <td className="admin-price">PKR {order.payment?.amount_due?.toLocaleString()}</td>
+
+                          <td>
+                            <span className={`admin-order-status admin-order-status--${order.payment?.status || 'pending_payment'}`}>
+                              {order.payment?.status === 'confirmed' ? '✓ Confirmed' :
+                                order.payment?.status === 'in_production' ? '🔄 In Production' :
+                                  order.payment?.status === 'completed' ? '✅ Completed' :
+                                    '⏳ Pending'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="admin-row-actions">
+                              <button className="admin-btn admin-btn--ghost" onClick={(e) => { e.stopPropagation(); router.push(`/admin/orders/${order.order_id}`); }}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                View
+                              </button>
+                              {order.payment?.status === 'confirmed' && (
+                                <a
+                                  href={getWhatsAppConfirmLink(order)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="admin-btn admin-btn--wa"
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                  </svg>
+                                  WhatsApp
+                                </a>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

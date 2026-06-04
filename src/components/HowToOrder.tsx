@@ -13,7 +13,7 @@ const STEPS = [
       <>
         Select your card, choose the <strong>total number of cards</strong> and
         any <strong>add-ons</strong> (additional event cards e.g. Valima,
-        Mehndi), then add your card content and proceed to checkout.
+        Mehndi).
       </>
     ),
   },
@@ -34,8 +34,8 @@ const STEPS = [
     body: (
       <>
         In the WhatsApp group, we will{" "}
-        <strong>confirm the content with you</strong> for the card design before
-        we proceed to print.
+        <strong>ask for the content</strong> for the card design and will send
+        you soft copy of the design for your approval before printing.
       </>
     ),
   },
@@ -52,16 +52,6 @@ const STEPS = [
   },
   {
     number: 5,
-    title: "Design Approval",
-    body: (
-      <>
-        We will <strong>share the soft copy of the design</strong> with you for
-        your approval before printing.
-      </>
-    ),
-  },
-  {
-    number: 6,
     title: "Printing & Dispatch",
     body: (
       <>
