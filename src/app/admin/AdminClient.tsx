@@ -214,7 +214,13 @@ export default function AdminClient() {
         {/* ── Sidebar ── */}
         <aside className="admin-sidebar">
           <div className="admin-logo">
-            <span className="admin-logo__mark">P</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="Shahi Bulawa"
+              className="admin-logo__mark"
+              style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, background: 'transparent' }}
+            />
             <div>
               <p className="admin-logo__brand">Shahi Bulawa</p>
               <p className="admin-logo__sub">Admin Panel</p>
