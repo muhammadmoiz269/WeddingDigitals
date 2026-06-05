@@ -52,7 +52,7 @@ export default function Footer() {
             </div>
             <p className="text-sm text-white/50 leading-relaxed mb-6">
               Karachi&apos;s premium wedding card studio. Combining artisan
-              craftsmanship with transparent, honest pricing since 2018.
+              craftsmanship with transparent, honest pricing.
             </p>
             {/* Social Icons */}
             <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export default function Footer() {
               {[
                 { label: 'Home', href: '/' },
                 { label: 'Collection', href: '/#collection' },
-                { label: 'About Us', href: '/#about' },
+
               ].map((link) => (
                 <li key={link.label}>
                   <Link
@@ -219,9 +219,7 @@ export default function Footer() {
             <a href="#" className="hover:text-champagne transition-colors">
               Terms of Service
             </a>
-            <a href="#" className="hover:text-champagne transition-colors">
-              Refund Policy
-            </a>
+
           </div>
         </div>
       </div>

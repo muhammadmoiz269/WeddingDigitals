@@ -74,7 +74,7 @@ export default function Hero() {
           variants={fadeUp}
           className="max-w-2xl mx-auto text-base sm:text-lg text-charcoal/70 leading-relaxed mb-10"
         >
-          From dream to doorstep — beautifully crafted wedding invitations,
+          From dream to doorstep, beautifully crafted wedding invitations,
           printed with love in Karachi. Starting from{" "}
           <span className="font-semibold text-champagne-dark">
             PKR 80/card

@@ -24,6 +24,24 @@ export async function POST(request: Request) {
       }
     }
 
+    if (Number(body.quantity) > 10000) {
+      return NextResponse.json(
+        { success: false, error: "Maximum quantity limit is 10,000 cards." },
+        { status: 400 }
+      );
+    }
+
+    if (Array.isArray(body.customization?.addon_events)) {
+      for (const addon of body.customization.addon_events) {
+        if (Number(addon.quantity) > 10000) {
+          return NextResponse.json(
+            { success: false, error: "Maximum quantity limit for additional cards is 10,000." },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // content is no longer required — collected via WhatsApp after order
     if (!body.customization?.main_event) {
       return NextResponse.json(

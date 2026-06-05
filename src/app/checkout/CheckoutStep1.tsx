@@ -20,7 +20,7 @@ export const ADDON_EVENTS = [
 ] as const;
 export type AddonEventType = (typeof ADDON_EVENTS)[number];
 
-export const ADDON_MIN_QTY = 30;
+export const ADDON_MIN_QTY = 50;
 
 export interface AddOnEventData {
   eventType: AddonEventType;
@@ -81,7 +81,7 @@ export default function CheckoutStep1({
         <div>
           <strong>Card details collected via WhatsApp</strong>
           <p>
-            After placing your order, our team will contact you on WhatsApp to collect names, dates, venue and any other card details. No need to fill them here.
+            After placing your order, our team will contact you on WhatsApp to collect names, dates, venue and any other card details.
           </p>
         </div>
       </div>
@@ -156,10 +156,17 @@ export default function CheckoutStep1({
                         <input
                           type="number"
                           min={ADDON_MIN_QTY}
+                          max={10000}
                           placeholder={`min ${ADDON_MIN_QTY}`}
                           value={evt.quantity}
                           onChange={(e) => {
-                            onAddonChange(idx, { quantity: e.target.value });
+                            const val = e.target.value;
+                            const num = parseInt(val, 10);
+                            if (!isNaN(num) && num > 10000) {
+                              onAddonChange(idx, { quantity: "10000" });
+                            } else {
+                              onAddonChange(idx, { quantity: val });
+                            }
                             onClearError(`addon_qty_${idx}`);
                           }}
                           className={`co-addon-qty-input${fieldErrors[`addon_qty_${idx}`] ? " co-input--error" : ""}`}

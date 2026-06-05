@@ -3,7 +3,6 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import InfiniteProductGrid from "@/components/InfiniteProductGrid";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
 import FaqAccordion from "@/components/FaqAccordion";
 import JsonLd from "@/components/JsonLd";
 import { FAQ_HOME } from "@/lib/faqs";
@@ -81,7 +80,6 @@ export default async function Home() {
         <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
       </main>
       <Footer />
-      <ChatWidget />
     </>
   );
 }

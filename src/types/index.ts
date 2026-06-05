@@ -34,6 +34,7 @@ export interface Feature {
 export interface NavLink {
   label: string;
   href: string;
+  target?: string;
 }
 
 // ─── Product Engine Types ───

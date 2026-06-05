@@ -213,7 +213,7 @@ export default function InfiniteProductGrid({
           </h2>
           <div className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6" />
           <p className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base">
-            Each invitation is a masterpiece — designed, printed, and finished
+            Each invitation is a masterpiece, designed, printed, and finished
             in our Karachi studio with the finest materials.
           </p>
         </div>
@@ -226,11 +226,10 @@ export default function InfiniteProductGrid({
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
-                className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
-                  activeCategory === cat
+                className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${activeCategory === cat
                     ? "bg-champagne text-white shadow-md shadow-champagne/25"
                     : "bg-cream text-charcoal/70 hover:bg-cream-dark hover:text-charcoal border border-cream-dark"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -283,11 +282,10 @@ export default function InfiniteProductGrid({
                     <button
                       key={option.value}
                       onClick={() => handleSortChange(option.value)}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                        activeSort === option.value
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${activeSort === option.value
                           ? "bg-champagne/10 text-champagne-dark font-semibold"
                           : "text-charcoal/70 hover:bg-cream/60 hover:text-charcoal-dark"
-                      }`}
+                        }`}
                     >
                       <span className="flex items-center justify-between">
                         {option.label}
@@ -426,8 +424,8 @@ function CardGridItem({
   const discount =
     card.original_price && card.original_price > card.base_price
       ? Math.round(
-          ((card.original_price - card.base_price) / card.original_price) * 100,
-        )
+        ((card.original_price - card.base_price) / card.original_price) * 100,
+      )
       : 0;
 
   const imageSrc = card.images?.[0] ?? null;
@@ -443,7 +441,7 @@ function CardGridItem({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   }, [videoUrl]);
 
@@ -556,9 +554,9 @@ function CardGridItem({
               dangerouslySetInnerHTML={{
                 __html: card.description
                   ? card.description
-                      .replace(/<[^>]*>/g, " ")
-                      .replace(/\s+/g, " ")
-                      .trim()
+                    .replace(/<[^>]*>/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
                   : "",
               }}
             />

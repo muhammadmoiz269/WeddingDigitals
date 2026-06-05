@@ -15,7 +15,7 @@ export default function Features() {
           </h2>
           <div className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6" />
           <p className="max-w-lg mx-auto text-charcoal/60 text-sm sm:text-base">
-            Boutique craftsmanship, transparent pricing, and a personal touch —
+            Boutique craftsmanship, transparent pricing, and a personal touch,
             because your wedding invitation is the first chapter of your love story.
           </p>
         </div>

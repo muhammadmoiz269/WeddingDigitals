@@ -2,13 +2,9 @@ import { AddOn, PriceBreakdown, QuantityTier } from "@/types";
 import { WHATSAPP_NUMBER } from "./constants";
 
 /**
- * Quantity tier discounts:
- * - 100 pcs: 0% discount
- * - 250 pcs: 0% discount
- * - 500+ pcs: 10% discount
+ * No quantity tier discounts applied.
  */
-export function getQuantityDiscount(quantity: number): number {
-  if (quantity >= 500) return 10;
+export function getQuantityDiscount(_quantity: number): number {
   return 0;
 }
 
@@ -23,16 +19,13 @@ export function getAddonEventCardPrice(addonCardPrice: number | undefined): numb
 
 /**
  * Calculate the total for an add-on event card order.
- * Uses the card's inner_card_price × quantity, with bulk discount applied.
+ * Uses the card's inner_card_price × quantity.
  */
 export function calculateAddonEventPrice(
   addonCardPrice: number,
   quantity: number
 ): number {
-  const discountPercent = getQuantityDiscount(quantity);
-  const subtotal = addonCardPrice * quantity;
-  const discount = Math.round((subtotal * discountPercent) / 100);
-  return subtotal - discount;
+  return addonCardPrice * quantity;
 }
 
 /**

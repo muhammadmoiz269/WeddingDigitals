@@ -55,7 +55,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   // Fire InitiateCheckout on mount
   useEffect(() => {
     beginCheckout(card.slug, initialQty, card.base_price * initialQty);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [selectedAddOnIds] = useState<Set<string>>(new Set(initialAddOnIds));
@@ -136,18 +136,30 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           errors[`addon_qty_${idx}`] = `Please enter a quantity for ${evt.eventType}`;
         } else if (qty < ADDON_MIN_QTY) {
           errors[`addon_qty_${idx}`] = `Minimum quantity for ${evt.eventType} is ${ADDON_MIN_QTY}`;
+        } else if (qty > 10000) {
+          errors[`addon_qty_${idx}`] = `Maximum quantity for ${evt.eventType} is 10,000`;
         }
       });
     }
     if (s === 2) {
-      if (!form.customerName.trim()) errors.customerName = 'Please enter your full name';
+      if (!form.customerName.trim()) {
+        errors.customerName = 'Please enter your full name';
+      } else if (form.customerName.trim().length > 100) {
+        errors.customerName = 'Name cannot exceed 100 characters';
+      }
       if (!form.whatsapp.trim()) {
         errors.whatsapp = 'Please enter your WhatsApp number';
       } else if (!/^(\+92|0)?3\d{9}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
         errors.whatsapp = 'Invalid number. Use format: 03XX-XXXXXXX';
+      } else if (form.whatsapp.replace(/[\s-]/g, '').length > 12) {
+        errors.whatsapp = 'Phone number cannot exceed 12 digits';
       }
       if (!form.area) errors.area = 'Please select your delivery area';
-      if (!form.address.trim()) errors.address = 'Please enter your delivery address';
+      if (!form.address.trim()) {
+        errors.address = 'Please enter your delivery address';
+      } else if (form.address.trim().length > 500) {
+        errors.address = 'Address cannot exceed 500 characters';
+      }
     }
     return errors;
   };
@@ -313,7 +325,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
               mainTotal={breakdown.total}
               onMainEventChange={evt => setForm(f => ({ ...f, mainEvent: evt }))}
               onAddonChange={updateAddonEvent}
-              onClearError={field => setFieldErrors(fe => { const n = {...fe}; delete n[field]; return n; })}
+              onClearError={field => setFieldErrors(fe => { const n = { ...fe }; delete n[field]; return n; })}
               onNext={nextStep}
               onBack={() => router.back()}
             />
@@ -331,18 +343,27 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                   <input
                     className={`co-input ${fieldErrors.customerName ? 'co-input--error' : ''}`}
                     placeholder="Your full name"
+                    maxLength={50}
                     value={form.customerName}
-                    onChange={e => { setForm(f => ({ ...f, customerName: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.customerName; return n; }); }}
+                    onChange={e => { setForm(f => ({ ...f, customerName: e.target.value })); setFieldErrors(fe => { const n = { ...fe }; delete n.customerName; return n; }); }}
                   />
-                  {fieldErrors.customerName && <span className="co-field-error">{fieldErrors.customerName}</span>}
+                  <div className="co-field-meta">
+                    {fieldErrors.customerName && <span className="co-field-error">{fieldErrors.customerName}</span>}
+                    <span className={`co-char-count ${form.customerName.length > 90 ? 'co-char-count--warn' : ''}`}>{form.customerName.length}/50</span>
+                  </div>
                 </div>
                 <div className="co-field">
                   <label className="co-label">WhatsApp Number *</label>
                   <input
                     className={`co-input ${fieldErrors.whatsapp ? 'co-input--error' : ''}`}
                     placeholder="03XX-XXXXXXX"
+                    maxLength={11}
                     value={form.whatsapp}
-                    onChange={e => { setForm(f => ({ ...f, whatsapp: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.whatsapp; return n; }); }}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9+\s-]/g, '');
+                      setForm(f => ({ ...f, whatsapp: val }));
+                      setFieldErrors(fe => { const n = { ...fe }; delete n.whatsapp; return n; });
+                    }}
                   />
                   {fieldErrors.whatsapp && <span className="co-field-error">{fieldErrors.whatsapp}</span>}
                 </div>
@@ -356,7 +377,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                     className={`co-input ${fieldErrors.area ? 'co-input--error' : ''}`}
                     placeholder="Search area…"
                     value={areaDropdownOpen ? areaSearch : form.area || areaSearch}
-                    onChange={e => { setAreaSearch(e.target.value); setAreaDropdownOpen(true); setFieldErrors(fe => { const n = {...fe}; delete n.area; return n; }); }}
+                    onChange={e => { setAreaSearch(e.target.value); setAreaDropdownOpen(true); setFieldErrors(fe => { const n = { ...fe }; delete n.area; return n; }); }}
                     onFocus={() => setAreaDropdownOpen(true)}
                   />
                   {areaDropdownOpen && (
@@ -365,7 +386,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                         <button
                           key={a}
                           className={`co-dropdown__item ${form.area === a ? 'co-dropdown__item--active' : ''}`}
-                          onClick={() => { setForm(f => ({ ...f, area: a })); setAreaSearch(''); setAreaDropdownOpen(false); setFieldErrors(fe => { const n = {...fe}; delete n.area; return n; }); }}
+                          onClick={() => { setForm(f => ({ ...f, area: a })); setAreaSearch(''); setAreaDropdownOpen(false); setFieldErrors(fe => { const n = { ...fe }; delete n.area; return n; }); }}
                         >
                           {a}
                         </button>
@@ -384,10 +405,14 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 <input
                   className={`co-input ${fieldErrors.address ? 'co-input--error' : ''}`}
                   placeholder="House/flat no, street, block, area"
+                  maxLength={500}
                   value={form.address}
-                  onChange={e => { setForm(f => ({ ...f, address: e.target.value })); setFieldErrors(fe => { const n = {...fe}; delete n.address; return n; }); }}
+                  onChange={e => { setForm(f => ({ ...f, address: e.target.value })); setFieldErrors(fe => { const n = { ...fe }; delete n.address; return n; }); }}
                 />
-                {fieldErrors.address && <span className="co-field-error">{fieldErrors.address}</span>}
+                <div className="co-field-meta">
+                  {fieldErrors.address && <span className="co-field-error">{fieldErrors.address}</span>}
+                  <span className={`co-char-count ${form.address.length > 450 ? 'co-char-count--warn' : ''}`}>{form.address.length}/500</span>
+                </div>
               </div>
 
               {/* Order Summary */}
@@ -397,9 +422,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 <div className="co-summary__row">
                   <span>
                     {form.mainEvent} (Main) — {form.quantity} cards
-                    {breakdown.discount > 0 && (
-                      <span className="co-summary__discount-tag"> ({breakdown.discountPercent}% bulk discount)</span>
-                    )}
                   </span>
                   <span>{formatPKR(breakdown.total)}</span>
                 </div>
@@ -590,6 +612,22 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           font-weight: 500;
           margin-top: 2px;
         }
+        .co-field-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 2px;
+          min-height: 16px;
+        }
+        .co-char-count {
+          font-size: 0.68rem;
+          color: #b0a090;
+          margin-left: auto;
+        }
+        .co-char-count--warn {
+          color: #d97706;
+          font-weight: 600;
+        }
         .co-input--error {
           border-color: #dc2626 !important;
           background: rgba(220,38,38,0.02);
@@ -601,7 +639,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         /* ── Step ── */
         .co-step { display: flex; flex-direction: column; gap: 1.25rem; }
         .co-step__title { font-size: 1.25rem; font-weight: 700; color: #2a2018; margin: 0; }
-        .co-step__desc { font-size: 0.875rem; color: #8a7a6a; margin: -0.5rem 0 0; }
+        .co-step__desc { font-size: 0.875rem; color: #8a7a6a; margin: 0.5rem 0 0; }
 
         /* ── Templates ── */
         .co-templates { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
@@ -620,7 +658,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         .co-field { display: flex; flex-direction: column; gap: 0.375rem; }
         .co-label { font-size: 0.75rem; font-weight: 600; color: #6a5a4a; letter-spacing: 0.02em; }
         .co-input {
-          padding: 0.7rem 0.875rem; border: 1px solid #e0d6c6; border-radius: 10px;
+          width: 100%; padding: 0.7rem 0.875rem; border: 1px solid #e0d6c6; border-radius: 10px;
           font-size: 0.875rem; color: #2a2018; background: white; outline: none;
           transition: border-color 0.2s; font-family: inherit;
         }

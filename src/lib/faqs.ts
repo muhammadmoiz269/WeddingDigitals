@@ -22,12 +22,12 @@ export const FAQ_HOME: Faq[] = [
   {
     question: 'What is the minimum order quantity?',
     answer:
-      'Our minimum order quantity is 50 cards per design. This applies to each event card (e.g., 50 Nikkah cards or 50 Mehndi cards). For larger orders of 500 cards or more, a 10% discount is automatically applied to your total. Custom quantities between 50 and 500 are fully supported.',
+      'Our minimum order quantity is 50 cards per design. This applies to each event card (e.g., 50 Nikkah cards or 50 Mehndi cards). Custom quantities above 50 cards are fully supported.',
   },
   {
     question: 'Do you offer digital or WhatsApp wedding cards?',
     answer:
-      'Yes — digital e-cards are available as an add-on for all designs. Once your printed card design is approved, we can export a WhatsApp-ready digital version (JPEG/PDF) at no extra cost, so you can share your wedding invitation instantly with guests abroad or those not receiving printed copies.',
+      'Yes — digital e-cards are available as an add-on for all designs.',
   },
 ];
 

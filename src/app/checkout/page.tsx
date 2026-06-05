@@ -58,7 +58,12 @@ export default async function CheckoutPage({
 }) {
   const params = await searchParams;
   const slug = typeof params.slug === "string" ? params.slug : "";
-  const qty = typeof params.qty === "string" ? parseInt(params.qty, 10) : 100;
+  let qty = typeof params.qty === "string" ? parseInt(params.qty, 10) : 100;
+  if (isNaN(qty) || qty < 1) {
+    qty = 100;
+  } else {
+    qty = Math.min(qty, 10000);
+  }
   const addons =
     typeof params.addons === "string"
       ? params.addons.split(",").filter(Boolean)

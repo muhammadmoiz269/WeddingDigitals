@@ -97,8 +97,8 @@ export default function PriceCalculator({
                 setRawInput("");
               }}
               className={`relative px-2 py-2.5 rounded-xl text-center transition-all duration-300 cursor-pointer border ${quantity === tier && rawInput === ""
-                  ? "bg-champagne text-white border-champagne shadow-md shadow-champagne/20"
-                  : "bg-white text-charcoal border-cream-dark hover:border-champagne/40"
+                ? "bg-champagne text-white border-champagne shadow-md shadow-champagne/20"
+                : "bg-white text-charcoal border-cream-dark hover:border-champagne/40"
                 }`}
             >
               <span className="block text-base font-bold">{tier}</span>
@@ -111,22 +111,32 @@ export default function PriceCalculator({
           {/* Custom quantity input */}
           <div
             className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${rawInput !== ""
-                ? "border-champagne shadow-md shadow-champagne/20 bg-champagne"
-                : "border-cream-dark bg-white"
+              ? "border-champagne shadow-md shadow-champagne/20 bg-champagne"
+              : "border-cream-dark bg-white"
               }`}
           >
             <input
               id="custom-quantity-input"
               type="number"
               min={minOrder}
+              max={10000}
               placeholder="Custom"
               value={rawInput}
               onChange={(e) => {
                 const val = e.target.value;
-                setRawInput(val);
                 const num = parseInt(val, 10);
-                if (!isNaN(num) && num >= minOrder) {
-                  setQuantity(num);
+                if (!isNaN(num)) {
+                  if (num > 10000) {
+                    setRawInput("10000");
+                    setQuantity(10000);
+                  } else {
+                    setRawInput(val);
+                    if (num >= minOrder) {
+                      setQuantity(num);
+                    }
+                  }
+                } else {
+                  setRawInput(val);
                 }
               }}
               onBlur={() => {
@@ -135,13 +145,16 @@ export default function PriceCalculator({
                 if (isNaN(num) || num < 1) {
                   // Clear only if non-numeric or zero
                   setRawInput("");
+                } else if (num > 10000) {
+                  setRawInput("10000");
+                  setQuantity(10000);
                 }
                 // Any valid positive number: keep exactly as typed
               }}
               style={{ colorScheme: "light" }}
               className={`w-full px-2 pt-2.5 pb-0 text-center text-base font-bold bg-transparent outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${rawInput !== ""
-                  ? "text-white placeholder-white/70"
-                  : "text-charcoal placeholder-charcoal/40"
+                ? "text-white placeholder-white/70"
+                : "text-charcoal placeholder-charcoal/40"
                 }`}
             />
             <span
@@ -153,7 +166,7 @@ export default function PriceCalculator({
           </div>
         </div>
         <p className="mt-2 text-[10px] sm:text-xs text-charcoal/40">
-          Min. {minOrder} pcs. Bulk discount at 500+ cards.
+          Min. {minOrder} pcs. Max. 10,000 pcs.
         </p>
       </div>
 
@@ -171,15 +184,15 @@ export default function PriceCalculator({
                   key={addon.id}
                   onClick={() => toggleAddOn(addon.id)}
                   className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-300 text-left cursor-pointer ${isSelected
-                      ? "bg-champagne/5 border-champagne/40 shadow-sm"
-                      : "bg-white border-cream-dark hover:border-champagne/25"
+                    ? "bg-champagne/5 border-champagne/40 shadow-sm"
+                    : "bg-white border-cream-dark hover:border-champagne/25"
                     }`}
                 >
                   {/* Checkbox */}
                   <div
                     className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected
-                        ? "bg-champagne border-champagne"
-                        : "border-cream-dark"
+                      ? "bg-champagne border-champagne"
+                      : "border-cream-dark"
                       }`}
                   >
                     {isSelected && (
@@ -259,16 +272,7 @@ export default function PriceCalculator({
           </div>
         )}
 
-        {breakdown.discount > 0 && (
-          <div className="flex justify-between text-sm">
-            <span className="text-green-600 font-medium">
-              Bulk Discount ({breakdown.discountPercent}%)
-            </span>
-            <span className="font-medium text-green-600">
-              -{formatPKR(breakdown.discount)}
-            </span>
-          </div>
-        )}
+
 
         <div className="pt-2.5 border-t border-champagne/20 flex justify-between">
           <span className="text-base font-semibold text-charcoal-dark">
@@ -279,10 +283,6 @@ export default function PriceCalculator({
           </span>
         </div>
 
-        <p className="text-[10px] text-charcoal/40 text-right">
-          {formatPKR(Math.round(breakdown.total / quantity))}/card after
-          discount
-        </p>
       </motion.div>
 
       {/* Sample Card Notice */}
