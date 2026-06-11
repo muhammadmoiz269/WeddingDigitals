@@ -5,6 +5,7 @@ import JsonLd from "@/components/JsonLd";
 import { organizationLd, localBusinessLd, websiteLd } from "@/lib/jsonld";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
 import "./globals.css";
@@ -127,7 +128,7 @@ export default function RootLayout({
         {children}
         <SpeedInsights />
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
-
+        <Analytics mode="production" />
         {/* ── Meta Pixel ── */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
