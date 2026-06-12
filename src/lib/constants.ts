@@ -64,7 +64,7 @@ export function sortCards(cards: CardProduct[], sort: SortValue): CardProduct[] 
     case "price-desc":
       return sorted.sort((a, b) => b.base_price - a.base_price);
     case "newest":
-      return sorted; // API already returns newest first
+      return sorted.sort((a, b) => (b.is_new ? 1 : 0) - (a.is_new ? 1 : 0));
     case "name-asc":
       return sorted.sort((a, b) => a.name.localeCompare(b.name));
     case "name-desc":

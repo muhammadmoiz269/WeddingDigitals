@@ -19,7 +19,7 @@ function buildMongoSort(sort: string): Record<string, 1 | -1> {
     case "best-selling": return { is_bestseller: -1, created_at: -1 };
     case "price-asc":    return { base_price: 1 };
     case "price-desc":   return { base_price: -1 };
-    case "newest":       return { created_at: -1 };
+    case "newest":       return { is_new: -1, created_at: -1 };
     case "name-asc":     return { name: 1 };
     case "name-desc":    return { name: -1 };
     case "featured":

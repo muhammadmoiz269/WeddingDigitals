@@ -130,9 +130,7 @@ const CardSchema = new Schema<ICard>(
 
 // Indexes for fast queries
 CardSchema.index({ category: 1 });
-CardSchema.index({ slug: 1 });
 CardSchema.index({ is_bestseller: 1 });
-CardSchema.index({ card_code: 1 }, { sparse: true });
 
 const Card: Model<ICard> =
   mongoose.models.Card || mongoose.model<ICard>("Card", CardSchema);

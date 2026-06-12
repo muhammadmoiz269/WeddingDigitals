@@ -7,7 +7,7 @@ export const FAQ_HOME: Faq[] = [
   {
     question: 'How long does printing and delivery take?',
     answer:
-      'We print and dispatch within 3–7 business days from order confirmation. For urgent orders (Karachi only) we offer a 48-hour express service — message us on WhatsApp to confirm availability before placing your order.',
+      'We print and dispatch within 3–7 business days from order confirmation. For urgent orders (Karachi only) we offer a 48-hour express service. Message us on WhatsApp to confirm availability before placing your order.',
   },
   {
     question: 'Do you deliver outside Karachi?',
@@ -17,7 +17,7 @@ export const FAQ_HOME: Faq[] = [
   {
     question: 'Can I customise card text in both Urdu and English?',
     answer:
-      'Absolutely. All our card designs support bilingual text — Urdu (Nastaliq script) and English side by side. During the checkout customisation step you can enter your event details in either or both languages, and our designers will typeset them professionally. A free digital proof is shared on WhatsApp before any printing begins.',
+      'Absolutely. All our card designs support bilingual text — Urdu (Nastaliq script) and English side by side. A free digital proof is shared on WhatsApp before any printing begins.',
   },
   {
     question: 'What is the minimum order quantity?',
@@ -27,7 +27,7 @@ export const FAQ_HOME: Faq[] = [
   {
     question: 'Do you offer digital or WhatsApp wedding cards?',
     answer:
-      'Yes — digital e-cards are available as an add-on for all designs.',
+      'Yes, digital e-cards are available as an add-on for all designs.',
   },
 ];
 

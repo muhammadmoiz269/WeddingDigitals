@@ -66,6 +66,11 @@ function parseCsv(raw: string): string[][] {
 
 // ── Parse + map ───────────────────────────────────────────────────────────────
 
+if (!fs.existsSync(CSV_PATH)) {
+  console.warn(`⚠️ Warning: SEO.csv not found at ${CSV_PATH}. Skipping regeneration, using existing src/data/seo-products.ts`);
+  process.exit(0);
+}
+
 const raw = fs.readFileSync(CSV_PATH, 'utf-8');
 const [headerRow, ...dataRows] = parseCsv(raw);
 

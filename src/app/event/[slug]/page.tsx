@@ -53,7 +53,7 @@ async function fetchEventCards(
     await connectToDatabase();
     const [docs, total] = await Promise.all([
       Card.find({ events: eventName })
-        .sort({ is_bestseller: -1, created_at: -1 })
+        .sort({ is_bestseller: -1, is_new: -1, created_at: -1 })
         .limit(ITEMS_PER_PAGE)
         .lean(),
       Card.countDocuments({ events: eventName }),
