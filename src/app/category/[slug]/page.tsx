@@ -13,6 +13,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CategoryProductGrid from '@/components/CategoryProductGrid';
+import NoScriptProductLinks from '@/components/NoScriptProductLinks';
 import FaqAccordion from '@/components/FaqAccordion';
 import { FAQ_HOME } from '@/lib/faqs';
 
@@ -32,7 +33,9 @@ export async function generateMetadata({
   if (!cat) return { title: 'Not Found' };
 
   return {
-    title: cat.metaTitle,
+    // metaTitle is already fully composed ("... | Shahi Bulawa"), so use
+    // `absolute` to skip the root layout's "%s | Shahi Bulawa" template.
+    title: { absolute: cat.metaTitle },
     description: cat.metaDescription,
     keywords: [...cat.keywords],
     alternates: {
@@ -45,6 +48,18 @@ export async function generateMetadata({
       url: `${SITE_URL}/category/${slug}`,
     },
   };
+}
+
+async function fetchCategorySlugs(
+  category: string,
+): Promise<{ slug: string; name: string }[]> {
+  try {
+    await connectToDatabase();
+    const docs = await Card.find({ category }, 'slug name').lean();
+    return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
+  } catch {
+    return [];
+  }
 }
 
 async function fetchCategoryCards(
@@ -101,7 +116,10 @@ export default async function CategoryPage({
   const cat = CATEGORY_LANDING.find((c) => c.slug === slug);
   if (!cat) notFound();
 
-  const { cards, total } = await fetchCategoryCards(cat.category);
+  const [{ cards, total }, allSlugs] = await Promise.all([
+    fetchCategoryCards(cat.category),
+    fetchCategorySlugs(cat.category),
+  ]);
   const siblings = CATEGORY_LANDING.filter((c) => c.slug !== slug);
 
   const pageUrl = `${SITE_URL}/category/${slug}`;
@@ -169,6 +187,7 @@ export default async function CategoryPage({
           category={cat.category}
           siblings={siblings}
         />
+        <NoScriptProductLinks cards={allSlugs} />
         <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
       </main>
       <Footer />

@@ -27,7 +27,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral wedding card karachi","bride groom wedding card","wedding invitation cards karachi","romantic shadi card","digital wedding card pakistan"],
     imageAlt: "Watercolour wedding invitation card showing a bride and groom standing beneath a blush rose floral arch by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-floral-arch-couple-watercolour-wedding-card-hsc-d004.jpg",
-    slug: "floral-arch-couple-watercolour-wedding-card-hsc-d004",
+    slug: "floral-arch-couple-watercolour-wedding-card",
   },
   {
     cardCode: "3CC1177",
@@ -40,7 +40,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["destination wedding card karachi","modern wedding invitation","scenic save the date","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Watercolour save the date card showing a lakeside dock with a floral arch and flying birds by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-lakeside-dock-save-the-date-card-3cc1177.jpg",
-    slug: "lakeside-dock-save-the-date-wedding-card-3cc1177",
+    slug: "lakeside-dock-save-the-date-wedding-card",
   },
   {
     cardCode: "3CC1174",
@@ -53,7 +53,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","wild rose wedding invitation","wedding cards karachi","two piece wedding card","digital wedding card pakistan"],
     imageAlt: "Two-piece wedding ceremony card set with blush and peach wild roses and gold script by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-blush-wild-rose-wedding-ceremony-card-set-3cc1174.jpg",
-    slug: "blush-wild-rose-wedding-ceremony-card-set-3cc1174",
+    slug: "blush-wild-rose-wedding-ceremony-card-set-karachi",
   },
   {
     cardCode: "3CC1173",
@@ -66,7 +66,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["valima reception card karachi","reception cards karachi","muslim wedding invitation","jasmine wedding card","digital valima card pakistan"],
     imageAlt: "Valima reception card with green script calligraphy and white jasmine watercolour florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-green-script-jasmine-valima-reception-card-3cc1173.jpg",
-    slug: "green-script-jasmine-valima-reception-card-3cc1173",
+    slug: "green-script-jasmine-valima-reception-card-karachi",
   },
   {
     cardCode: "3CC1171",
@@ -79,7 +79,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["modern wedding card karachi","monogram save the date","greenery wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a sage-green circle monogram and white roses with greenery by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-sage-circle-monogram-save-the-date-card-3cc1171.jpg",
-    slug: "sage-circle-monogram-save-the-date-card-3cc1171",
+    slug: "sage-circle-monogram-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1166",
@@ -92,7 +92,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding cards karachi","blue floral wedding card","landscape wedding card","watercolour wedding invitation","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card with dusty-blue and cream watercolour flowers in the corners and brown script by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-dusty-blue-watercolour-landscape-wedding-card-3cc1166.jpg",
-    slug: "dusty-blue-watercolour-landscape-wedding-card-3cc1166",
+    slug: "dusty-blue-watercolour-landscape-wedding-card-karachi",
   },
   {
     cardCode: "3CC1165",
@@ -105,7 +105,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","whimsical wedding invitation","landscape wedding card","digital wedding card pakistan","shadi cards karachi"],
     imageAlt: "Landscape wedding ceremony card set with hand-drawn love-heart trees, flying birds and a soft watercolour wash by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-love-heart-tree-landscape-wedding-card-set-3cc1165.jpg",
-    slug: "love-heart-tree-landscape-wedding-card-set-3cc1165",
+    slug: "love-heart-tree-landscape-wedding-card-set-karachi",
   },
   {
     cardCode: "3CC1163",
@@ -118,7 +118,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding cards karachi","lilac wedding invitation","landscape wedding card","purple floral wedding card","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card with lilac and mauve cosmos floral side panels and a cream centre band by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-lilac-cosmos-side-panel-landscape-wedding-card-3cc1163.jpg",
-    slug: "lilac-cosmos-side-panel-landscape-wedding-card-3cc1163",
+    slug: "lavender-floral-valima-card-karachi",
   },
   {
     cardCode: "3CC1160",
@@ -131,7 +131,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","blue wedding invitation","landscape wedding card","digital wedding card pakistan","shadi cards karachi"],
     imageAlt: "Landscape wedding ceremony card with dusty-blue watercolour florals and a thin gold double frame by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-dusty-blue-floral-landscape-wedding-card-3cc1160.jpg",
-    slug: "dusty-blue-floral-landscape-wedding-card-3cc1160",
+    slug: "dusty-blue-floral-landscape-valima-card-karachi",
   },
   {
     cardCode: "3CC1158",
@@ -144,7 +144,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding cards karachi","rose wedding invitation","landscape wedding card","save the date karachi","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card with mauve and burgundy watercolour roses in the corners and a soft wash by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-mauve-burgundy-rose-landscape-wedding-card-3cc1158.jpg",
-    slug: "mauve-burgundy-rose-landscape-wedding-card-3cc1158",
+    slug: "mauve-burgundy-rose-landscape-wedding-card-karachi",
   },
   {
     cardCode: "3CC1154",
@@ -157,7 +157,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["save the date cards karachi","monogram wedding card","simple wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Minimalist save the date card with a single hand-painted pink tulip stem and a gold monogram oval by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-single-tulip-stem-monogram-save-the-date-card-3cc1154.jpg",
-    slug: "single-tulip-stem-monogram-save-the-date-card-3cc1154",
+    slug: "single-tulip-stem-monogram-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1153",
@@ -170,7 +170,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["valima reception card karachi","reception cards karachi","purple wedding card","two piece valima card","digital valima card pakistan"],
     imageAlt: "Valima reception card set with a lilac band cover and an oval insert with purple phlox florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-lilac-phlox-valima-reception-card-set-3cc1153.jpg",
-    slug: "lilac-phlox-valima-reception-card-set-3cc1153",
+    slug: "purple-floral-valima-card-karachi",
   },
   {
     cardCode: "3CC1152",
@@ -183,7 +183,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","classic wedding invitation","purple wedding card","muslim wedding card","digital wedding card pakistan"],
     imageAlt: "Wedding ceremony card with a gold-line arch frame and soft lilac and purple peony florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-lilac-peony-arch-wedding-ceremony-card-3cc1152.jpg",
-    slug: "lilac-peony-arch-wedding-ceremony-card-3cc1152",
+    slug: "lilac-peony-arch-wedding-ceremony-card-karachi",
   },
   {
     cardCode: "3CC1151",
@@ -196,7 +196,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","classic wedding invitation","purple wedding card","two piece wedding card","digital wedding card pakistan"],
     imageAlt: "Wedding ceremony card set with an arch-cut cover and lilac periwinkle watercolour florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-periwinkle-arch-wedding-ceremony-card-set-3cc1151.jpg",
-    slug: "periwinkle-arch-wedding-ceremony-card-set-3cc1151",
+    slug: "periwinkle-arch-wedding-ceremony-card-set",
   },
   {
     cardCode: "3CC1150",
@@ -209,7 +209,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["monogram wedding card karachi","modern save the date","eucalyptus wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a gold monogram in an oval frame, eucalyptus sprigs and a peach peony by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-monogram-oval-eucalyptus-save-the-date-card-3cc1150.jpg",
-    slug: "monogram-oval-eucalyptus-save-the-date-card-3cc1150",
+    slug: "monogram-oval-eucalyptus-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1146",
@@ -222,7 +222,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral valima card karachi","peony wedding invitation","reception cards karachi","silver foil wedding card","digital valima card pakistan"],
     imageAlt: "Valima reception card with a silver foil arch and lush pink and coral peony watercolour florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-silver-arch-peony-valima-reception-card-3cc1146.jpg",
-    slug: "silver-arch-peony-valima-reception-card-3cc1146",
+    slug: "silver-arch-peony-valima-reception-card-karachi",
   },
   {
     cardCode: "3CC1144",
@@ -235,7 +235,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding cards karachi","blue floral wedding card","landscape wedding card","watercolour wedding invitation","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card with dusty-blue and cream watercolour florals in the corners by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-dusty-blue-floral-landscape-wedding-card-3cc1144.jpg",
-    slug: "dusty-blue-floral-landscape-wedding-card-3cc1144",
+    slug: "dusty-blue-floral-landscape-wedding-card-karachi",
   },
   {
     cardCode: "3CC1143",
@@ -248,7 +248,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral valima card karachi","reception cards karachi","rose wedding invitation","landscape wedding card","digital valima card pakistan"],
     imageAlt: "Landscape valima reception card with lilac and peach watercolour roses and a thin black frame by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-lilac-peach-rose-landscape-valima-card-3cc1143.jpg",
-    slug: "lilac-peach-rose-landscape-valima-card-3cc1143",
+    slug: "lavender-peach-rose-landscape-valima-card-shahi-bulawa-karachi",
   },
   {
     cardCode: "3CC1142",
@@ -261,7 +261,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding cards karachi","eucalyptus wedding invitation","landscape wedding card","greenery wedding card","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card with eucalyptus leaves, pink bottlebrush florals and a thin gold frame by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-eucalyptus-bottlebrush-landscape-wedding-card-3cc1142.jpg",
-    slug: "eucalyptus-bottlebrush-landscape-wedding-card-3cc1142",
+    slug: "eucalyptus-bottlebrush-landscape-wedding-card-karachi",
   },
   {
     cardCode: "3CC1140",
@@ -274,7 +274,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["classic wedding invitation karachi","vintage wedding card","wedding ceremony card","landscape wedding card","digital wedding card pakistan"],
     imageAlt: "Landscape wedding card set with vintage sepia and beige roses and a gold double frame by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-vintage-sepia-rose-landscape-wedding-card-set-3cc1140.jpg",
-    slug: "vintage-sepia-rose-landscape-wedding-card-set-3cc1140",
+    slug: "vintage-sepia-rose-landscape-wedding-card-set-karachi",
   },
   {
     cardCode: "3CC1138",
@@ -287,7 +287,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["valima cards karachi","boho wedding invitation","simple wedding card","modern valima card","digital wedding card pakistan"],
     imageAlt: "Minimalist valima card with a terracotta and rust botanical vase illustration on a warm beige wash by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-terracotta-botanical-vase-valima-card-3cc1138.jpg",
-    slug: "terracotta-botanical-vase-valima-card-3cc1138",
+    slug: "terracotta-botanical-vase-valima-card-karachi",
   },
   {
     cardCode: "3CC1136",
@@ -300,7 +300,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["geometric wedding invitation karachi","wedding ceremony card","gold wedding card","digital wedding card pakistan","shadi cards karachi"],
     imageAlt: "Cream wedding invitation card with thin gold geometric lines and pink watercolour florals in the corners by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-gold-geometric-line-floral-wedding-card-3cc1136.jpg",
-    slug: "gold-geometric-line-floral-wedding-card-3cc1136",
+    slug: "gold-geometric-line-floral-wedding-card-karachi",
   },
   {
     cardCode: "3CC1135",
@@ -313,7 +313,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["modern wedding card karachi","geometric wedding invitation","monogram save the date","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a gold heptagon geometric frame, green monogram and a pink wildflower wreath by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-heptagon-gold-frame-floral-save-the-date-card-3cc1135.jpg",
-    slug: "heptagon-gold-frame-floral-save-the-date-card-3cc1135",
+    slug: "heptagon-gold-frame-floral-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1133",
@@ -326,7 +326,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["gold wedding card karachi","premium wedding invitation","rose wedding card","wedding cards karachi","digital wedding card pakistan"],
     imageAlt: "White wedding card with a delicate gold wreath ring, pink roses and gold script names by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-gold-wreath-ring-rose-wedding-card-3cc1133.jpg",
-    slug: "gold-wreath-ring-rose-wedding-card-3cc1133",
+    slug: "gold-wreath-ring-rose-wedding-invitation-card-karachi",
   },
   {
     cardCode: "3CC1132",
@@ -339,7 +339,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["modern wedding card karachi","gold foil save the date","rose wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a gold diamond frame, red and white roses and a soft gingham background by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-gold-diamond-frame-rose-save-the-date-card-3cc1132.jpg",
-    slug: "gold-diamond-frame-rose-save-the-date-card-3cc1132",
+    slug: "gold-diamond-frame-rose-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1131",
@@ -352,7 +352,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral valima card karachi","pink rose wedding invitation","reception cards karachi","muslim wedding card","digital valima card pakistan"],
     imageAlt: "Valima reception card with large pink roses in the corners, a thin black frame and green script by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-large-pink-rose-valima-reception-card-3cc1131.jpg",
-    slug: "large-pink-rose-valima-reception-card-3cc1131",
+    slug: "large-pink-rose-valima-reception-card-karachi",
   },
   {
     cardCode: "3CC1129",
@@ -365,7 +365,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["modern wedding card karachi","geometric wedding invitation","floral save the date","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a hexagon geometric frame, soft mauve wash and cream rose clusters by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-hexagon-frame-floral-save-the-date-card-3cc1129.jpg",
-    slug: "hexagon-frame-floral-save-the-date-card-3cc1129",
+    slug: "hexagon-frame-floral-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1128",
@@ -378,7 +378,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral save the date karachi","watercolour wedding card","wedding cards karachi","romantic wedding invitation","digital save the date pakistan"],
     imageAlt: "Save the date card with a watercolour floral wedding arch, draped fabric and terracotta cloud tones by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-watercolour-floral-arch-save-the-date-card-3cc1128.jpg",
-    slug: "watercolour-floral-arch-save-the-date-card-3cc1128",
+    slug: "watercolour-floral-arch-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1127",
@@ -391,7 +391,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding ceremony card karachi","classic wedding invitation","muslim wedding card","traditional shadi card","digital wedding card pakistan"],
     imageAlt: "White wedding ceremony card with a subtle quatrefoil lattice border and gold and black text by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-quatrefoil-lattice-wedding-ceremony-card-3cc1127.jpg",
-    slug: "quatrefoil-lattice-wedding-ceremony-card-3cc1127",
+    slug: "quatrefoil-lattice-wedding-ceremony-card-karachi",
   },
   {
     cardCode: "3CC1119",
@@ -404,7 +404,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["valima reception card karachi","gold foil wedding card","reception cards karachi","muslim wedding invitation","digital valima card pakistan"],
     imageAlt: "Ivory valima reception card with gold foil text and a fine engraved decorative border strip by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-ivory-gold-foil-engraved-valima-card-3cc1119.jpg",
-    slug: "ivory-gold-foil-engraved-valima-card-3cc1119",
+    slug: "ivory-gold-foil-engraved-valima-reception-card-karachi",
   },
   {
     cardCode: "3CC1117",
@@ -417,7 +417,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["valima reception card","gold foil wedding card","reception cards karachi","muslim wedding invitation","digital valima card pakistan"],
     imageAlt: "Ivory valima reception card with gold foil calligraphy and an embossed floral border by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-ivory-gold-foil-valima-reception-card-3cc1117.jpg",
-    slug: "ivory-gold-foil-valima-reception-card-3cc1117",
+    slug: "ivory-gold-foil-valima-reception-card-karachi",
   },
   {
     cardCode: "3CC1116",
@@ -430,7 +430,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["textured wedding card karachi","embossed valima card","reception cards karachi","gold foil wedding card","digital valima card pakistan"],
     imageAlt: "Valima reception card set with an embossed grid cover, maroon velvet Invitation band and a gold-foil insert by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-embossed-grid-valima-reception-card-set-3cc1116.jpg",
-    slug: "embossed-grid-valima-reception-card-set-3cc1116",
+    slug: "embossed-grid-valima-reception-card-set-karachi",
   },
   {
     cardCode: "3CC1114",
@@ -443,7 +443,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["peony wedding invitation","wedding ceremony card karachi","arch wedding card","elegant shadi card","digital wedding card pakistan"],
     imageAlt: "Ivory wedding ceremony card with a gold arch outline and pink peony watercolour florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-ivory-arch-peony-floral-wedding-card-3cc1114.jpg",
-    slug: "ivory-arch-peony-floral-wedding-card-3cc1114",
+    slug: "ivory-arch-peony-floral-wedding-invitation-card-karachi",
   },
   {
     cardCode: "3CC1111",
@@ -456,7 +456,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["pink wedding card karachi","rose wedding invitation","wedding ceremony card","digital wedding card pakistan","shadi cards karachi"],
     imageAlt: "Wedding invitation card with a hand-drawn pink rose bouquet inside a soft pink circle by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-pink-rose-bouquet-wedding-invitation-card-3cc1111.jpg",
-    slug: "pink-rose-bouquet-wedding-invitation-card-3cc1111",
+    slug: "pink-rose-bouquet-wedding-invitation-card-karachi",
   },
   {
     cardCode: "3CC1103",
@@ -469,7 +469,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["save the date cards karachi","rose wedding invitation","watercolour wedding card","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Ivory save the date card with peach and pink watercolour roses in opposite corners and brown script by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-peach-rose-corner-save-the-date-card-3cc1103.jpg",
-    slug: "peach-rose-corner-save-the-date-card-3cc1103",
+    slug: "peach-rose-corner-watercolour-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1101",
@@ -482,7 +482,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral valima card karachi","reception cards karachi","pink wedding invitation","muslim wedding card","digital valima card pakistan"],
     imageAlt: "Valima Day card with a pink banded name panel, peach roses and a pink gerbera by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-valima-day-pink-banded-floral-card-3cc1101.jpg",
-    slug: "valima-day-pink-banded-floral-card-3cc1101",
+    slug: "valima-day-pink-banded-floral-invitation-card-karachi",
   },
   {
     cardCode: "3CC1100",
@@ -495,7 +495,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["wedding invitation cards karachi","floral wedding card","bride groom wedding card","romantic shadi card","digital wedding card pakistan"],
     imageAlt: "Watercolour wedding invitation card showing a bride and groom under a blush rose floral arch by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-watercolour-couple-floral-arch-wedding-card-3cc1100.jpg",
-    slug: "watercolour-couple-floral-arch-wedding-card-3cc1100",
+    slug: "watercolour-couple-floral-arch-wedding-card",
   },
   {
     cardCode: "3CC1084",
@@ -508,7 +508,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["modern wedding card karachi","geometric wedding invitation","tulip save the date","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a geometric diamond frame, blush watercolour wash and pink tulip florals by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-geometric-diamond-frame-save-the-date-card-3cc1084.jpg",
-    slug: "geometric-diamond-frame-save-the-date-card-3cc1084",
+    slug: "geometric-diamond-frame-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1083",
@@ -521,7 +521,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral save the date karachi","cherry blossom wedding card","marble wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a grey marble background, pink cherry blossom branches and a thin rose-gold frame by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-marble-cherry-blossom-save-the-date-card-3cc1083.jpg",
-    slug: "marble-cherry-blossom-save-the-date-card-3cc1083",
+    slug: "marble-cherry-blossom-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1082",
@@ -534,7 +534,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral save the date karachi","sage green wedding card","rose wedding invitation","digital save the date pakistan","wedding cards karachi"],
     imageAlt: "Save the date card with a sage green and gold marble wash and peach and cream rose borders by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-sage-gold-marble-rose-save-the-date-card-3cc1082.jpg",
-    slug: "sage-gold-marble-rose-save-the-date-card-3cc1082",
+    slug: "sage-gold-marble-rose-save-the-date-card-karachi",
   },
   {
     cardCode: "3CC1079",
@@ -547,7 +547,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["gold monogram wedding card karachi","premium wedding invitation","marble wedding card","wedding cards karachi","digital wedding card pakistan"],
     imageAlt: "Wedding card with a grey marble background, delicate floral wreath and a gold monogram by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-marble-gold-monogram-wreath-wedding-card-3cc1079.jpg",
-    slug: "marble-gold-monogram-wreath-wedding-card-3cc1079",
+    slug: "marble-gold-monogram-wreath-wedding-card-karachi",
   },
   {
     cardCode: "3CC1070",
@@ -560,7 +560,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["embossed wedding card karachi","textured wedding invitation","navy velvet wedding card","traditional shadi card","digital wedding card pakistan"],
     imageAlt: "Cream wedding invitation card with an embossed grid texture, navy velvet band and rose clusters by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-embossed-grid-navy-velvet-invitation-card-3cc1070.jpg",
-    slug: "embossed-grid-navy-velvet-invitation-card-3cc1070",
+    slug: "embossed-grid-navy-velvet-invitation-card-karachi",
   },
   {
     cardCode: "3CC1060",
@@ -573,7 +573,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["classic wedding card karachi","vintage rose wedding invitation","traditional shadi card","wedding cards karachi","digital wedding card pakistan"],
     imageAlt: "Ivory wedding invitation card with vintage rose clusters at the top and bottom and brown script Invitation by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-vintage-rose-cluster-invitation-card-3cc1060.jpg",
-    slug: "vintage-rose-cluster-invitation-card-3cc1060",
+    slug: "vintage-rose-cluster-wedding-invitation-card-karachi",
   },
   {
     cardCode: "3CC1059",
@@ -586,7 +586,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["classic wedding card karachi","rose wreath wedding invitation","wedding cards karachi","traditional shadi card","digital wedding card pakistan"],
     imageAlt: "White wedding invitation card with a blush pink rose wreath ring and brown calligraphy Invitation by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-blush-rose-wreath-invitation-card-3cc1059.jpg",
-    slug: "blush-rose-wreath-invitation-card-3cc1059",
+    slug: "blush-rose-wedding-invitation-card-shahi-bulawa-karachi",
   },
   {
     cardCode: "3CC1057",
@@ -599,7 +599,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["classic wedding invitation karachi","sage green wedding card","elegant shadi card","wedding ceremony card","digital wedding card pakistan"],
     imageAlt: "White wedding card with soft sage-green and cream floral sprays and gold script reading weds by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-sage-green-floral-spray-wedding-card-3cc1057.jpg",
-    slug: "sage-green-floral-spray-wedding-card-3cc1057",
+    slug: "sage-green-floral-spray-wedding-invitation-card-karachi",
   },
   {
     cardCode: "3CC1056",
@@ -612,7 +612,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["classic wedding card karachi","pink rose wedding invitation","calligraphy wedding card","traditional shadi card","digital wedding card pakistan"],
     imageAlt: "White wedding invitation card with delicate pink roses around an ornate frame and calligraphy Invitation by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-ornate-frame-pink-rose-invitation-card-3cc1056.jpg",
-    slug: "ornate-frame-pink-rose-invitation-card-3cc1056",
+    slug: "ornate-frame-pink-rose-invitation-card-karachi",
   },
   {
     cardCode: "3CC1037",
@@ -625,7 +625,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["red wedding card karachi","rose wedding invitation","traditional shadi card","barat card karachi","digital wedding card pakistan"],
     imageAlt: "Red and ivory rose wedding invitation card with a red velvet band and gold Invitation plaque by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-red-rose-velvet-band-invitation-card-3cc1037.jpg",
-    slug: "red-rose-velvet-band-invitation-card-3cc1037",
+    slug: "red-rose-velvet-band-invitation-card-karachi",
   },
   {
     cardCode: "1157",
@@ -638,7 +638,7 @@ export const SEO_PRODUCTS: readonly SeoProduct[] = Object.freeze([
     secondaryKeywords: ["floral valima card karachi","reception cards karachi","landscape wedding card","muslim wedding invitation","digital valima card pakistan"],
     imageAlt: "Landscape valima reception card with pink cosmos florals in the corners, a thin gold frame and teal script by Shahi Bulawa Karachi",
     imageFileName: "shahi-bulawa-pink-cosmos-floral-landscape-valima-card-1157.jpg",
-    slug: "pink-cosmos-floral-landscape-valima-card-1157",
+    slug: "pink-cosmos-floral-landscape-valima-card-karachi",
   },
 ]);
 

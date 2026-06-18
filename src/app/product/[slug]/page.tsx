@@ -17,8 +17,13 @@ export const revalidate = 600;
 // ─── Static params ────────────────────────────────────────────────────────────
 
 export async function generateStaticParams() {
-  const { SEO_PRODUCTS } = await import('@/data/seo-products');
-  return SEO_PRODUCTS.map((p) => ({ slug: p.slug }));
+  try {
+    await connectToDatabase();
+    const docs = await Card.find({}, 'slug').lean();
+    return docs.map((doc) => ({ slug: doc.slug }));
+  } catch {
+    return [];
+  }
 }
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
@@ -116,7 +121,7 @@ export async function generateMetadata({
   }
 
   if (!card && !seo) {
-    return { title: 'Card Not Found | Shahi Bulawa' };
+    return { title: { absolute: 'Card Not Found | Shahi Bulawa' } };
   }
 
   const plainTextDescription = card
@@ -130,7 +135,10 @@ export async function generateMetadata({
   const firstImage = card?.images && card.images.length > 0 ? card.images[0] : undefined;
 
   return {
-    title,
+    // `title` is already fully composed (e.g. "... | Shahi Bulawa Karachi"),
+    // so use `absolute` to skip the root layout's "%s | Shahi Bulawa" template
+    // — otherwise the brand name is appended twice.
+    title: { absolute: title },
     description,
     alternates: {
       canonical: `/product/${slug}`,

@@ -14,6 +14,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import InfiniteCardGrid from '@/components/InfiniteCardGrid';
+import NoScriptProductLinks from '@/components/NoScriptProductLinks';
 
 export const revalidate = 1800;
 
@@ -31,7 +32,9 @@ export async function generateMetadata({
   if (!entry) return { title: 'Not Found' };
 
   return {
-    title: entry.metaTitle,
+    // metaTitle is already fully composed ("... | Shahi Bulawa"), so use
+    // `absolute` to skip the root layout's "%s | Shahi Bulawa" template.
+    title: { absolute: entry.metaTitle },
     description: entry.metaDescription,
     keywords: [...entry.keywords],
     alternates: {
@@ -44,6 +47,18 @@ export async function generateMetadata({
       url: `${SITE_URL}/event/${slug}`,
     },
   };
+}
+
+async function fetchEventSlugs(
+  eventName: string,
+): Promise<{ slug: string; name: string }[]> {
+  try {
+    await connectToDatabase();
+    const docs = await Card.find({ events: eventName }, 'slug name').lean();
+    return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
+  } catch {
+    return [];
+  }
 }
 
 async function fetchEventCards(
@@ -100,7 +115,10 @@ export default async function EventPage({
   const event = EVENT_LANDING.find((e) => e.slug === slug);
   if (!event) notFound();
 
-  const { cards, total } = await fetchEventCards(event.event);
+  const [{ cards, total }, allSlugs] = await Promise.all([
+    fetchEventCards(event.event),
+    fetchEventSlugs(event.event),
+  ]);
   const pageUrl = `${SITE_URL}/event/${slug}`;
 
   return (
@@ -173,6 +191,7 @@ export default async function EventPage({
               filterParam="event"
               filterValue={event.event}
             />
+            <NoScriptProductLinks cards={allSlugs} />
 
             {/* Cross-links to categories */}
             <div className="mt-16 pt-10 border-t border-cream-dark">

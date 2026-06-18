@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import InfiniteProductGrid from "@/components/InfiniteProductGrid";
+import NoScriptProductLinks from "@/components/NoScriptProductLinks";
 import Footer from "@/components/Footer";
 import FaqAccordion from "@/components/FaqAccordion";
 import JsonLd from "@/components/JsonLd";
@@ -11,6 +12,16 @@ import connectToDatabase from "@/lib/mongodb";
 import Card from "@/lib/models/Card";
 import type { CardProduct } from "@/types";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
+
+async function fetchAllSlugs(): Promise<{ slug: string; name: string }[]> {
+  try {
+    await connectToDatabase();
+    const docs = await Card.find({}, "slug name").lean();
+    return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
+  } catch {
+    return [];
+  }
+}
 
 // ISR: revalidate every 30 minutes so new/updated cards appear without a
 // full redeploy while the initial HTML (with the first batch) stays cached.
@@ -63,8 +74,8 @@ async function fetchInitialCards(): Promise<{
 }
 
 export default async function Home() {
-  const { cards: initialCards, total: initialTotal } =
-    await fetchInitialCards();
+  const [{ cards: initialCards, total: initialTotal }, allSlugs] =
+    await Promise.all([fetchInitialCards(), fetchAllSlugs()]);
 
   return (
     <>
@@ -76,6 +87,7 @@ export default async function Home() {
           initialCards={initialCards}
           initialTotal={initialTotal}
         />
+        <NoScriptProductLinks cards={allSlugs} />
         <Features />
         <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
       </main>

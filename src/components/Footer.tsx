@@ -102,7 +102,7 @@ export default function Footer() {
               {[
                 { label: 'Home', href: '/' },
                 { label: 'Collection', href: '/#collection' },
-
+                { label: 'All Wedding Cards', href: '/cards' },
               ].map((link) => (
                 <li key={link.label}>
                   <Link
@@ -213,13 +213,12 @@ export default function Footer() {
             reserved.
           </p>
           <div className="flex items-center gap-6 text-xs text-white/30">
-            <a href="#" className="hover:text-champagne transition-colors">
+            <Link href="/privacy-policy" className="hover:text-champagne transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-champagne transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-champagne transition-colors">
               Terms of Service
-            </a>
-
+            </Link>
           </div>
         </div>
       </div>
