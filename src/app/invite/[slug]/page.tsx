@@ -5,6 +5,7 @@ import connectToDatabase from '@/lib/mongodb';
 import EInvitationModel from '@/lib/models/EInvitation';
 import type { EInvitation } from '@/types';
 import InvitePageClient from '@/components/invite/InvitePageClient';
+import { SITE_URL } from '@/lib/site';
 
 // Always fetch live data — invitations are per-customer and change on every admin edit.
 export const dynamic = 'force-dynamic';
@@ -37,12 +38,14 @@ export async function generateMetadata({
     return { title: { absolute: 'Invitation Not Found' } };
   }
 
-  const { groom_name, bride_name } = invitation.couple;
+  const { groom_name, bride_name, event_title } = invitation.couple;
   const title = `${groom_name} & ${bride_name} — Wedding Invitation`;
+  const description = `You are cordially invited to attend the ${event_title} of ${groom_name} and ${bride_name}.`;
+  const pageUrl = `${SITE_URL}/invite/${slug}`;
 
   return {
     title: { absolute: title },
-    description: `You are cordially invited to attend the ${invitation.couple.event_title} of ${groom_name} and ${bride_name}.`,
+    description,
     // Personal invitation pages must not be indexed — every slug is a private URL
     robots: { index: false, follow: false },
     // Per CLAUDE.md: every page must set its own canonical to avoid the root '/' default
@@ -52,6 +55,18 @@ export async function generateMetadata({
         'en-PK': `/invite/${slug}`,
         'x-default': `/invite/${slug}`,
       },
+    },
+    // og:image is auto-injected from opengraph-image.tsx — no need to specify it here
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   };
 }
