@@ -89,7 +89,7 @@ export default async function Home() {
         />
         <NoScriptProductLinks cards={allSlugs} />
         <Features />
-        <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
+        <FaqAccordion faqs={FAQ_HOME} />
       </main>
       <Footer />
     </>

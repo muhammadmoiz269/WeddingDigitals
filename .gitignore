@@ -42,3 +42,6 @@ next-env.d.ts
 
 # AI
 .claude
+
+# SEO
+SEO.csv

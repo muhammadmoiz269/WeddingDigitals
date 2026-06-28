@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import EInviteList from "./einvitations/EInviteList";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,7 @@ export default function AdminClient() {
   const [filterCat, setFilterCat] = useState("All");
 
   // ─── Orders state ─────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'cards' | 'orders'>('cards');
+  const [activeTab, setActiveTab] = useState<'cards' | 'orders' | 'einvites'>('cards');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -82,12 +83,11 @@ export default function AdminClient() {
   }, []);
 
   useEffect(() => {
-    // Re-fetch if the user manually opens the tab and the list might be stale
     if (activeTab === 'orders') fetchOrders();
   }, [activeTab]);
 
   const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
-    const msg = `Assalamu Alaikum ${order.customer.name}! 🌙\n\n` +
+    const msg = `Assalam o Alaikum ${order.customer.name}! 🌙\n\n` +
       `Your order *#${order.order_id}* has been *confirmed!* ✅\n\n` +
       `📋 *Card:* ${order.card_name}\n` +
       `🎉 *Event:* ${order.customization.main_event}\n` +
@@ -248,6 +248,12 @@ export default function AdminClient() {
                 <span className="admin-nav__badge">{orders.filter(o => !['confirmed', 'in_production', 'completed'].includes(o.payment?.status)).length}</span>
               )}
             </button>
+            <button onClick={() => setActiveTab('einvites')} className={`admin-nav__item ${activeTab === 'einvites' ? 'admin-nav__item--active' : ''}`}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              E-Invitations
+            </button>
           </nav>
           <div className="admin-sidebar__footer">
             <a href="/" target="_blank" className="admin-view-site">
@@ -271,7 +277,9 @@ export default function AdminClient() {
 
         {/* ── Main ── */}
         <main className="admin-main">
-          {activeTab === 'cards' ? (
+          {activeTab === 'einvites' ? (
+            <EInviteList />
+          ) : activeTab === 'cards' ? (
             <>
               {/* Header */}
               <header className="admin-header">
@@ -1255,6 +1263,38 @@ export default function AdminClient() {
         }
         .admin-table__row--clickable { cursor: pointer; }
         .admin-table__row--clickable:hover { background: rgba(201,169,110,0.08); }
+
+        /* ── Template grid ── */
+        .admin-template-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 1rem;
+        }
+        .admin-tpl-card {
+          background: #111009;
+          border: 1px solid rgba(201,169,110,0.12);
+          border-radius: 12px;
+          overflow: hidden;
+          transition: border-color 0.2s;
+        }
+        .admin-tpl-card:hover { border-color: rgba(201,169,110,0.3); }
+        .admin-tpl-card__swatch {
+          height: 72px;
+          width: 100%;
+        }
+        .admin-tpl-card__body {
+          padding: 0.875rem 1rem;
+        }
+        .admin-tpl-card__name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #EDE5D8;
+        }
+        .admin-tpl-card__meta {
+          font-size: 0.72rem;
+          color: #6a5a4a;
+          margin-top: 0.25rem;
+        }
 
         /* ── Order Detail Styles ── */
         .od-section {

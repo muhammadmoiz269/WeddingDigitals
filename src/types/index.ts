@@ -70,6 +70,67 @@ export interface CardProduct {
 
 export type QuantityTier = 100 | 250 | 500;
 
+// ─── E-Invitation Types ───
+
+export interface RsvpContact {
+  name: string;
+  number: string;
+}
+
+export interface ScheduleItem {
+  time: string;
+  title: string;
+  description?: string;
+}
+
+export interface Faq {
+  question: string;
+  answer: string;
+}
+
+export interface ComponentConfig {
+  [key: string]: unknown;
+
+  // Hero
+  hero_intro_text?: string;      // default: "You are cordially invited to attend"
+  bg_video_opacity?: number;     // 0–1, default: 0.1
+
+  // Countdown
+  show_countdown?: boolean;      // default: true
+  countdown_heading?: string;    // default: "Count Down"
+
+  // Schedule
+  show_schedule?: boolean;       // default: true (still gated by data presence)
+
+  // RSVP
+  show_rsvp?: boolean;           // default: true (still gated by data presence)
+  rsvp_message?: string;         // default: "Kindly confirm your attendance via WhatsApp"
+
+  // Footer
+  footer_tagline?: string;       // default: "with love"
+}
+
+export interface EInvitation {
+  _id: string;
+  couple: {
+    groom_name: string;
+    bride_name: string;
+    event_title: string;
+    seal_initials: string;
+    monogram: string;
+  };
+  slug: string;
+  wedding_at: string; // ISO date string on the client side
+  venue: { name: string; address: string; maps_embed_url: string };
+  media: { image_url: string; video_url: string; background_video_url: string; audio_url: string };
+  rsvp_contacts: RsvpContact[];
+  schedule: ScheduleItem[];
+  faqs: Faq[];
+  status: "draft" | "published";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PriceBreakdown {
   basePrice: number;
   quantity: number;

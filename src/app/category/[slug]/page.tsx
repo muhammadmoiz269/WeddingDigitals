@@ -188,7 +188,7 @@ export default async function CategoryPage({
           siblings={siblings}
         />
         <NoScriptProductLinks cards={allSlugs} />
-        <FaqAccordion faqs={FAQ_HOME} heading="Frequently Asked Questions" />
+        <FaqAccordion faqs={FAQ_HOME} />
       </main>
       <Footer />
     </>

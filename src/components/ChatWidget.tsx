@@ -78,7 +78,7 @@ const FAQ_DATA: FAQ[] = [
   },
   {
     keywords: ['hi', 'hello', 'hey', 'salam', 'assalam', 'aoa'],
-    answer: "Assalamu Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I'm here to help you with any questions about our cards, pricing, or ordering process. How can I assist you?",
+    answer: "Assalam o Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I'm here to help you with any questions about our cards, pricing, or ordering process. How can I assist you?",
     followUp: ['Show me categories', 'What are the prices?', 'How to order?'],
   },
   {
@@ -171,7 +171,7 @@ export default function ChatWidget() {
         {
           id: idCounter.current++,
           role: 'bot',
-          text: "Assalamu Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I can help you with pricing, ordering, delivery, and more. What would you like to know?",
+          text: "Assalam o Alaikum! 👋 Welcome to **Shahi Bulawa Wedding Cards**. I can help you with pricing, ordering, delivery, and more. What would you like to know?",
           followUp: ['💰 Pricing', '📋 How to Order', '🎨 Custom Design'],
         },
       ]);

@@ -42,7 +42,7 @@ function Field({ label, value, mono, highlight, full }: {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildWhatsApp(order: any) {
   const msg =
-    `Assalamu Alaikum ${order.customer?.name}! 🌙\n\n` +
+    `Assalam o Alaikum ${order.customer?.name}! 🌙\n\n` +
     `Your order *#${order.order_id}* has been *confirmed!* ✅\n\n` +
     `📋 *Card:* ${order.card_name}\n` +
     `🎉 *Event:* ${order.customization?.main_event}\n` +
