@@ -13,11 +13,19 @@ interface OrderData {
   order_id: string;
   card_name: string;
   quantity: number;
+  base_price?: number;
+  add_ons?: { name: string; price: number }[];
+  subtotal_before_discount?: number;
+  discount?: {
+    source: 'promo' | 'quantity';
+    code?: string;
+    amount: number;
+  };
   total: number;
   customization: {
     main_event: string;
     content: string;
-    addon_events: { event_type: string; quantity: number; content: string }[];
+    addon_events: { event_type: string; quantity: number; content: string; price_per_card?: number }[];
   };
   customer: {
     name: string;
@@ -39,6 +47,20 @@ function SuccessContent() {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(!!orderId);
   const [error, setError] = useState(orderId ? '' : 'No order ID provided.');
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadReceipt = async () => {
+    if (!order || downloading) return;
+    setDownloading(true);
+    try {
+      const { downloadReceipt } = await import('@/lib/receipt');
+      await downloadReceipt(order);
+    } catch (e) {
+      console.error('Receipt download failed', e);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (!orderId) return;
@@ -81,23 +103,15 @@ function SuccessContent() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="success-card">
-      {/* Success icon */}
-      <div className={`success-icon ${isConfirmed ? '' : 'success-icon--pending'}`}>
-        {isConfirmed ? (
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        ) : (
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" strokeLinecap="round" />
-          </svg>
-        )}
+      {/* Animated success tick */}
+      <div className="success-tick">
+        <svg viewBox="0 0 52 52" width="64" height="64">
+          <circle className="success-tick__circle" cx="26" cy="26" r="24" fill="none" />
+          <path className="success-tick__check" fill="none" d="M14 27l8 8 16-16" />
+        </svg>
       </div>
 
-      <h1 className="success-title">
-        {isConfirmed ? 'Order Confirmed! 🎉' : 'Order Placed! 📋'}
-      </h1>
+      <h1 className="success-title">Thank you for ordering with Shahi Bulawa!</h1>
       <p className="success-desc">
         {isConfirmed ? (
           <>
@@ -187,6 +201,25 @@ function SuccessContent() {
           <span>Delivery</span>
           <span>{order.customer.area}, Karachi</span>
         </div>
+        {/* Discount (promo code or bulk) */}
+        {order.discount && order.discount.amount > 0 && (
+          <>
+            <div className="success-row">
+              <span>Subtotal</span>
+              <span>{formatPKR(order.subtotal_before_discount ?? order.total + order.discount.amount)}</span>
+            </div>
+            <div className="success-row success-row--discount">
+              <span>
+                {order.discount.source === 'promo' ? (
+                  <>🎟 Promo <span className="success-row__tag success-row__tag--green">{order.discount.code}</span></>
+                ) : (
+                  'Bulk Discount'
+                )}
+              </span>
+              <span>− {formatPKR(order.discount.amount)}</span>
+            </div>
+          </>
+        )}
         <div className="success-row success-row--total">
           <span>Order Total</span>
           <span>{formatPKR(order.total)}</span>
@@ -202,8 +235,19 @@ function SuccessContent() {
           </>
         ) : (
           <>
-            <span className="success-status__badge success-status__badge--placed">📋 Order Placed</span>
-            <span className="success-status__text">Our team will contact you on WhatsApp to arrange payment</span>
+            <button
+              className="success-status__badge success-status__badge--placed success-status__badge--action"
+              onClick={handleDownloadReceipt}
+              disabled={downloading}
+              title="Download PDF receipt"
+            >
+              {downloading ? '⏳ Preparing…' : 'Download Receipt'}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </button>
           </>
         )}
       </div>
@@ -257,16 +301,51 @@ export default function SuccessPage() {
           text-align: center;
           gap: 1.25rem;
         }
+        /* ── Animated tick (draws in, holds, fades, repeats) ── */
+        .success-tick {
+          animation: tick-pop 4s ease-in-out infinite;
+        }
+        .success-tick__circle {
+          stroke: #22c55e; stroke-width: 3;
+          stroke-dasharray: 152; stroke-dashoffset: 152;
+          animation: tick-circle 4s ease-in-out infinite;
+        }
+        .success-tick__check {
+          stroke: #16a34a; stroke-width: 4;
+          stroke-linecap: round; stroke-linejoin: round;
+          stroke-dasharray: 40; stroke-dashoffset: 40;
+          animation: tick-check 4s ease-in-out infinite;
+        }
+        @keyframes tick-circle {
+          0% { stroke-dashoffset: 152; opacity: 1; }
+          35% { stroke-dashoffset: 0; }
+          85% { stroke-dashoffset: 0; opacity: 1; }
+          /* fade out fully while still drawn… */
+          94% { stroke-dashoffset: 0; opacity: 0; }
+          /* …then reset invisibly in the background */
+          94.1% { stroke-dashoffset: 152; opacity: 0; }
+          100% { stroke-dashoffset: 152; opacity: 0; }
+        }
+        @keyframes tick-check {
+          0%, 30% { stroke-dashoffset: 40; opacity: 1; }
+          55% { stroke-dashoffset: 0; }
+          85% { stroke-dashoffset: 0; opacity: 1; }
+          94% { stroke-dashoffset: 0; opacity: 0; }
+          94.1% { stroke-dashoffset: 40; opacity: 0; }
+          100% { stroke-dashoffset: 40; opacity: 0; }
+        }
+        @keyframes tick-pop {
+          0%, 52% { transform: scale(1); }
+          62% { transform: scale(1.08); }
+          72%, 100% { transform: scale(1); }
+        }
+
         .success-icon {
           width: 72px; height: 72px; border-radius: 50%;
           background: linear-gradient(135deg, #22c55e, #16a34a);
           display: flex; align-items: center; justify-content: center;
           color: white;
           box-shadow: 0 8px 24px rgba(34,197,94,0.25);
-        }
-        .success-icon--pending {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-          box-shadow: 0 8px 24px rgba(245,158,11,0.25);
         }
         .success-icon--error {
           background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -360,6 +439,11 @@ export default function SuccessPage() {
           padding: 0.875rem 1.25rem;
         }
         .success-row--total span { color: #2a2018; }
+        .success-row--discount span { color: #16a34a; font-weight: 600; }
+        .success-row--discount span:first-child { color: #16a34a; }
+        .success-row__tag--green {
+          background: rgba(34,197,94,0.12); color: #166534;
+        }
         .success-row__tag {
           display: inline-block; margin-left: 0.375rem;
           padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.65rem;
@@ -388,6 +472,15 @@ export default function SuccessPage() {
           color: #166534;
         }
         .success-status__text { font-size: 0.75rem; color: #a09080; }
+        .success-status__badge--action {
+          display: inline-flex; align-items: center; gap: 0.4rem;
+          cursor: pointer; font-family: inherit; transition: all 0.2s;
+        }
+        .success-status__badge--action:hover:not(:disabled) {
+          background: rgba(201,169,110,0.2);
+          transform: translateY(-1px);
+        }
+        .success-status__badge--action:disabled { opacity: 0.6; cursor: wait; }
 
         /* ── Buttons ── */
         .success-btn {

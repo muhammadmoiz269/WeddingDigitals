@@ -7,6 +7,14 @@ export interface IOrder extends Document {
   quantity: number;
   base_price: number;
   add_ons: { name: string; price: number }[];
+  /** Order total before any discount (server-computed gross) */
+  subtotal_before_discount?: number;
+  /** Present when a discount was applied; `total` is always the final discounted amount */
+  discount?: {
+    source: "promo" | "quantity";
+    code?: string;
+    amount: number;
+  };
   total: number;
 
   customization: {
@@ -25,7 +33,8 @@ export interface IOrder extends Document {
     method: "full" | "deposit";
     amount_due: number;
     receipt_url: string;
-    status: "pending_payment" | "confirmed" | "in_production" | "completed";
+    /** "confirmed" is legacy — the workflow is pending_payment → in_production → out_for_delivery → completed */
+    status: "pending_payment" | "confirmed" | "in_production" | "out_for_delivery" | "completed";
   };
 
   created_at: Date;
@@ -49,6 +58,12 @@ const OrderSchema = new Schema<IOrder>(
         price: { type: Number, required: true, min: 0 },
       },
     ],
+    subtotal_before_discount: { type: Number, min: 0 },
+    discount: {
+      source: { type: String, enum: ["promo", "quantity"] },
+      code: { type: String },
+      amount: { type: Number, min: 0 },
+    },
     total: { type: Number, required: true, min: 0 },
 
     customization: {
@@ -75,7 +90,7 @@ const OrderSchema = new Schema<IOrder>(
       receipt_url: { type: String, default: "" },
       status: {
         type: String,
-        enum: ["pending_payment", "confirmed", "in_production", "completed"],
+        enum: ["pending_payment", "confirmed", "in_production", "out_for_delivery", "completed"],
         default: "pending_payment",
       },
     },

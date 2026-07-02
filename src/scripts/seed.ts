@@ -24,6 +24,7 @@ const CardSchema = new mongoose.Schema(
     card_code: { type: String, trim: true, uppercase: true, sparse: true },
     base_price: { type: Number, required: true, min: 0 },
     original_price: { type: Number, min: 0 },
+    inner_card_price: { type: Number, min: 0 },
     category: {
       type: String,
       required: true,
@@ -42,6 +43,14 @@ const CardSchema = new mongoose.Schema(
         description: { type: String, default: "" },
       },
     ],
+    events: {
+      type: [String],
+      enum: ["Nikkah", "Valima", "Mehndi", "Baraat", "Engagement"],
+      default: [],
+    },
+    meta_title: { type: String, trim: true },
+    meta_description: { type: String, trim: true },
+    image_alt_text: { type: String, trim: true },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
@@ -69,7 +78,9 @@ const seedCards = [
     name: "Mughal Floral Velvet Card",
     base_price: 350,
     original_price: 500,
+    inner_card_price: 60,
     category: "Luxury",
+    events: ["Baraat", "Valima"],
     description:
       "Hand-finished velvet card with intricate Mughal floral motifs and gold foil detailing. Includes matching envelope with wax seal. A timeless choice for grand Karachi weddings.",
     images: ["/images/card-1.jpg", "/images/card-1.jpg"],
@@ -87,7 +98,9 @@ const seedCards = [
     slug: "minimalist-nikkah-invite",
     name: "Minimalist Nikkah Invite",
     base_price: 120,
+    inner_card_price: 30,
     category: "Minimalist",
+    events: ["Nikkah"],
     description:
       "Clean, modern design with elegant Urdu typography on premium 300gsm cotton card stock. Perfect for intimate Nikkah ceremonies. Simplicity at its finest.",
     images: ["/images/card-2.jpg", "/images/card-2.jpg"],
@@ -105,7 +118,9 @@ const seedCards = [
     name: "Royal Baroque Gold Foil Card",
     base_price: 450,
     original_price: 600,
+    inner_card_price: 70,
     category: "Luxury",
+    events: ["Baraat"],
     description:
       "Luxurious baroque-inspired design with real gold foil stamping on Italian imported textured paper. A statement of grandeur for your Barat procession.",
     images: ["/images/card-3.jpg", "/images/card-3.jpg"],
@@ -123,7 +138,9 @@ const seedCards = [
     slug: "pastel-garden-watercolor",
     name: "Pastel Garden Watercolor Invite",
     base_price: 180,
+    inner_card_price: 40,
     category: "Floral",
+    events: ["Valima"],
     description:
       "Delicate watercolor florals in soft pastels printed on handmade recycled paper. Includes RSVP card and directions insert. Perfect for elegant Valima receptions.",
     images: ["/images/card-4.jpg", "/images/card-4.jpg"],
@@ -141,7 +158,9 @@ const seedCards = [
     name: "Classic Urdu Calligraphy Card",
     base_price: 200,
     original_price: 280,
+    inner_card_price: 45,
     category: "Classic",
+    events: ["Baraat", "Valima"],
     description:
       "Traditional Nastaliq calligraphy by master calligraphers, digitally printed on satin-finish card stock with embossed border. A nod to our rich heritage.",
     images: ["/images/card-5.jpg", "/images/card-5.jpg"],
@@ -158,7 +177,9 @@ const seedCards = [
     slug: "modern-geometric-walima",
     name: "Modern Geometric Walima Card",
     base_price: 150,
+    inner_card_price: 35,
     category: "Modern",
+    events: ["Valima"],
     description:
       "Contemporary geometric patterns with metallic champagne accents. Flat-printed on thick matte stock with matching envelope liner.",
     images: ["/images/card-6.jpg", "/images/card-6.jpg"],
@@ -174,7 +195,9 @@ const seedCards = [
     slug: "mehndi-night-festive",
     name: "Mehndi Night Festive Card",
     base_price: 130,
+    inner_card_price: 30,
     category: "Textured",
+    events: ["Mehndi"],
     description:
       "Vibrant mehndi-inspired patterns in green and gold. Playful yet elegant design for your Mehndi celebration invites.",
     images: ["/images/card-7.jpg", "/images/card-7.jpg"],
@@ -192,7 +215,9 @@ const seedCards = [
     name: "Ivory Laser-Cut Pocket Card",
     base_price: 380,
     original_price: 500,
+    inner_card_price: 60,
     category: "Luxury",
+    events: ["Baraat", "Valima"],
     description:
       "Precision laser-cut ivory pocket folder with satin ribbon tie. Contains main invite, RSVP, menu card, and map insert. The ultimate luxury statement.",
     images: ["/images/card-8.jpg", "/images/card-8.jpg"],
@@ -222,7 +247,7 @@ async function main() {
     const result = await Card.findOneAndUpdate(
       { slug: card.slug },
       { $set: card },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true, runValidators: true }
     );
     const wasNew = result.created_at?.getTime() === result.updated_at?.getTime();
     if (wasNew) {

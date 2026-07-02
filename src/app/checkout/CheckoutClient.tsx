@@ -83,6 +83,14 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
   const areaRef = useRef<HTMLDivElement>(null);
 
+  // ─── Promo code state ───────────────────────────────────────────────────────
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_amount: number } | null>(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const appliedPromoRef = useRef(appliedPromo);
+  useEffect(() => { appliedPromoRef.current = appliedPromo; }, [appliedPromo]);
+
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -122,7 +130,60 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     });
   }, []);
 
-  const amountDue = grandTotal;
+  // Body shared by /api/promo/validate and re-validation — names/quantities
+  // only, the server resolves all prices from the database
+  const buildPromoOrderInfo = useCallback(() => ({
+    card_slug: card.slug,
+    quantity: form.quantity,
+    add_on_names: selectedAddOns.map(a => a.name),
+    addon_events: form.addOnEvents
+      .filter(e => e.enabled && e.eventType !== form.mainEvent)
+      .map(e => ({ event_type: e.eventType, quantity: parseInt(e.quantity, 10) }))
+      .filter(e => Number.isInteger(e.quantity) && e.quantity >= 1),
+  }), [card.slug, form.quantity, form.addOnEvents, form.mainEvent, selectedAddOns]);
+
+  const applyPromo = useCallback(async (codeArg?: string) => {
+    const code = (codeArg ?? promoInput).trim();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch('/api/promo/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, ...buildPromoOrderInfo() }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setAppliedPromo(null);
+        setPromoError(json.error || 'Invalid promo code');
+        return;
+      }
+      setAppliedPromo({ code: json.data.code, discount_amount: json.data.discount_amount });
+      setPromoInput('');
+    } catch {
+      setPromoError('Could not validate the code. Please try again.');
+    } finally {
+      setPromoLoading(false);
+    }
+  }, [promoInput, buildPromoOrderInfo]);
+
+  const removePromo = useCallback(() => {
+    setAppliedPromo(null);
+    setPromoError('');
+  }, []);
+
+  // Re-validate an applied promo whenever quantities change, so the preview
+  // never drifts from what the server will accept (e.g. min order amount)
+  useEffect(() => {
+    if (!appliedPromoRef.current) return;
+    applyPromo(appliedPromoRef.current.code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.quantity, form.addOnEvents, form.mainEvent, selectedAddOns]);
+
+  const promoDiscount = appliedPromo ? Math.min(appliedPromo.discount_amount, grandTotal) : 0;
+  const finalTotal = grandTotal - promoDiscount;
+  const amountDue = form.paymentMethod === 'deposit' ? Math.ceil(finalTotal / 2) : finalTotal;
 
   // ─── Validation ─────────────────────────────────────────────────────────────
 
@@ -202,7 +263,8 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         base_price: card.base_price,
         inner_card_price: card.inner_card_price ?? 0,
         add_ons: selectedAddOns.map(a => ({ name: a.name, price: a.price })),
-        total: grandTotal,
+        promo_code: appliedPromo?.code,
+        total: finalTotal,
         customization: {
           main_event: form.mainEvent,
           addon_events: enabledAddons.map(e => ({
@@ -223,7 +285,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         },
       };
 
-      beginCheckout(card.slug, form.quantity, grandTotal);
+      beginCheckout(card.slug, form.quantity, finalTotal);
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -233,11 +295,17 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
       const json = await res.json();
       if (!res.ok || !json.success) {
+        // Promo became invalid between preview and submit (deactivated,
+        // expired, or usage cap reached) — clear it so the user can retry
+        if (typeof json.error_code === 'string' && json.error_code.startsWith('PROMO_')) {
+          setAppliedPromo(null);
+          setPromoError(json.error || 'This promo code is no longer valid');
+        }
         throw new Error(json.error || 'Failed to place order');
       }
 
       // Fire Purchase event with confirmed order details
-      purchase(json.data.order_id, card.slug, form.quantity, grandTotal);
+      purchase(json.data.order_id, card.slug, form.quantity, finalTotal);
 
       router.push(`/checkout/success?orderId=${json.data.order_id}`);
     } catch (e: unknown) {
@@ -440,9 +508,42 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                       </div>
                     );
                   })}
+                {/* Promo Code */}
+                <div className="co-promo">
+                  {appliedPromo ? (
+                    <div className="co-summary__row co-summary__row--green">
+                      <span>
+                        🎟 <span className="co-summary__discount-tag">{appliedPromo.code}</span>
+                        <button className="co-promo__remove" onClick={removePromo} type="button">Remove</button>
+                      </span>
+                      <span>− {formatPKR(promoDiscount)}</span>
+                    </div>
+                  ) : (
+                    <div className="co-promo__input-row">
+                      <input
+                        className="co-promo__input"
+                        type="text"
+                        placeholder="Promo code"
+                        maxLength={32}
+                        value={promoInput}
+                        onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(''); }}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } }}
+                      />
+                      <button
+                        className="co-promo__apply"
+                        type="button"
+                        onClick={() => applyPromo()}
+                        disabled={promoLoading || !promoInput.trim()}
+                      >
+                        {promoLoading ? '…' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {promoError && <p className="co-promo__error">{promoError}</p>}
+                </div>
                 <div className="co-summary__total">
                   <span>Grand Total</span>
-                  <span>{formatPKR(grandTotal)}</span>
+                  <span>{formatPKR(finalTotal)}</span>
                 </div>
               </div>
 
@@ -457,7 +558,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                     <div className="co-pay-option__radio" />
                     <div>
                       <strong>Full Payment</strong>
-                      <span>{formatPKR(grandTotal)}</span>
+                      <span>{formatPKR(finalTotal)}</span>
                     </div>
                   </button>
                   <button
@@ -467,7 +568,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                     <div className="co-pay-option__radio" />
                     <div>
                       <strong>50% Deposit</strong>
-                      <span>{formatPKR(Math.ceil(grandTotal / 2))} now · {formatPKR(grandTotal - Math.ceil(grandTotal / 2))} on delivery</span>
+                      <span>{formatPKR(Math.ceil(finalTotal / 2))} advance · {formatPKR(finalTotal - Math.ceil(finalTotal / 2))} before delivery</span>
                     </div>
                   </button>
                 </div>
@@ -854,6 +955,28 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
           display: flex; justify-content: space-between; font-size: 1.125rem; font-weight: 700;
           color: #2a2018; padding-top: 0.5rem; border-top: 1px solid #e0d6c6; margin-top: 0.25rem;
         }
+
+        /* ── Promo code ── */
+        .co-promo { padding: 0.25rem 0; }
+        .co-promo__input-row { display: flex; gap: 0.5rem; }
+        .co-promo__input {
+          flex: 1; padding: 0.55rem 0.85rem; border: 1px solid #e0d6c6;
+          border-radius: 10px; font-size: 0.85rem; color: #2a2018;
+          background: white; outline: none; text-transform: uppercase;
+        }
+        .co-promo__input:focus { border-color: #C9A96E; }
+        .co-promo__apply {
+          padding: 0.55rem 1.1rem; border: none; border-radius: 10px;
+          background: #2a2018; color: #f5efe4; font-size: 0.82rem; font-weight: 600;
+          cursor: pointer; transition: opacity 0.2s;
+        }
+        .co-promo__apply:hover:not(:disabled) { opacity: 0.85; }
+        .co-promo__apply:disabled { opacity: 0.45; cursor: not-allowed; }
+        .co-promo__remove {
+          margin-left: 0.5rem; background: none; border: none; cursor: pointer;
+          font-size: 0.72rem; color: #b45309; text-decoration: underline; padding: 0;
+        }
+        .co-promo__error { margin-top: 0.4rem; font-size: 0.78rem; color: #dc2626; }
 
         /* ── Payment ── */
         .co-pay-options { display: flex; flex-direction: column; gap: 0.75rem; }

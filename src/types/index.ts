@@ -131,6 +131,33 @@ export interface EInvitation {
   updatedAt: string;
 }
 
+// ─── Promo Code Types ───
+
+export interface PromoCode {
+  _id: string;
+  code: string;
+  type: "percent" | "fixed";
+  value: number;
+  min_order_amount: number;
+  usage_limit: number | null;
+  usage_count: number;
+  valid_from: string | null;
+  valid_until: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Successful response payload from POST /api/promo/validate */
+export interface PromoValidationResult {
+  code: string;
+  type: "percent" | "fixed";
+  value: number;
+  discount_amount: number;
+  gross_total: number;
+  new_total: number;
+}
+
 export interface PriceBreakdown {
   basePrice: number;
   quantity: number;
