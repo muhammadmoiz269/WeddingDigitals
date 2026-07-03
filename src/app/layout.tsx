@@ -63,20 +63,11 @@ export const metadata: Metadata = {
     siteName: BRAND.name,
     title: `${BRAND.name} | Premium Wedding Cards in Karachi`,
     description: BRAND.description,
-    images: [
-      {
-        url: "/opengraph-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: `${BRAND.name} — Premium Wedding Cards in Karachi`,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${BRAND.name} | Premium Wedding Cards in Karachi`,
     description: BRAND.description,
-    images: ["/opengraph-image.jpg"],
   },
   robots: {
     index: true,
