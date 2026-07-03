@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 
 const fadeUp: Variants = {
@@ -106,7 +107,7 @@ export default function Hero() {
             </svg>
             Browse Collection
           </a>
-          <a href="#collection" className="btn-secondary text-base px-8 py-4">
+          <Link href="/cards" className="btn-secondary text-base px-8 py-4">
             View Designs
             <svg
               className="w-4 h-4"
@@ -121,7 +122,7 @@ export default function Hero() {
                 d="M17 8l4 4m0 0l-4 4m4-4H3"
               />
             </svg>
-          </a>
+          </Link>
         </motion.div>
 
         {/* Trust Indicators */}

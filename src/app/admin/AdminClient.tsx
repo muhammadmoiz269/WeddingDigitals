@@ -59,6 +59,18 @@ export default function AdminClient() {
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("All");
+  const [imgPreview, setImgPreview] = useState<{ src: string; alt: string; x: number; y: number } | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    setSidebarCollapsed(localStorage.getItem("admin_sidebar_collapsed") === "1");
+  }, []);
+
+  const toggleSidebar = () =>
+    setSidebarCollapsed((prev) => {
+      localStorage.setItem("admin_sidebar_collapsed", prev ? "0" : "1");
+      return !prev;
+    });
 
   // ─── Orders state ─────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<'cards' | 'orders' | 'einvites' | 'promos'>('cards');
@@ -213,7 +225,17 @@ export default function AdminClient() {
 
       <div className="admin-shell">
         {/* ── Sidebar ── */}
-        <aside className="admin-sidebar">
+        <aside className={`admin-sidebar ${sidebarCollapsed ? 'admin-sidebar--collapsed' : ''}`}>
+          <button
+            className="admin-sidebar__toggle"
+            onClick={toggleSidebar}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: sidebarCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s' }}>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
           <div className="admin-logo">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -222,63 +244,63 @@ export default function AdminClient() {
               className="admin-logo__mark"
               style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, background: 'transparent' }}
             />
-            <div>
+            <div className="admin-logo__text">
               <p className="admin-logo__brand">Shahi Bulawa</p>
               <p className="admin-logo__sub">Admin Panel</p>
             </div>
           </div>
           <nav className="admin-nav">
-            <button onClick={() => setActiveTab('cards')} className={`admin-nav__item ${activeTab === 'cards' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => setActiveTab('cards')} title={sidebarCollapsed ? 'Cards' : undefined} className={`admin-nav__item ${activeTab === 'cards' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" rx="1" />
                 <rect x="14" y="3" width="7" height="7" rx="1" />
                 <rect x="3" y="14" width="7" height="7" rx="1" />
                 <rect x="14" y="14" width="7" height="7" rx="1" />
               </svg>
-              Cards
+              <span className="admin-nav__label">Cards</span>
             </button>
-            <button onClick={() => setActiveTab('orders')} className={`admin-nav__item ${activeTab === 'orders' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => setActiveTab('orders')} title={sidebarCollapsed ? 'Orders' : undefined} className={`admin-nav__item ${activeTab === 'orders' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" y1="13" x2="8" y2="13" />
                 <line x1="16" y1="17" x2="8" y2="17" />
               </svg>
-              Orders
+              <span className="admin-nav__label">Orders</span>
               {orders.filter(o => !['confirmed', 'in_production', 'out_for_delivery', 'completed'].includes(o.payment?.status)).length > 0 && (
                 <span className="admin-nav__badge">{orders.filter(o => !['confirmed', 'in_production', 'out_for_delivery', 'completed'].includes(o.payment?.status)).length}</span>
               )}
             </button>
-            <button onClick={() => setActiveTab('einvites')} className={`admin-nav__item ${activeTab === 'einvites' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => setActiveTab('einvites')} title={sidebarCollapsed ? 'E-Invitations' : undefined} className={`admin-nav__item ${activeTab === 'einvites' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              E-Invitations
+              <span className="admin-nav__label">E-Invitations</span>
             </button>
-            <button onClick={() => setActiveTab('promos')} className={`admin-nav__item ${activeTab === 'promos' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => setActiveTab('promos')} title={sidebarCollapsed ? 'Promo Codes' : undefined} className={`admin-nav__item ${activeTab === 'promos' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
               </svg>
-              Promo Codes
+              <span className="admin-nav__label">Promo Codes</span>
             </button>
           </nav>
           <div className="admin-sidebar__footer">
-            <a href="/" target="_blank" className="admin-view-site">
+            <a href="/" target="_blank" title={sidebarCollapsed ? 'View Site' : undefined} className="admin-view-site">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
-              View Site
+              <span className="admin-nav__label">View Site</span>
             </a>
-            <button onClick={handleLogout} className="admin-view-site admin-logout-btn" style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: "0.5rem" }}>
+            <button onClick={handleLogout} title={sidebarCollapsed ? 'Logout' : undefined} className="admin-view-site admin-logout-btn" style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: "0.5rem" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-              Logout
+              <span className="admin-nav__label">Logout</span>
             </button>
           </div>
         </aside>
@@ -379,7 +401,18 @@ export default function AdminClient() {
                             <div className="admin-card-cell">
                               {card.images?.[0] ? (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img src={card.images[0]} alt={card.name} className="admin-card-thumb" />
+                                <img
+                                  src={card.images[0]}
+                                  alt={card.name}
+                                  className="admin-card-thumb"
+                                  onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const half = 190; // ~half of max preview height + padding
+                                    const y = Math.min(Math.max(rect.top + rect.height / 2, half), window.innerHeight - half);
+                                    setImgPreview({ src: card.images[0], alt: card.name, x: rect.right + 12, y });
+                                  }}
+                                  onMouseLeave={() => setImgPreview(null)}
+                                />
                               ) : (
                                 <div className="admin-card-thumb admin-card-thumb--placeholder">🃏</div>
                               )}
@@ -562,6 +595,14 @@ export default function AdminClient() {
 
 
 
+      {/* ── Card Image Hover Preview ── */}
+      {imgPreview && (
+        <div className="admin-thumb-preview" style={{ left: imgPreview.x, top: imgPreview.y }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imgPreview.src} alt={imgPreview.alt} />
+        </div>
+      )}
+
       {/* ── Delete Confirm Dialog ── */}
       {deleteTarget && (
         <div className="admin-overlay">
@@ -617,6 +658,50 @@ export default function AdminClient() {
           position: sticky;
           top: 0;
           height: 100vh;
+          transition: width 0.25s ease, padding 0.25s ease;
+        }
+        .admin-sidebar__toggle {
+          position: absolute;
+          top: 1.75rem;
+          right: -12px;
+          z-index: 20;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #1C1916;
+          border: 1px solid rgba(201,169,110,0.35);
+          color: #C9A96E;
+          cursor: pointer;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .admin-sidebar__toggle:hover { background: rgba(201,169,110,0.2); border-color: #C9A96E; }
+        .admin-sidebar--collapsed {
+          width: 72px;
+          padding: 1.5rem 0.75rem;
+        }
+        .admin-sidebar--collapsed .admin-logo {
+          justify-content: center;
+          padding-left: 0;
+          padding-right: 0;
+        }
+        .admin-sidebar--collapsed .admin-logo__text,
+        .admin-sidebar--collapsed .admin-nav__label {
+          display: none;
+        }
+        .admin-sidebar--collapsed .admin-nav__item,
+        .admin-sidebar--collapsed .admin-view-site {
+          justify-content: center;
+          padding-left: 0;
+          padding-right: 0;
+        }
+        .admin-sidebar--collapsed .admin-nav__badge {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          margin-left: 0;
         }
         .admin-logo {
           display: flex;
@@ -655,6 +740,7 @@ export default function AdminClient() {
         }
         .admin-nav { flex: 1; }
         .admin-nav__item {
+          position: relative;
           display: flex;
           align-items: center;
           gap: 0.625rem;
@@ -783,6 +869,34 @@ export default function AdminClient() {
           border: 1px solid rgba(201,169,110,0.15);
           flex-shrink: 0;
         }
+        .admin-card-thumb:hover { border-color: rgba(201,169,110,0.5); }
+
+        /* ── Thumb Hover Preview ── */
+        .admin-thumb-preview {
+          position: fixed;
+          z-index: 1100;
+          transform: translateY(-50%);
+          pointer-events: none;
+          background: #1C1916;
+          border: 1px solid rgba(201,169,110,0.3);
+          border-radius: 10px;
+          padding: 6px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.65);
+          animation: admin-preview-in 0.15s ease;
+        }
+        .admin-thumb-preview img {
+          display: block;
+          max-width: 280px;
+          max-height: 340px;
+          width: auto;
+          height: auto;
+          border-radius: 6px;
+        }
+        @keyframes admin-preview-in {
+          from { opacity: 0; transform: translateY(-50%) scale(0.96); }
+          to { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
         .admin-card-thumb--placeholder {
           background: #1C1916;
           display: flex;

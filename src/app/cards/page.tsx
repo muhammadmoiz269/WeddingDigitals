@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import connectToDatabase from '@/lib/mongodb';
 import Card from '@/lib/models/Card';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
 import { CATEGORY_LANDING } from '@/lib/categories';
 import { EVENT_LANDING } from '@/lib/events';
-import { cld } from '@/lib/cloudinary';
+import CardTileSlider from '@/components/CardTileSlider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
@@ -28,20 +27,22 @@ interface CardLink {
   slug: string;
   name: string;
   category: string;
-  image?: string;
+  base_price: number;
+  images: string[];
 }
 
 async function fetchAllCardLinks(): Promise<CardLink[]> {
   try {
     await connectToDatabase();
-    const docs = await Card.find({}, 'slug name category images')
+    const docs = await Card.find({}, 'slug name category base_price images')
       .sort({ name: 1 })
       .lean();
     return docs.map((doc) => ({
       slug: doc.slug,
       name: doc.name,
       category: doc.category,
-      image: doc.images?.[0],
+      base_price: doc.base_price,
+      images: doc.images ?? [],
     }));
   } catch {
     return [];
@@ -109,20 +110,17 @@ export default async function AllCardsPage() {
                   className="group block rounded-xl overflow-hidden border border-cream-dark/50 hover:border-champagne/30 hover:shadow-lg transition-all duration-300"
                 >
                   <div className="relative aspect-[3/4] bg-cream">
-                    {c.image && (
-                      <Image
-                        src={cld(c.image)}
-                        alt={c.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      />
-                    )}
+                    <CardTileSlider images={c.images} alt={c.name} />
                   </div>
                   <div className="p-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-champagne">
-                      {c.category}
-                    </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-champagne">
+                        {c.category}
+                      </span>
+                      <span className="text-sm font-bold text-black whitespace-nowrap">
+                        PKR {c.base_price.toLocaleString()}
+                      </span>
+                    </div>
                     <p className="text-sm font-medium text-charcoal-dark mt-1 leading-snug line-clamp-2">
                       {c.name}
                     </p>
