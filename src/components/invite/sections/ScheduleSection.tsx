@@ -53,7 +53,7 @@ export function ScheduleSection({ schedule }: Props) {
         >
           <div className="inv-schedule-container">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/flower-stand.png" alt="" aria-hidden="true" className="inv-flower-stand" />
+            <img src="/assets/template-01/flower-stand.png" alt="" aria-hidden="true" className="inv-flower-stand" />
             <div className="inv-schedule-list">
             {schedule.map((item, i) => (
               <motion.div

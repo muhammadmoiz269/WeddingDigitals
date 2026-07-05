@@ -79,7 +79,7 @@ export function HeroSection({
         <motion.img
           animate={centerCurtainCtrl}
           initial={{ y: '-100%' }}
-          src="/assets/curtain-center.png"
+          src="/assets/template-01/curtain-center.png"
           alt=""
           aria-hidden="true"
           style={{ height: '100%', width: 'auto', display: 'block', flexShrink: 0, transformOrigin: 'top center', opacity: 0.35 }}
@@ -92,7 +92,7 @@ export function HeroSection({
         style={{ position: 'absolute', left: -40, top: 0, height: '100%', transformOrigin: 'top left', zIndex: 10, pointerEvents: 'none' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/curtain-left.png" alt="" aria-hidden="true" style={{ height: '100%', width: 'auto', display: 'block' }} />
+        <img src="/assets/template-01/curtain-left.png" alt="" aria-hidden="true" style={{ height: '100%', width: 'auto', display: 'block' }} />
       </motion.div>
 
       {/* Right curtain */}
@@ -101,7 +101,7 @@ export function HeroSection({
         style={{ position: 'absolute', right: -40, top: 0, height: '100%', transformOrigin: 'top right', zIndex: 10, pointerEvents: 'none' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/curtain-right.png" alt="" aria-hidden="true" style={{ height: '100%', width: 'auto', display: 'block' }} />
+        <img src="/assets/template-01/curtain-right.png" alt="" aria-hidden="true" style={{ height: '100%', width: 'auto', display: 'block' }} />
       </motion.div>
 
       {/* Foreground content — only mounts after center curtain completes */}

@@ -131,7 +131,7 @@ export default function EnvelopeScreen({ onOpen, showEnvelopeImage = true }: Pro
         {showEnvelopeImage && (
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'url(/assets/envelope.png)',
+            backgroundImage: 'url(/assets/template-01/envelope.png)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',

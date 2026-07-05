@@ -26,7 +26,7 @@ export function RsvpSection({ contacts, message }: Props) {
           style={{ flexShrink: 0, pointerEvents: 'none' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/vase-left.png" alt="" aria-hidden="true" style={{ height: 150, width: 'auto', objectFit: 'contain', opacity: 0.55, display: 'block' }} />
+          <img src="/assets/template-01/vase-left.png" alt="" aria-hidden="true" style={{ height: 150, width: 'auto', objectFit: 'contain', opacity: 0.55, display: 'block' }} />
         </motion.div>
 
         {/* h2 only */}
@@ -60,7 +60,7 @@ export function RsvpSection({ contacts, message }: Props) {
           style={{ flexShrink: 0, pointerEvents: 'none' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/vase-right.png" alt="" aria-hidden="true" style={{ height: 150, width: 'auto', objectFit: 'contain', opacity: 0.55, display: 'block' }} />
+          <img src="/assets/template-01/vase-right.png" alt="" aria-hidden="true" style={{ height: 150, width: 'auto', objectFit: 'contain', opacity: 0.55, display: 'block' }} />
         </motion.div>
       </div>
 

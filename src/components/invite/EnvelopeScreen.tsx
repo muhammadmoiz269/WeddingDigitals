@@ -129,7 +129,7 @@ export default function EnvelopeScreen({ onOpen }: Props) {
       >
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: 'url(/assets/envelope.png)',
+          backgroundImage: 'url(/assets/template-01/envelope.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

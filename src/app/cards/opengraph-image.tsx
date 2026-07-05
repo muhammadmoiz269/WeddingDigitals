@@ -12,8 +12,8 @@ export default async function OG() {
   const [font, logo, rosesTopLeft, rosesBottomRight] = await Promise.all([
     readFile(join(process.cwd(), 'public/fonts/PlayfairDisplay-SemiBold.ttf')),
     readFile(join(process.cwd(), 'public/images/logo.png')),
-    readFile(join(process.cwd(), 'public/assets/roses-top-left.png')),
-    readFile(join(process.cwd(), 'public/assets/roses-bottom-right.png')),
+    readFile(join(process.cwd(), 'public/assets/template-01/roses-top-left.png')),
+    readFile(join(process.cwd(), 'public/assets/template-01/roses-bottom-right.png')),
   ]);
 
   return new ImageResponse(

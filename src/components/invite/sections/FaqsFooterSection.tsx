@@ -146,7 +146,7 @@ export function FaqsFooterSection({ faqs, monogram }: Props) {
           <div style={{ textAlign: 'center', marginBottom: '-1rem' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/assets/candles-white.png"
+              src="/assets/template-01/candles-white.png"
               alt=""
               aria-hidden="true"
               style={{

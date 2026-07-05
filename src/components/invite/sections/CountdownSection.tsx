@@ -23,11 +23,11 @@ export function CountdownSection({ countdownHeading, weddingDate, timeLeft, isPa
     <InvSection
       sideLeft={
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/assets/column-left-countdown.png" alt="" aria-hidden="true" className="inv-col-img" />
+        <img src="/assets/template-01/column-left-countdown.png" alt="" aria-hidden="true" className="inv-col-img" />
       }
       sideRight={
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/assets/column-right-countdown.png" alt="" aria-hidden="true" className="inv-col-img" />
+        <img src="/assets/template-01/column-right-countdown.png" alt="" aria-hidden="true" className="inv-col-img" />
       }
     >
       <Parallax speed={150}>

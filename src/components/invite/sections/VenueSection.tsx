@@ -15,11 +15,11 @@ export function VenueSection({ venue }: Props) {
     <InvSection
       sideLeft={
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/assets/roses-top-left.png" alt="" aria-hidden="true" style={{ width: 200, objectFit: 'contain', display: 'block', opacity: 0.6 }} />
+        <img src="/assets/template-01/roses-top-left.png" alt="" aria-hidden="true" style={{ width: 200, objectFit: 'contain', display: 'block', opacity: 0.6 }} />
       }
       sideRight={
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/assets/roses-bottom-right.png" alt="" aria-hidden="true" style={{ width: 200, objectFit: 'contain', display: 'block', opacity: 0.6 }} />
+        <img src="/assets/template-01/roses-bottom-right.png" alt="" aria-hidden="true" style={{ width: 200, objectFit: 'contain', display: 'block', opacity: 0.6 }} />
       }
     >
       <Parallax speed={150}>
@@ -95,7 +95,7 @@ export function VenueSection({ venue }: Props) {
               </a>
             )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/cypress-trees.png" alt="" aria-hidden="true" className="inv-cypress-img" style={{ height: 140, objectFit: 'contain', opacity: 0.55, display: 'block', alignSelf: 'flex-end', marginTop: 'auto' }} />
+            <img src="/assets/template-01/cypress-trees.png" alt="" aria-hidden="true" className="inv-cypress-img" style={{ height: 140, objectFit: 'contain', opacity: 0.55, display: 'block', alignSelf: 'flex-end', marginTop: 'auto' }} />
           </div>
 
           {venue.maps_embed_url && (
