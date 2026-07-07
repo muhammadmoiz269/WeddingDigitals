@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { Great_Vibes, Pinyon_Script } from 'next/font/google';
+import { Ephesis } from 'next/font/google';
 import type { EInvitation } from '@/types';
 import { ScrollerContext } from '../../core/ScrollerContext';
 import { formatDate } from '../../core/helpers/datetime';
@@ -15,17 +15,10 @@ import { FaqsFooter02 } from './sections/FaqsFooter02';
 import { Template02Styles } from './Template02Styles';
 import { template02Config, t2 } from './config';
 
-const scriptFont = Great_Vibes({
+const ephesis = Ephesis({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-script',
-  display: 'swap',
-});
-
-const scriptFontAlt = Pinyon_Script({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-script-alt',
   display: 'swap',
 });
 
@@ -55,7 +48,7 @@ export function Template02Design({ invitation }: Props) {
     <div style={{ height: '100vh', overflow: 'hidden' }}>
     <div
       ref={containerRef}
-      className={`inv-scroller t2-root ${scriptFont.variable} ${scriptFontAlt.variable}`}
+      className={`inv-scroller t2-root ${ephesis.variable}`}
       style={{
         background: t2.paper,
         color: t2.ink,

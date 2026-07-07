@@ -10,10 +10,17 @@ const STATUS_OPTIONS = [
   { value: 'completed',        label: '✅ Completed',         color: '#8b5cf6' },
 ];
 
-// No longer part of the workflow, but old orders may still carry it
 const LEGACY_STATUSES: Record<string, { label: string; color: string }> = {
   confirmed: { label: '✓ Confirmed', color: '#10b981' },
 };
+
+const KARACHI_AREAS = [
+  'Gulshan-e-Iqbal', 'DHA', 'North Nazimabad', 'Clifton', 'PECHS',
+  'Saddar', 'Malir', 'Korangi', 'Nazimabad', 'Gulistan-e-Johar',
+  'Bahria Town', 'FB Area', 'Tariq Road', 'Liaquatabad', 'Orangi Town',
+  'Landhi', 'Shah Faisal', 'Scheme 33', 'North Karachi', 'Surjani Town',
+  'Garden', 'Lyari', 'Kemari', 'Bin Qasim', 'Other',
+];
 
 function statusLabel(s: string) {
   return STATUS_OPTIONS.find(o => o.value === s)?.label ?? LEGACY_STATUSES[s]?.label ?? s;
@@ -65,6 +72,21 @@ function buildWhatsApp(order: any) {
   return `https://wa.me/${(order.customer?.whatsapp || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function initEditForm(order: any) {
+  return {
+    customer_name:    order.customer?.name    ?? '',
+    customer_whatsapp: order.customer?.whatsapp ?? '',
+    customer_area:    order.customer?.area    ?? '',
+    customer_address: order.customer?.address ?? '',
+    card_name:        order.card_name         ?? '',
+    quantity:         String(order.quantity   ?? ''),
+    total:            String(order.total      ?? ''),
+    payment_method:   order.payment?.method   ?? 'full',
+    amount_due:       String(order.payment?.amount_due ?? ''),
+  };
+}
+
 export default function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const router = useRouter();
@@ -74,6 +96,10 @@ export default function OrderDetailPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState<ReturnType<typeof initEditForm> | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -111,6 +137,51 @@ export default function OrderDetailPage() {
     finally { setSaving(false); }
   };
 
+  const openEdit = () => {
+    if (!order) return;
+    setEditForm(initEditForm(order));
+    setEditOpen(true);
+  };
+
+  const saveEdit = async () => {
+    if (!editForm) return;
+    setEditSaving(true);
+    try {
+      const patch: Record<string, string | number> = {
+        'customer.name':     editForm.customer_name.trim(),
+        'customer.whatsapp': editForm.customer_whatsapp.trim(),
+        'customer.area':     editForm.customer_area,
+        'customer.address':  editForm.customer_address.trim(),
+        'card_name':         editForm.card_name.trim(),
+        'payment.method':    editForm.payment_method,
+      };
+      const qty = parseInt(editForm.quantity, 10);
+      if (!isNaN(qty) && qty > 0) patch['quantity'] = qty;
+      const total = parseFloat(editForm.total);
+      if (!isNaN(total) && total >= 0) patch['total'] = total;
+      const amountDue = parseFloat(editForm.amount_due);
+      if (!isNaN(amountDue) && amountDue >= 0) patch['payment.amount_due'] = amountDue;
+
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setOrder(json.data);
+        setEditOpen(false);
+        showToast('Order updated!');
+      } else {
+        showToast('Failed to save changes');
+      }
+    } catch {
+      showToast('Error saving changes');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   if (loading) return (
     <div className="od-page od-page--center">
       <div className="od-spinner" />
@@ -130,6 +201,137 @@ export default function OrderDetailPage() {
   return (
     <div className="od-page">
       {toast && <div className="od-toast">{toast}</div>}
+
+      {/* ── Edit Modal ─────────────────────────────────────────────────────── */}
+      {editOpen && editForm && (
+        <div className="od-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setEditOpen(false); }}>
+          <div className="od-modal">
+            <div className="od-modal__header">
+              <h2 className="od-modal__title">✏️ Edit Order <span className="od-header__id">{order.order_id}</span></h2>
+              <button className="od-modal__close" onClick={() => setEditOpen(false)} aria-label="Close">✕</button>
+            </div>
+
+            <div className="od-modal__body">
+
+              {/* Customer Info */}
+              <div className="od-modal__section-title">Customer Info</div>
+              <div className="od-modal__grid">
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Full Name</label>
+                  <input
+                    className="od-modal__input"
+                    value={editForm.customer_name}
+                    onChange={e => setEditForm(f => f && ({ ...f, customer_name: e.target.value }))}
+                    placeholder="Customer name"
+                  />
+                </div>
+                <div className="od-modal__field">
+                  <label className="od-modal__label">WhatsApp Number</label>
+                  <input
+                    className="od-modal__input od-modal__input--mono"
+                    value={editForm.customer_whatsapp}
+                    onChange={e => setEditForm(f => f && ({ ...f, customer_whatsapp: e.target.value }))}
+                    placeholder="+923001234567"
+                  />
+                </div>
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Area (Karachi)</label>
+                  <select
+                    className="od-modal__select"
+                    value={editForm.customer_area}
+                    onChange={e => setEditForm(f => f && ({ ...f, customer_area: e.target.value }))}
+                  >
+                    <option value="">— Select area —</option>
+                    {KARACHI_AREAS.map(a => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="od-modal__field od-modal__field--full">
+                  <label className="od-modal__label">Delivery Address</label>
+                  <textarea
+                    className="od-modal__textarea"
+                    value={editForm.customer_address}
+                    onChange={e => setEditForm(f => f && ({ ...f, customer_address: e.target.value }))}
+                    placeholder="House/flat no, street, block, area"
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              {/* Order Details */}
+              <div className="od-modal__section-title">Order Details</div>
+              <div className="od-modal__grid">
+                <div className="od-modal__field od-modal__field--full">
+                  <label className="od-modal__label">Card Name</label>
+                  <input
+                    className="od-modal__input"
+                    value={editForm.card_name}
+                    onChange={e => setEditForm(f => f && ({ ...f, card_name: e.target.value }))}
+                    placeholder="Card name"
+                  />
+                </div>
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Quantity</label>
+                  <input
+                    className="od-modal__input"
+                    type="number"
+                    min={1}
+                    value={editForm.quantity}
+                    onChange={e => setEditForm(f => f && ({ ...f, quantity: e.target.value }))}
+                  />
+                </div>
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Order Total (PKR)</label>
+                  <input
+                    className="od-modal__input"
+                    type="number"
+                    min={0}
+                    value={editForm.total}
+                    onChange={e => setEditForm(f => f && ({ ...f, total: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Payment */}
+              <div className="od-modal__section-title">Payment</div>
+              <div className="od-modal__grid">
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Payment Method</label>
+                  <select
+                    className="od-modal__select"
+                    value={editForm.payment_method}
+                    onChange={e => setEditForm(f => f && ({ ...f, payment_method: e.target.value as 'full' | 'deposit' }))}
+                  >
+                    <option value="full">💰 Full Payment</option>
+                    <option value="deposit">💳 50% Deposit</option>
+                  </select>
+                </div>
+                <div className="od-modal__field">
+                  <label className="od-modal__label">Amount Due (PKR)</label>
+                  <input
+                    className="od-modal__input"
+                    type="number"
+                    min={0}
+                    value={editForm.amount_due}
+                    onChange={e => setEditForm(f => f && ({ ...f, amount_due: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            <div className="od-modal__footer">
+              <button className="od-btn od-btn--ghost" onClick={() => setEditOpen(false)} disabled={editSaving}>
+                Cancel
+              </button>
+              <button className="od-btn od-btn--save" onClick={saveEdit} disabled={editSaving}>
+                {editSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="od-header">
@@ -151,6 +353,9 @@ export default function OrderDetailPage() {
               Send WhatsApp
             </a>
           )}
+          <button className="od-btn od-btn--edit" onClick={openEdit}>
+            ✏️ Edit Order
+          </button>
         </div>
       </header>
 
@@ -292,7 +497,7 @@ export default function OrderDetailPage() {
         .od-header__title { font-size: 1.375rem; font-weight: 700; color: #e8ddd0; }
         .od-header__id { color: #C9A96E; font-family: monospace; }
         .od-header__meta { font-size: 0.8rem; color: #6a5a4a; margin-top: 0.25rem; }
-        .od-header__actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .od-header__actions { display: flex; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 
         /* ── Buttons ── */
         .od-btn {
@@ -305,6 +510,11 @@ export default function OrderDetailPage() {
         .od-btn--ghost:hover { background: rgba(255,255,255,0.09); color: #e8ddd0; }
         .od-btn--wa { background: #25D366; color: white; }
         .od-btn--wa:hover { background: #1db954; }
+        .od-btn--edit { background: rgba(201,169,110,0.12); color: #C9A96E; border: 1px solid rgba(201,169,110,0.3); }
+        .od-btn--edit:hover { background: rgba(201,169,110,0.2); }
+        .od-btn--save { background: #C9A96E; color: #0d0b09; }
+        .od-btn--save:hover:not(:disabled) { background: #b8945a; }
+        .od-btn--save:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* ── Layout ── */
         .od-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
@@ -369,6 +579,69 @@ export default function OrderDetailPage() {
         }
 
         .od-hint { font-size: 0.75rem; color: #6a5a4a; font-style: italic; }
+
+        /* ── Edit Modal ── */
+        .od-modal-overlay {
+          position: fixed; inset: 0; z-index: 1000;
+          background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 1rem;
+        }
+        .od-modal {
+          background: #1a1512; border: 1px solid rgba(201,169,110,0.2);
+          border-radius: 20px; width: 100%; max-width: 680px;
+          max-height: 90vh; display: flex; flex-direction: column;
+          box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+        }
+        .od-modal__header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
+        .od-modal__title { font-size: 1rem; font-weight: 700; color: #e8ddd0; }
+        .od-modal__close {
+          background: none; border: none; color: #6a5a4a; font-size: 1.1rem;
+          cursor: pointer; padding: 0.25rem; line-height: 1;
+          transition: color 0.15s;
+        }
+        .od-modal__close:hover { color: #e8ddd0; }
+        .od-modal__body {
+          overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;
+          flex: 1;
+        }
+        .od-modal__section-title {
+          font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.12em; color: #C9A96E;
+          padding-bottom: 0.5rem; border-bottom: 1px solid rgba(201,169,110,0.15);
+        }
+        .od-modal__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+        @media (max-width: 540px) { .od-modal__grid { grid-template-columns: 1fr; } }
+        .od-modal__field { display: flex; flex-direction: column; gap: 0.35rem; }
+        .od-modal__field--full { grid-column: 1 / -1; }
+        .od-modal__label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6a5a4a; font-weight: 600; }
+        .od-modal__input, .od-modal__select, .od-modal__textarea {
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px; padding: 0.6rem 0.875rem;
+          color: #e8ddd0; font-size: 0.875rem; font-family: inherit;
+          transition: border-color 0.15s; width: 100%;
+          outline: none;
+        }
+        .od-modal__input:focus, .od-modal__select:focus, .od-modal__textarea:focus {
+          border-color: rgba(201,169,110,0.5);
+        }
+        .od-modal__input--mono { font-family: monospace; }
+        .od-modal__select { cursor: pointer; appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a5a4a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat; background-position: right 0.75rem center;
+          padding-right: 2rem;
+        }
+        .od-modal__select option { background: #1a1512; }
+        .od-modal__textarea { resize: vertical; min-height: 60px; }
+        .od-modal__footer {
+          display: flex; justify-content: flex-end; gap: 0.75rem;
+          padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
       `}</style>
     </div>
   );

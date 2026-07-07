@@ -155,7 +155,7 @@ export function FaqsFooter02({ faqs, monogram }: Props) {
           <div style={{ textAlign: 'center', paddingBottom: '2rem' }}>
             <Divider color={t2.accent} />
             <p style={{
-              fontFamily: 'var(--font-script), var(--font-script-alt), cursive',
+              fontFamily: 'var(--font-script), cursive',
               fontSize: 'clamp(1.5rem, 3vw, 2.1rem)',
               color: t2.heading,
               letterSpacing: '0.04em',
