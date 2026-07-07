@@ -122,7 +122,7 @@ export interface EInvitation {
   slug: string;
   wedding_at: string; // ISO date string on the client side
   venue: { name: string; address: string; maps_embed_url: string };
-  media: { image_url: string; video_url: string; background_video_url: string; audio_url: string };
+  media: { image_url: string; video_url: string; background_video_url: string; audio_url: string; event_card_url?: string };
   rsvp_contacts: RsvpContact[];
   schedule: ScheduleItem[];
   faqs: Faq[];

@@ -10,11 +10,14 @@ export function InvSection({
   innerClass = '',
   sideLeft,
   sideRight,
+  background,
 }: {
   children: React.ReactNode;
   innerClass?: string;
   sideLeft?: React.ReactNode;
   sideRight?: React.ReactNode;
+  /** Full-bleed background layer rendered behind the content (z-index 0). */
+  background?: React.ReactNode;
 }) {
   const scrollRef  = useScroller();
   const sectionRef = useRef<HTMLElement>(null);
@@ -31,6 +34,7 @@ export function InvSection({
         className="inv-section"
         style={{ position: 'relative' }}
       >
+        {background}
         {sideLeft && (
           <div className="inv-side-left">
             {sideLeft}

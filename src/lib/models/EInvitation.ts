@@ -20,6 +20,7 @@ export interface IEInvitation extends Document {
     video_url: string;
     background_video_url: string;
     audio_url: string;
+    event_card_url: string;
   };
   rsvp_contacts: { name: string; number: string }[];
   schedule: { time: string; title: string; description: string }[];
@@ -51,6 +52,7 @@ const EInvitationSchema = new Schema<IEInvitation>(
       video_url:            { type: String, trim: true, default: "" },
       background_video_url: { type: String, trim: true, default: "" },
       audio_url:            { type: String, trim: true, default: "" },
+      event_card_url:       { type: String, trim: true, default: "" },
     },
 
     rsvp_contacts: [{ name: { type: String }, number: { type: String } }],

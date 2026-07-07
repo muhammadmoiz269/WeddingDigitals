@@ -24,7 +24,7 @@ type FormState = {
   slug: string;
   wedding_at: string;
   venue: { name: string; address: string; maps_embed_url: string };
-  media: { image_url: string; video_url: string; background_video_url: string; audio_url: string };
+  media: { image_url: string; video_url: string; background_video_url: string; audio_url: string; event_card_url: string };
   rsvp_contacts: { name: string; number: string }[];
   schedule: { time: string; title: string; description: string }[];
   faqs: { question: string; answer: string }[];
@@ -52,6 +52,7 @@ function buildInitial(d?: Partial<EInvitation>): FormState {
       video_url:            d?.media?.video_url            ?? '',
       background_video_url: d?.media?.background_video_url ?? '',
       audio_url:            d?.media?.audio_url            ?? '',
+      event_card_url:       d?.media?.event_card_url       ?? '',
     },
     rsvp_contacts: d?.rsvp_contacts?.length
       ? d.rsvp_contacts.map(r => ({ name: r.name, number: r.number }))
@@ -135,11 +136,11 @@ export default function EInviteForm({ initialData }: Props) {
     setForm(f => ({ ...f, faqs: f.faqs.filter((_, j) => j !== i) }));
 
   // ─── Cloudinary ────────────────────────────────────────────────────────────
-  const openWidget = useCallback((field: 'image_url' | 'video_url' | 'audio_url') => {
+  const openWidget = useCallback((field: 'image_url' | 'video_url' | 'audio_url' | 'event_card_url') => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cld = (window as any).cloudinary;
     if (!cld || !CLOUD_NAME || !UPLOAD_PRESET) { showToast('Cloudinary not configured', 'error'); return; }
-    const isImage = field === 'image_url';
+    const isImage = field === 'image_url' || field === 'event_card_url';
     const isAudio = field === 'audio_url';
     cld.createUploadWidget(
       {
@@ -300,6 +301,27 @@ export default function EInviteForm({ initialData }: Props) {
                   placeholder="Paste the src= URL from Google Maps → Share → Embed a map" />
                 <p className="ec-hint">In Google Maps: Share → Embed a map → copy only the URL inside src=&quot;…&quot;</p>
               </div>
+
+              <div className="ec-field">
+                <label className="ec-label">Event Details Card <span className="ec-opt">(optional)</span></label>
+                {form.media.event_card_url ? (
+                  <div className="ec-media-preview">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.media.event_card_url} alt="Event details card" className="ec-media-preview__img" />
+                    <div className="ec-media-preview__actions">
+                      <button type="button" className="ec-btn-sm" onClick={() => openWidget('event_card_url')}>Replace</button>
+                      <button type="button" className="ec-btn-danger" onClick={() => setForm(f => ({ ...f, media: { ...f.media, event_card_url: '' } }))}>✕ Remove</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" className="ec-upload-zone" onClick={() => openWidget('event_card_url')}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                    <span>Upload event details card</span>
+                    <span className="ec-upload-hint">JPG, PNG, WebP, GIF — max 10 MB</span>
+                  </button>
+                )}
+                <p className="ec-hint">Optional — shown above the venue details on Template 02 designs.</p>
+              </div>
             </div>
 
             {/* ── Section 3: Media ────────────────────────────────────────── */}
@@ -343,6 +365,7 @@ export default function EInviteForm({ initialData }: Props) {
                     <span className="ec-upload-hint">MP4, WebM, MOV — max 50 MB</span>
                   </button>
                 )}
+                <p className="ec-hint">On Template 02 designs this video plays as the envelope intro screen.</p>
               </div>
 
               <div className="ec-field">
