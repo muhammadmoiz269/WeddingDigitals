@@ -30,6 +30,11 @@ const ICONS = {
       <path d="M8 3v9a4 4 0 0 0 8 0V3h2v9a6 6 0 0 1-12 0V3h2zM4 20h16v2H4v-2z"/>
     </svg>
   ),
+  strikethrough: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.154 14c.23.516.346 1.09.346 1.72 0 1.342-.524 2.392-1.571 3.147C14.88 19.622 13.433 20 11.586 20c-1.64 0-3.263-.381-4.87-1.144V16.6c1.52.877 3.075 1.316 4.666 1.316 2.06 0 3.09-.732 3.09-2.197 0-.43-.075-.778-.22-1.043-.115-.212-.29-.403-.513-.573H3v-2h18v2h-3.846zM8.55 11.997H6c-.05-.306-.088-.636-.088-.979 0-1.36.527-2.424 1.583-3.189C8.548 7.278 10.002 6.9 11.86 6.9c1.524 0 2.95.305 4.278.915v2.214c-1.302-.688-2.688-1.033-4.157-1.033-2.04 0-3.06.715-3.06 2.146 0 .34.063.646.19.912.04.082.09.16.138.236z"/>
+    </svg>
+  ),
   bulletList: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
       <path d="M4 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM8 5h12v2H8V5zm0 6h12v2H8v-2zm0 6h12v2H8v-2z"/>
@@ -63,9 +68,9 @@ export default function RichTextEditor({
     el.innerHTML = value;
   }, [value]);
 
-  const execCmd = useCallback((cmd: string) => {
+  const execCmd = useCallback((cmd: string, value?: string) => {
     editorRef.current?.focus();
-    document.execCommand(cmd, false);
+    document.execCommand(cmd, false, value);
     onChange(editorRef.current?.innerHTML ?? '');
   }, [onChange]);
 
@@ -82,19 +87,49 @@ export default function RichTextEditor({
   const isWarn  = plainLen / maxLength > 0.9;
   const isLimit = plainLen >= maxLength;
 
-  const tools = [
-    { cmd: 'bold',                icon: ICONS.bold,        title: 'Bold (Ctrl+B)' },
-    { cmd: 'italic',              icon: ICONS.italic,      title: 'Italic (Ctrl+I)' },
-    { cmd: 'underline',           icon: ICONS.underline,   title: 'Underline (Ctrl+U)' },
-    { cmd: 'insertUnorderedList', icon: ICONS.bulletList,  title: 'Bullet list' },
-    { cmd: 'insertOrderedList',   icon: ICONS.orderedList, title: 'Numbered list' },
+  const inlineTools = [
+    { cmd: 'bold',                icon: ICONS.bold,          title: 'Bold (Ctrl+B)' },
+    { cmd: 'italic',              icon: ICONS.italic,        title: 'Italic (Ctrl+I)' },
+    { cmd: 'underline',           icon: ICONS.underline,     title: 'Underline (Ctrl+U)' },
+    { cmd: 'strikeThrough',       icon: ICONS.strikethrough, title: 'Strikethrough' },
+  ];
+
+  const blockTools = [
+    { cmd: 'insertUnorderedList', icon: ICONS.bulletList,    title: 'Bullet list' },
+    { cmd: 'insertOrderedList',   icon: ICONS.orderedList,   title: 'Numbered list' },
   ];
 
   return (
     <div className="rte-wrap">
       {/* Toolbar */}
       <div className="rte-toolbar">
-        {tools.map(({ cmd, icon, title }) => (
+        {/* Heading pills */}
+        <button
+          type="button"
+          title="Heading 2"
+          className="rte-btn rte-btn--text"
+          onMouseDown={(e) => { e.preventDefault(); execCmd('formatBlock', 'h2'); }}
+        >H2</button>
+        <button
+          type="button"
+          title="Heading 3"
+          className="rte-btn rte-btn--text"
+          onMouseDown={(e) => { e.preventDefault(); execCmd('formatBlock', 'h3'); }}
+        >H3</button>
+        <span className="rte-sep" />
+        {inlineTools.map(({ cmd, icon, title }) => (
+          <button
+            key={cmd}
+            type="button"
+            title={title}
+            className="rte-btn"
+            onMouseDown={(e) => { e.preventDefault(); execCmd(cmd); }}
+          >
+            {icon}
+          </button>
+        ))}
+        <span className="rte-sep" />
+        {blockTools.map(({ cmd, icon, title }) => (
           <button
             key={cmd}
             type="button"
@@ -110,7 +145,7 @@ export default function RichTextEditor({
           type="button"
           title="Clear formatting"
           className="rte-btn"
-          onMouseDown={(e) => { e.preventDefault(); execCmd('removeFormat'); }}
+          onMouseDown={(e) => { e.preventDefault(); execCmd('removeFormat'); execCmd('formatBlock', 'p'); }}
         >
           {ICONS.clearFormat}
         </button>
@@ -178,6 +213,14 @@ export default function RichTextEditor({
           transition: background .14s, color .14s, border-color .14s;
           flex-shrink: 0;
         }
+        .rte-btn--text {
+          width: auto;
+          padding: 0 6px;
+          font-size: .7rem;
+          font-weight: 700;
+          font-family: inherit;
+          letter-spacing: .03em;
+        }
         .rte-btn:hover {
           background: rgba(201,169,110,0.12);
           color: #C9A96E;
@@ -214,6 +257,9 @@ export default function RichTextEditor({
         .rte-body strong { font-weight: 700; color: #EDE5D8; }
         .rte-body em     { font-style: italic; }
         .rte-body u      { text-decoration: underline; }
+        .rte-body s, .rte-body strike { text-decoration: line-through; color: #7a6a5a; }
+        .rte-body h2     { font-size: 1rem; font-weight: 700; color: #EDE5D8; margin: .5rem 0 .2rem; line-height: 1.3; }
+        .rte-body h3     { font-size: .875rem; font-weight: 700; color: #C9A96E; margin: .4rem 0 .15rem; line-height: 1.3; }
         .rte-body ul     { list-style: disc;    padding-left: 1.3rem; margin: .3rem 0; }
         .rte-body ol     { list-style: decimal; padding-left: 1.3rem; margin: .3rem 0; }
         .rte-body li     { margin-bottom: .15rem; }

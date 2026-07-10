@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import EInviteList from "./einvitations/EInviteList";
 import PromoCodesTab from "./PromoCodesTab";
+import RichTextEditor from "@/components/RichTextEditor";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,36 @@ interface CardDoc {
 
 const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"] as const;
 
+const KARACHI_AREAS = [
+  'Gulshan-e-Iqbal', 'DHA', 'North Nazimabad', 'Clifton', 'PECHS',
+  'Saddar', 'Malir', 'Korangi', 'Nazimabad', 'Gulistan-e-Johar',
+  'Bahria Town', 'FB Area', 'Tariq Road', 'Liaquatabad', 'Orangi Town',
+  'Landhi', 'Shah Faisal', 'Scheme 33', 'North Karachi', 'Surjani Town',
+  'Garden', 'Lyari', 'Kemari', 'Bin Qasim', 'Other',
+];
+
+const MAIN_EVENTS = ['Wedding', 'Nikkah', 'Valima', 'Mehndi', 'Baraat', 'Engagement'];
+
+const WA_REGEX = /^(\+92|0)?3\d{9}$/;
+
+function initCustomForm() {
+  return {
+    catalog_card_id: '',   // _id of selected catalog card ('' = manual)
+    card_name:       '',
+    quantity:        '',
+    total:           '',
+    amount_due:      '',
+    main_event:      'Wedding',
+    customer_name:   '',
+    customer_whatsapp: '',
+    customer_area:   '',
+    customer_address:'',
+    payment_method:  'full' as 'full' | 'deposit',
+    payment_status:  'pending_payment',
+    note:            '',
+  };
+}
+
 
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -64,6 +95,10 @@ export default function AdminClient() {
 
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("admin_sidebar_collapsed") === "1");
+    const saved = localStorage.getItem("admin_active_tab");
+    if (saved === 'orders' || saved === 'einvites' || saved === 'promos') {
+      setActiveTab(saved);
+    }
   }, []);
 
   const toggleSidebar = () =>
@@ -74,6 +109,10 @@ export default function AdminClient() {
 
   // ─── Orders state ─────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<'cards' | 'orders' | 'einvites' | 'promos'>('cards');
+  const switchTab = (tab: 'cards' | 'orders' | 'einvites' | 'promos') => {
+    localStorage.setItem("admin_active_tab", tab);
+    setActiveTab(tab);
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -98,6 +137,103 @@ export default function AdminClient() {
   useEffect(() => {
     if (activeTab === 'orders') fetchOrders();
   }, [activeTab]);
+
+  // ─── Custom-order modal state ──────────────────────────────────────────────
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customSaving, setCustomSaving] = useState(false);
+  const [customForm, setCustomForm] = useState(initCustomForm);
+  const [customErrors, setCustomErrors] = useState<Record<string, string>>({});
+
+  const openCustomModal = () => {
+    setCustomForm(initCustomForm());
+    setCustomErrors({});
+    setCustomOpen(true);
+  };
+
+  // When a catalog card is picked, prefill name and suggest total
+  const handleCatalogPick = (cardId: string) => {
+    const card = cards.find(c => c._id === cardId || c.slug === cardId);
+    if (!card) {
+      setCustomForm(f => ({ ...f, catalog_card_id: '', card_name: '', total: '', amount_due: '' }));
+      return;
+    }
+    const qty = parseInt(customForm.quantity, 10) || 1;
+    const suggested = card.base_price * qty;
+    const amountDue = customForm.payment_method === 'deposit' ? Math.ceil(suggested / 2) : suggested;
+    setCustomForm(f => ({
+      ...f,
+      catalog_card_id: cardId,
+      card_name: card.name,
+      total: String(suggested),
+      amount_due: String(amountDue),
+    }));
+  };
+
+  // Auto-update amount_due suggestion when total or method changes (only if it
+  // looks like the suggestion hasn't been manually overridden)
+  const handleCustomTotalOrMethod = (total: string, method: 'full' | 'deposit') => {
+    const t = parseFloat(total);
+    const suggested = !isNaN(t) && t >= 0
+      ? (method === 'deposit' ? Math.ceil(t / 2) : t)
+      : 0;
+    setCustomForm(f => ({ ...f, total, payment_method: method, amount_due: suggested > 0 ? String(suggested) : f.amount_due }));
+  };
+
+  const submitCustomOrder = async () => {
+    // Client-side validation
+    const errs: Record<string, string> = {};
+    if (!customForm.card_name.trim()) errs.card_name = 'Card name is required';
+    const qty = parseInt(customForm.quantity, 10);
+    if (!qty || qty < 1) errs.quantity = 'Quantity must be ≥ 1';
+    const total = parseFloat(customForm.total);
+    if (isNaN(total) || total < 0) errs.total = 'Total must be ≥ 0';
+    if (!customForm.main_event) errs.main_event = 'Event is required';
+    if (!customForm.customer_name.trim()) errs.customer_name = 'Name is required';
+    if (!WA_REGEX.test(customForm.customer_whatsapp)) errs.customer_whatsapp = 'Enter a valid Pakistani number';
+    if (!customForm.customer_area) errs.customer_area = 'Area is required';
+    if (Object.keys(errs).length > 0) { setCustomErrors(errs); return; }
+
+    setCustomSaving(true);
+    setCustomErrors({});
+    try {
+      const amountDue = parseFloat(customForm.amount_due);
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          custom: true,
+          card_name: customForm.card_name.trim(),
+          quantity: qty,
+          total,
+          customization: { main_event: customForm.main_event },
+          customer: {
+            name: customForm.customer_name.trim(),
+            whatsapp: customForm.customer_whatsapp.trim(),
+            area: customForm.customer_area,
+            address: customForm.customer_address.trim(),
+          },
+          payment: {
+            method: customForm.payment_method,
+            amount_due: !isNaN(amountDue) && amountDue >= 0 ? amountDue : undefined,
+            status: customForm.payment_status,
+          },
+          note: customForm.note.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCustomOpen(false);
+        addToast(`Order ${json.data.order_id} created`, 'success');
+        fetchOrders();
+      } else {
+        addToast(json.error || 'Failed to create order', 'error');
+      }
+    } catch {
+      addToast('Network error — order not created', 'error');
+    } finally {
+      setCustomSaving(false);
+    }
+  };
 
   const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
     const msg = `Assalam o Alaikum ${order.customer.name}! 🌙\n\n` +
@@ -250,7 +386,7 @@ export default function AdminClient() {
             </div>
           </div>
           <nav className="admin-nav">
-            <button onClick={() => setActiveTab('cards')} title={sidebarCollapsed ? 'Cards' : undefined} className={`admin-nav__item ${activeTab === 'cards' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => switchTab('cards')} title={sidebarCollapsed ? 'Cards' : undefined} className={`admin-nav__item ${activeTab === 'cards' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" rx="1" />
                 <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -259,7 +395,7 @@ export default function AdminClient() {
               </svg>
               <span className="admin-nav__label">Cards</span>
             </button>
-            <button onClick={() => setActiveTab('orders')} title={sidebarCollapsed ? 'Orders' : undefined} className={`admin-nav__item ${activeTab === 'orders' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => switchTab('orders')} title={sidebarCollapsed ? 'Orders' : undefined} className={`admin-nav__item ${activeTab === 'orders' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
@@ -271,13 +407,13 @@ export default function AdminClient() {
                 <span className="admin-nav__badge">{orders.filter(o => !['confirmed', 'in_production', 'out_for_delivery', 'completed'].includes(o.payment?.status)).length}</span>
               )}
             </button>
-            <button onClick={() => setActiveTab('einvites')} title={sidebarCollapsed ? 'E-Invitations' : undefined} className={`admin-nav__item ${activeTab === 'einvites' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => switchTab('einvites')} title={sidebarCollapsed ? 'E-Invitations' : undefined} className={`admin-nav__item ${activeTab === 'einvites' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <span className="admin-nav__label">E-Invitations</span>
             </button>
-            <button onClick={() => setActiveTab('promos')} title={sidebarCollapsed ? 'Promo Codes' : undefined} className={`admin-nav__item ${activeTab === 'promos' ? 'admin-nav__item--active' : ''}`}>
+            <button onClick={() => switchTab('promos')} title={sidebarCollapsed ? 'Promo Codes' : undefined} className={`admin-nav__item ${activeTab === 'promos' ? 'admin-nav__item--active' : ''}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -485,13 +621,22 @@ export default function AdminClient() {
                     {ordersLoading ? "Loading…" : `${orders.length} order${orders.length !== 1 ? "s" : ""} total`}
                   </p>
                 </div>
-                <button className="admin-btn admin-btn--ghost" onClick={fetchOrders} disabled={ordersLoading}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="23 4 23 10 17 10" />
-                    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                  </svg>
-                  Refresh
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button className="admin-btn admin-btn--ghost" onClick={fetchOrders} disabled={ordersLoading}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="23 4 23 10 17 10" />
+                      <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                    </svg>
+                    Refresh
+                  </button>
+                  <button className="admin-btn admin-btn--primary" onClick={openCustomModal}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Custom Order
+                  </button>
+                </div>
               </header>
 
               {ordersLoading ? (
@@ -631,6 +776,225 @@ export default function AdminClient() {
       )}
 
 
+
+      {/* ── Custom Order Modal ── */}
+      {customOpen && (
+        <div className="admin-overlay" onClick={e => { if (e.target === e.currentTarget) setCustomOpen(false); }}>
+          <div className="admin-modal" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="admin-modal__header">
+              <h2 className="admin-modal__title">Create Custom Order</h2>
+              <button className="admin-modal__close" onClick={() => setCustomOpen(false)} aria-label="Close">✕</button>
+            </div>
+
+            <div className="admin-modal__body">
+
+              {/* Card */}
+              <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Card</p>
+
+              {/* Selected card image preview */}
+              {(() => {
+                const picked = cards.find(c => (c._id || c.slug) === customForm.catalog_card_id);
+                const src = picked?.images?.[0];
+                if (!src) return null;
+                return (
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={picked!.name}
+                      className="admin-custom-card-preview"
+                      onMouseEnter={e => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const half = 190;
+                        const y = Math.min(Math.max(rect.top + rect.height / 2, half), window.innerHeight - half);
+                        setImgPreview({ src, alt: picked!.name, x: rect.right + 12, y });
+                      }}
+                      onMouseLeave={() => setImgPreview(null)}
+                    />
+                  </div>
+                );
+              })()}
+
+              <div className="admin-form-grid">
+                <div className="admin-field">
+                  <label className="admin-label">Catalog Card <span className="admin-optional">(optional — fills name &amp; price)</span></label>
+                  <select
+                    className="admin-select"
+                    value={customForm.catalog_card_id}
+                    onChange={e => handleCatalogPick(e.target.value)}
+                  >
+                    <option value="">— Manual / off-catalog —</option>
+                    {cards.map(c => (
+                      <option key={c._id || c.slug} value={c._id || c.slug}>
+                        {c.name} — PKR {c.base_price.toLocaleString()}/card
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Card Name <span className="admin-required">*</span></label>
+                  <input
+                    className={`admin-input${customErrors.card_name ? ' admin-input--error' : ''}`}
+                    value={customForm.card_name}
+                    onChange={e => setCustomForm(f => ({ ...f, card_name: e.target.value }))}
+                    placeholder="e.g. Royal Gold Foil Card"
+                  />
+                  {customErrors.card_name && <p className="admin-field-error">{customErrors.card_name}</p>}
+                </div>
+              </div>
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Quantity <span className="admin-required">*</span></label>
+                  <input
+                    className={`admin-input${customErrors.quantity ? ' admin-input--error' : ''}`}
+                    type="number"
+                    min={1}
+                    value={customForm.quantity}
+                    onChange={e => setCustomForm(f => ({ ...f, quantity: e.target.value }))}
+                    placeholder="e.g. 250"
+                  />
+                  {customErrors.quantity && <p className="admin-field-error">{customErrors.quantity}</p>}
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Main Event <span className="admin-required">*</span></label>
+                  <select
+                    className="admin-select"
+                    value={customForm.main_event}
+                    onChange={e => setCustomForm(f => ({ ...f, main_event: e.target.value }))}
+                  >
+                    {MAIN_EVENTS.map(ev => <option key={ev} value={ev}>{ev}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Pricing */}
+              <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.25rem' }}>Pricing</p>
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Order Total (PKR) <span className="admin-required">*</span></label>
+                  <input
+                    className={`admin-input${customErrors.total ? ' admin-input--error' : ''}`}
+                    type="number"
+                    min={0}
+                    value={customForm.total}
+                    onChange={e => handleCustomTotalOrMethod(e.target.value, customForm.payment_method)}
+                    placeholder="e.g. 35000"
+                  />
+                  {customErrors.total && <p className="admin-field-error">{customErrors.total}</p>}
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Payment Method</label>
+                  <select
+                    className="admin-select"
+                    value={customForm.payment_method}
+                    onChange={e => handleCustomTotalOrMethod(customForm.total, e.target.value as 'full' | 'deposit')}
+                  >
+                    <option value="full">💰 Full Payment</option>
+                    <option value="deposit">💳 50% Deposit</option>
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Amount Due (PKR)</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={customForm.amount_due}
+                    onChange={e => setCustomForm(f => ({ ...f, amount_due: e.target.value }))}
+                    placeholder="Auto-calculated"
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Payment Status</label>
+                  <select
+                    className="admin-select"
+                    value={customForm.payment_status}
+                    onChange={e => setCustomForm(f => ({ ...f, payment_status: e.target.value }))}
+                  >
+                    <option value="pending_payment">⏳ Pending Payment</option>
+                    <option value="confirmed">✓ Confirmed</option>
+                    <option value="in_production">🔄 In Production</option>
+                    <option value="out_for_delivery">🚚 Out for Delivery</option>
+                    <option value="completed">✅ Completed</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Customer */}
+              <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.25rem' }}>Customer</p>
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Full Name <span className="admin-required">*</span></label>
+                  <input
+                    className={`admin-input${customErrors.customer_name ? ' admin-input--error' : ''}`}
+                    value={customForm.customer_name}
+                    onChange={e => setCustomForm(f => ({ ...f, customer_name: e.target.value }))}
+                    placeholder="Customer name"
+                  />
+                  {customErrors.customer_name && <p className="admin-field-error">{customErrors.customer_name}</p>}
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">WhatsApp <span className="admin-required">*</span></label>
+                  <input
+                    className={`admin-input admin-input--mono${customErrors.customer_whatsapp ? ' admin-input--error' : ''}`}
+                    value={customForm.customer_whatsapp}
+                    onChange={e => setCustomForm(f => ({ ...f, customer_whatsapp: e.target.value }))}
+                    placeholder="+923001234567 or 03001234567"
+                  />
+                  {customErrors.customer_whatsapp && <p className="admin-field-error">{customErrors.customer_whatsapp}</p>}
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Area (Karachi) <span className="admin-required">*</span></label>
+                  <select
+                    className={`admin-select${customErrors.customer_area ? ' admin-input--error' : ''}`}
+                    value={customForm.customer_area}
+                    onChange={e => setCustomForm(f => ({ ...f, customer_area: e.target.value }))}
+                  >
+                    <option value="">— Select area —</option>
+                    {KARACHI_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                  {customErrors.customer_area && <p className="admin-field-error">{customErrors.customer_area}</p>}
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Address <span className="admin-optional">(optional)</span></label>
+                  <input
+                    className="admin-input"
+                    value={customForm.customer_address}
+                    onChange={e => setCustomForm(f => ({ ...f, customer_address: e.target.value }))}
+                    placeholder="House/flat no, street, block"
+                  />
+                </div>
+              </div>
+
+              {/* Note */}
+              <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.25rem' }}>Internal Note</p>
+              <div className="admin-field">
+                <label className="admin-label">Note <span className="admin-optional">(optional — not shown to customer)</span></label>
+                <RichTextEditor
+                  value={customForm.note}
+                  onChange={html => setCustomForm(f => ({ ...f, note: html }))}
+                  placeholder="e.g. Called on phone, agreed price via WhatsApp"
+                  minRows={3}
+                  maxLength={10000}
+                />
+              </div>
+
+            </div>
+
+            <div className="admin-modal__footer">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setCustomOpen(false)} disabled={customSaving}>
+                Cancel
+              </button>
+              <button className="admin-btn admin-btn--primary" onClick={submitCustomOrder} disabled={customSaving}>
+                {customSaving ? 'Creating…' : 'Create Order'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Scoped Styles ── */}
       <style>{`
@@ -870,6 +1234,20 @@ export default function AdminClient() {
           flex-shrink: 0;
         }
         .admin-card-thumb:hover { border-color: rgba(201,169,110,0.5); }
+
+        .admin-custom-card-preview {
+          width: 120px;
+          height: 120px;
+          object-fit: cover;
+          border-radius: 10px;
+          border: 1px solid rgba(201,169,110,0.25);
+          cursor: zoom-in;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .admin-custom-card-preview:hover {
+          border-color: rgba(201,169,110,0.6);
+          box-shadow: 0 4px 20px rgba(201,169,110,0.2);
+        }
 
         /* ── Thumb Hover Preview ── */
         .admin-thumb-preview {
@@ -1112,6 +1490,8 @@ export default function AdminClient() {
         .admin-input::placeholder, .admin-textarea::placeholder { color: #3a2a1a; }
         .admin-input--mono { font-family: monospace; font-size: 0.82rem; }
         .admin-input--sm { max-width: 90px; }
+        .admin-input--error { border-color: rgba(220,38,38,0.5) !important; }
+        .admin-field-error { font-size: 0.72rem; color: #f87171; margin-top: 2px; }
         .admin-select { appearance: none; cursor: pointer; }
         .admin-textarea { resize: vertical; }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import RichTextEditor from '@/components/RichTextEditor';
 import { useParams, useRouter } from 'next/navigation';
 
 const STATUS_OPTIONS = [
@@ -84,6 +85,7 @@ function initEditForm(order: any) {
     total:            String(order.total      ?? ''),
     payment_method:   order.payment?.method   ?? 'full',
     amount_due:       String(order.payment?.amount_due ?? ''),
+    note:             order.note              ?? '',
   };
 }
 
@@ -154,6 +156,7 @@ export default function OrderDetailPage() {
         'customer.address':  editForm.customer_address.trim(),
         'card_name':         editForm.card_name.trim(),
         'payment.method':    editForm.payment_method,
+        'note':              editForm.note.trim(),
       };
       const qty = parseInt(editForm.quantity, 10);
       if (!isNaN(qty) && qty > 0) patch['quantity'] = qty;
@@ -319,6 +322,19 @@ export default function OrderDetailPage() {
                 </div>
               </div>
 
+              {/* Internal Note */}
+              <div className="od-modal__section-title">Internal Note</div>
+              <div className="od-modal__field od-modal__field--full">
+                <label className="od-modal__label">Note (admin only, not shown to customer)</label>
+                <RichTextEditor
+                  value={editForm.note}
+                  onChange={html => setEditForm(f => f && ({ ...f, note: html }))}
+                  placeholder="Add an internal note about this order…"
+                  minRows={3}
+                  maxLength={10000}
+                />
+              </div>
+
             </div>
 
             <div className="od-modal__footer">
@@ -374,6 +390,13 @@ export default function OrderDetailPage() {
               <Field label="Base Price / card" value={`PKR ${order.base_price?.toLocaleString()}`} />
             </div>
           </Section>
+
+          {/* Internal Note */}
+          {order.note && (
+            <Section title="Internal Note" icon="📝">
+              <div className="od-note-text" dangerouslySetInnerHTML={{ __html: order.note }} />
+            </Section>
+          )}
 
           {/* Add-on Events (if any) */}
           {addonEvents.length > 0 && (
@@ -579,6 +602,20 @@ export default function OrderDetailPage() {
         }
 
         .od-hint { font-size: 0.75rem; color: #6a5a4a; font-style: italic; }
+
+        .od-note-text {
+          font-size: 0.875rem; color: #c8b89a; line-height: 1.6; word-break: break-word;
+        }
+        .od-note-text strong { font-weight: 700; color: #e8ddd0; }
+        .od-note-text em { font-style: italic; }
+        .od-note-text u { text-decoration: underline; }
+        .od-note-text s, .od-note-text strike { text-decoration: line-through; color: #7a6a5a; }
+        .od-note-text h2 { font-size: 1rem; font-weight: 700; color: #e8ddd0; margin: 0.5rem 0 0.2rem; }
+        .od-note-text h3 { font-size: 0.875rem; font-weight: 700; color: #C9A96E; margin: 0.4rem 0 0.15rem; }
+        .od-note-text ul { list-style: disc; padding-left: 1.3rem; margin: 0.3rem 0; }
+        .od-note-text ol { list-style: decimal; padding-left: 1.3rem; margin: 0.3rem 0; }
+        .od-note-text li { margin-bottom: 0.15rem; }
+        .od-note-text p { margin: 0; }
 
         /* ── Edit Modal ── */
         .od-modal-overlay {

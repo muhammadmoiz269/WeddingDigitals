@@ -20,6 +20,98 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // ── Admin custom-order path ─────────────────────────────────────────────
+    // Bypasses catalog pricing, promo logic, and the TOTAL_MISMATCH check.
+    // Triggered by setting `custom: true` in the request body (admin-only UI).
+    if (body.custom === true) {
+      // Validate required fields for a manual order
+      if (!body.card_name || typeof body.card_name !== "string") {
+        return NextResponse.json({ success: false, error: "card_name is required" }, { status: 400 });
+      }
+      const qty = Number(body.quantity);
+      if (!qty || qty < 1) {
+        return NextResponse.json({ success: false, error: "quantity must be ≥ 1" }, { status: 400 });
+      }
+      const total = Number(body.total);
+      if (isNaN(total) || total < 0) {
+        return NextResponse.json({ success: false, error: "total must be ≥ 0" }, { status: 400 });
+      }
+      if (!body.customization?.main_event) {
+        return NextResponse.json({ success: false, error: "customization.main_event is required" }, { status: 400 });
+      }
+      if (!body.customer?.name || !body.customer?.whatsapp || !body.customer?.area) {
+        return NextResponse.json({ success: false, error: "customer name, whatsapp, and area are required" }, { status: 400 });
+      }
+      if (body.payment?.method !== "full" && body.payment?.method !== "deposit") {
+        return NextResponse.json({ success: false, error: "payment.method must be 'full' or 'deposit'" }, { status: 400 });
+      }
+
+      await connectToDatabase();
+
+      // Derive slug from card name; fall back to "custom"
+      const cardSlug = (body.card_name as string)
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "") || "custom";
+
+      const basePrice = Math.round(total / qty);
+
+      // Amount due: use client value if valid, otherwise derive from method
+      const clientAmountDue = Number(body.payment?.amount_due);
+      const amountDue =
+        !isNaN(clientAmountDue) && clientAmountDue >= 0
+          ? clientAmountDue
+          : body.payment.method === "deposit"
+          ? Math.ceil(total / 2)
+          : total;
+
+      const paymentStatus = body.payment?.status ?? "pending_payment";
+
+      // Generate unique order ID using the same retry logic as the catalog path
+      let orderId = generateOrderId();
+      let retries = 5;
+      while (retries > 0) {
+        const existing = await Order.findOne({ order_id: orderId }).lean();
+        if (!existing) break;
+        orderId = generateOrderId();
+        retries--;
+      }
+
+      const order = await Order.create({
+        order_id: orderId,
+        card_slug: cardSlug,
+        card_name: (body.card_name as string).trim(),
+        quantity: qty,
+        base_price: basePrice,
+        add_ons: [],
+        subtotal_before_discount: total,
+        total,
+        customization: {
+          main_event: body.customization.main_event,
+          addon_events: [],
+        },
+        customer: {
+          name: (body.customer.name as string).trim(),
+          whatsapp: (body.customer.whatsapp as string).trim(),
+          area: body.customer.area,
+          address: body.customer.address || "",
+        },
+        payment: {
+          method: body.payment.method,
+          amount_due: amountDue,
+          receipt_url: body.payment?.receipt_url || "",
+          status: paymentStatus,
+        },
+        note: body.note || "",
+      });
+
+      return NextResponse.json(
+        { success: true, data: { order_id: order.order_id } },
+        { status: 201 }
+      );
+    }
+    // ── End custom-order path ───────────────────────────────────────────────
+
     // Validate required fields
     const required = [
       "card_slug", "card_name", "quantity", "base_price", "total",

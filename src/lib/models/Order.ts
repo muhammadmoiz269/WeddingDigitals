@@ -37,6 +37,9 @@ export interface IOrder extends Document {
     status: "pending_payment" | "confirmed" | "in_production" | "out_for_delivery" | "completed";
   };
 
+  /** Internal admin note — not shown to customers */
+  note?: string;
+
   created_at: Date;
   updated_at: Date;
 }
@@ -94,6 +97,9 @@ const OrderSchema = new Schema<IOrder>(
         default: "pending_payment",
       },
     },
+
+    /** Internal admin note — not shown to customers */
+    note: { type: String, default: "" },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
