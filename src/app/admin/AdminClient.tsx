@@ -691,7 +691,7 @@ export default function AdminClient() {
                             </span>
                           </td>
                           <td className="admin-min-order">{order.quantity} pcs</td>
-                          <td className="admin-price">PKR {order.payment?.total?.toLocaleString()}</td>
+                          <td className="admin-price">PKR {order.total?.toLocaleString()}</td>
 
                           <td>
                             <span className={`admin-order-status admin-order-status--${order.payment?.status || 'pending_payment'}`}>
