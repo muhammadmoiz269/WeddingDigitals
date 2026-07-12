@@ -118,7 +118,7 @@ export default function PriceCalculator({
             <input
               id="custom-quantity-input"
               type="number"
-              min={minOrder}
+              min={1}
               max={10000}
               placeholder="Custom"
               value={rawInput}
@@ -129,11 +129,11 @@ export default function PriceCalculator({
                   if (num > 10000) {
                     setRawInput("10000");
                     setQuantity(10000);
+                  } else if (num >= 1) {
+                    setRawInput(val);
+                    setQuantity(num);
                   } else {
                     setRawInput(val);
-                    if (num >= minOrder) {
-                      setQuantity(num);
-                    }
                   }
                 } else {
                   setRawInput(val);
@@ -166,7 +166,7 @@ export default function PriceCalculator({
           </div>
         </div>
         <p className="mt-2 text-[10px] sm:text-xs text-charcoal/40">
-          Min. {minOrder} pcs. Max. 10,000 pcs.
+          Max. 10,000 pcs.
         </p>
       </div>
 

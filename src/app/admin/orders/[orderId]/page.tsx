@@ -86,6 +86,11 @@ function initEditForm(order: any) {
     payment_method:   order.payment?.method   ?? 'full',
     amount_due:       String(order.payment?.amount_due ?? ''),
     note:             order.note              ?? '',
+    addon_events:     ((order.customization?.addon_events ?? []) as { event_type: string; quantity: number; price_per_card?: number }[]).map(e => ({
+      event_type:     e.event_type,
+      quantity:       String(e.quantity),
+      price_per_card: e.price_per_card,
+    })),
   };
 }
 
@@ -149,7 +154,7 @@ export default function OrderDetailPage() {
     if (!editForm) return;
     setEditSaving(true);
     try {
-      const patch: Record<string, string | number> = {
+      const patch: Record<string, unknown> = {
         'customer.name':     editForm.customer_name.trim(),
         'customer.whatsapp': editForm.customer_whatsapp.trim(),
         'customer.area':     editForm.customer_area,
@@ -164,6 +169,13 @@ export default function OrderDetailPage() {
       if (!isNaN(total) && total >= 0) patch['total'] = total;
       const amountDue = parseFloat(editForm.amount_due);
       if (!isNaN(amountDue) && amountDue >= 0) patch['payment.amount_due'] = amountDue;
+      if (editForm.addon_events.length > 0) {
+        patch['customization.addon_events'] = editForm.addon_events.map(e => ({
+          event_type: e.event_type,
+          quantity: parseInt(e.quantity, 10) || 0,
+          ...(e.price_per_card != null ? { price_per_card: e.price_per_card } : {}),
+        }));
+      }
 
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
@@ -295,6 +307,32 @@ export default function OrderDetailPage() {
                   />
                 </div>
               </div>
+
+              {/* Addon Event Quantities */}
+              {editForm.addon_events.length > 0 && (
+                <>
+                  <div className="od-modal__section-title">Additional Event Cards</div>
+                  <div className="od-modal__grid">
+                    {editForm.addon_events.map((evt, i) => (
+                      <div key={i} className="od-modal__field">
+                        <label className="od-modal__label">{evt.event_type} — Quantity</label>
+                        <input
+                          className="od-modal__input"
+                          type="number"
+                          min={1}
+                          value={evt.quantity}
+                          onChange={e => setEditForm(f => {
+                            if (!f) return f;
+                            const events = [...f.addon_events];
+                            events[i] = { ...events[i], quantity: e.target.value };
+                            return { ...f, addon_events: events };
+                          })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {/* Payment */}
               <div className="od-modal__section-title">Payment</div>
