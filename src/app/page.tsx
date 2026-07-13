@@ -5,6 +5,7 @@ import InfiniteProductGrid from "@/components/InfiniteProductGrid";
 import NoScriptProductLinks from "@/components/NoScriptProductLinks";
 import Footer from "@/components/Footer";
 import FaqAccordion from "@/components/FaqAccordion";
+import GoogleReviews from "@/components/GoogleReviews";
 import JsonLd from "@/components/JsonLd";
 import { FAQ_HOME } from "@/lib/faqs";
 import { faqPageLd } from "@/lib/jsonld";
@@ -12,6 +13,7 @@ import connectToDatabase from "@/lib/mongodb";
 import Card from "@/lib/models/Card";
 import type { CardProduct } from "@/types";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
+import { fetchGoogleReviews } from "@/lib/server/googleReviews";
 
 async function fetchAllSlugs(): Promise<{ slug: string; name: string }[]> {
   try {
@@ -74,8 +76,10 @@ async function fetchInitialCards(): Promise<{
 }
 
 export default async function Home() {
-  const [{ cards: initialCards, total: initialTotal }, allSlugs] =
-    await Promise.all([fetchInitialCards(), fetchAllSlugs()]);
+  const [{ cards: initialCards, total: initialTotal }, allSlugs, reviewData] =
+    await Promise.all([fetchInitialCards(), fetchAllSlugs(), fetchGoogleReviews()]);
+
+  console.log("REVIEWS", reviewData)
 
   return (
     <>
@@ -89,6 +93,11 @@ export default async function Home() {
         />
         <NoScriptProductLinks cards={allSlugs} />
         <Features />
+        <GoogleReviews
+          reviews={reviewData.reviews}
+          rating={reviewData.rating}
+          totalRatings={reviewData.totalRatings}
+        />
         <FaqAccordion faqs={FAQ_HOME} />
       </main>
       <Footer />

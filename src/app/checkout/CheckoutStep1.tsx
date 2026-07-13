@@ -20,7 +20,7 @@ export const ADDON_EVENTS = [
 ] as const;
 export type AddonEventType = (typeof ADDON_EVENTS)[number];
 
-export const ADDON_MIN_QTY = 50;
+export const ADDON_MIN_QTY = 1;
 
 export interface AddOnEventData {
   eventType: AddonEventType;
