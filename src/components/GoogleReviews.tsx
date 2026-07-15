@@ -61,7 +61,14 @@ function Avatar({ name, photoUrl }: { name: string; photoUrl?: string }) {
   const initial = name.charAt(0).toUpperCase();
   if (photoUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={photoUrl} alt={name} className="w-10 h-10 rounded-full object-cover" />;
+    return (
+      <img
+        src={photoUrl}
+        alt={name}
+        referrerPolicy="no-referrer"
+        className="w-10 h-10 rounded-full object-cover"
+      />
+    );
   }
   // Deterministic hue from the first char
   const hue = (initial.charCodeAt(0) * 47) % 360;
