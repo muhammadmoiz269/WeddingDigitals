@@ -37,12 +37,15 @@ interface CardDoc {
 
 const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"] as const;
 
-const KARACHI_AREAS = [
-  'Gulshan-e-Iqbal', 'DHA', 'North Nazimabad', 'Clifton', 'PECHS',
-  'Saddar', 'Malir', 'Korangi', 'Nazimabad', 'Gulistan-e-Johar',
-  'Bahria Town', 'FB Area', 'Tariq Road', 'Liaquatabad', 'Orangi Town',
-  'Landhi', 'Shah Faisal', 'Scheme 33', 'North Karachi', 'Surjani Town',
-  'Garden', 'Lyari', 'Kemari', 'Bin Qasim', 'Other',
+const PAKISTAN_CITIES = [
+  'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',
+  'Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala',
+  'Hyderabad', 'Sukkur', 'Bahawalpur', 'Sargodha', 'Abbottabad',
+  'Mardan', 'Larkana', 'Mirpur', 'Muzaffarabad', 'Gujrat',
+  'Sheikhupura', 'Jhelum', 'Rahim Yar Khan', 'Dera Ghazi Khan', 'Kasur',
+  'Sahiwal', 'Okara', 'Mingora (Swat)', 'Nawabshah', 'Chiniot',
+  'Kamoke', 'Hafizabad', 'Kohat', 'Khanewal', 'Dera Ismail Khan',
+  'Turbat', 'Khuzdar', 'Gilgit', 'Skardu', 'Chitral', 'Hunza', 'Other',
 ];
 
 const MAIN_EVENTS = ['Wedding', 'Nikkah', 'Valima', 'Mehndi', 'Baraat', 'Engagement'];
@@ -54,12 +57,15 @@ function initCustomForm() {
     catalog_card_id: '',   // _id of selected catalog card ('' = manual)
     card_name:       '',
     quantity:        '',
+    subtotal:        '',
+    discount_amount: '',
     total:           '',
     amount_due:      '',
     main_event:      'Wedding',
+    addon_events:    [] as { event_type: string; quantity: string }[],
     customer_name:   '',
     customer_whatsapp: '',
-    customer_area:   '',
+    customer_city:   '',
     customer_address:'',
     payment_method:  'full' as 'full' | 'deposit',
     payment_status:  'pending_payment',
@@ -150,33 +156,66 @@ export default function AdminClient() {
     setCustomOpen(true);
   };
 
-  // When a catalog card is picked, prefill name and suggest total
+  // When a catalog card is picked, prefill name and suggest subtotal/total
   const handleCatalogPick = (cardId: string) => {
     const card = cards.find(c => c._id === cardId || c.slug === cardId);
     if (!card) {
-      setCustomForm(f => ({ ...f, catalog_card_id: '', card_name: '', total: '', amount_due: '' }));
+      setCustomForm(f => ({ ...f, catalog_card_id: '', card_name: '', subtotal: '', discount_amount: '', total: '', amount_due: '' }));
       return;
     }
     const qty = parseInt(customForm.quantity, 10) || 1;
-    const suggested = card.base_price * qty;
-    const amountDue = customForm.payment_method === 'deposit' ? Math.ceil(suggested / 2) : suggested;
+    const suggestedSubtotal = card.base_price * qty;
+    const disc = parseFloat(customForm.discount_amount) || 0;
+    const netTotal = Math.max(0, suggestedSubtotal - disc);
+    const amountDue = customForm.payment_method === 'deposit' ? Math.ceil(netTotal / 2) : netTotal;
     setCustomForm(f => ({
       ...f,
       catalog_card_id: cardId,
       card_name: card.name,
-      total: String(suggested),
+      subtotal: String(suggestedSubtotal),
+      total: String(netTotal),
       amount_due: String(amountDue),
     }));
   };
 
-  // Auto-update amount_due suggestion when total or method changes (only if it
-  // looks like the suggestion hasn't been manually overridden)
-  const handleCustomTotalOrMethod = (total: string, method: 'full' | 'deposit') => {
-    const t = parseFloat(total);
-    const suggested = !isNaN(t) && t >= 0
-      ? (method === 'deposit' ? Math.ceil(t / 2) : t)
+  // Auto-update total and amount_due when subtotal, discount, or payment method changes
+  const handleCustomPricing = (
+    subtotalVal: string,
+    discountVal: string,
+    totalVal: string,
+    method: 'full' | 'deposit',
+    updatedField: 'subtotal' | 'discount' | 'total' | 'method'
+  ) => {
+    let sub = parseFloat(subtotalVal);
+    let disc = parseFloat(discountVal);
+    let tot = parseFloat(totalVal);
+
+    if (updatedField === 'subtotal' || updatedField === 'discount') {
+      sub = isNaN(sub) ? 0 : sub;
+      disc = isNaN(disc) ? 0 : disc;
+      tot = Math.max(0, sub - disc);
+      totalVal = subtotalVal !== '' || discountVal !== '' ? String(tot) : '';
+    } else if (updatedField === 'total') {
+      tot = isNaN(tot) ? 0 : tot;
+      if (!isNaN(sub) && sub > 0) {
+        disc = Math.max(0, sub - tot);
+        discountVal = disc > 0 ? String(disc) : '';
+      }
+    }
+
+    const netTot = parseFloat(totalVal);
+    const suggestedDue = !isNaN(netTot) && netTot >= 0
+      ? (method === 'deposit' ? Math.ceil(netTot / 2) : netTot)
       : 0;
-    setCustomForm(f => ({ ...f, total, payment_method: method, amount_due: suggested > 0 ? String(suggested) : f.amount_due }));
+
+    setCustomForm(f => ({
+      ...f,
+      subtotal: subtotalVal,
+      discount_amount: discountVal,
+      total: totalVal,
+      payment_method: method,
+      amount_due: suggestedDue > 0 ? String(suggestedDue) : f.amount_due,
+    }));
   };
 
   const submitCustomOrder = async () => {
@@ -186,17 +225,22 @@ export default function AdminClient() {
     const qty = parseInt(customForm.quantity, 10);
     if (!qty || qty < 1) errs.quantity = 'Quantity must be ≥ 1';
     const total = parseFloat(customForm.total);
-    if (isNaN(total) || total < 0) errs.total = 'Total must be ≥ 0';
+    if (isNaN(total) || total < 0) errs.total = 'Net total must be ≥ 0';
     if (!customForm.main_event) errs.main_event = 'Event is required';
     if (!customForm.customer_name.trim()) errs.customer_name = 'Name is required';
     if (!WA_REGEX.test(customForm.customer_whatsapp)) errs.customer_whatsapp = 'Enter a valid Pakistani number';
-    if (!customForm.customer_area) errs.customer_area = 'Area is required';
+    if (!customForm.customer_city) errs.customer_city = 'City is required';
     if (Object.keys(errs).length > 0) { setCustomErrors(errs); return; }
 
     setCustomSaving(true);
     setCustomErrors({});
     try {
       const amountDue = parseFloat(customForm.amount_due);
+      const discountAmount = parseFloat(customForm.discount_amount) || 0;
+      const enabledAddons = customForm.addon_events
+        .filter(a => a.event_type !== customForm.main_event && parseInt(a.quantity, 10) > 0)
+        .map(a => ({ event_type: a.event_type, quantity: parseInt(a.quantity, 10) }));
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,12 +248,17 @@ export default function AdminClient() {
           custom: true,
           card_name: customForm.card_name.trim(),
           quantity: qty,
+          discount_amount: discountAmount,
           total,
-          customization: { main_event: customForm.main_event },
+          customization: {
+            main_event: customForm.main_event,
+            addon_events: enabledAddons,
+          },
           customer: {
             name: customForm.customer_name.trim(),
             whatsapp: customForm.customer_whatsapp.trim(),
-            area: customForm.customer_area,
+            city: customForm.customer_city,
+            area: customForm.customer_city,
             address: customForm.customer_address.trim(),
           },
           payment: {
@@ -235,7 +284,7 @@ export default function AdminClient() {
     }
   };
 
-  const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; area: string }; payment: { method: string; amount_due: number } }) => {
+  const getWhatsAppConfirmLink = (order: { order_id: string; card_name: string; quantity: number; total: number; customization: { main_event: string }; customer: { whatsapp: string; name: string; city?: string; area?: string }; payment: { method: string; amount_due: number } }) => {
     const msg = `Assalam o Alaikum ${order.customer.name}! 🌙\n\n` +
       `Your order *#${order.order_id}* has been *confirmed!* ✅\n\n` +
       `📋 *Card:* ${order.card_name}\n` +
@@ -246,7 +295,7 @@ export default function AdminClient() {
       `• Names (bride & groom)\n` +
       `• Date, time & venue of each event\n` +
       `• Contact numbers to print on card\n\n` +
-      `Your cards will be designed, printed and dispatched to ${order.customer.area}, Karachi within *7-10 working days* after design approval.\n\n` +
+      `Your cards will be designed, printed and dispatched to ${order.customer.city || order.customer.area} within *7-10 working days* after design approval.\n\n` +
       `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
     const phone = order.customer.whatsapp.replace(/[^\d]/g, '');
     const fullPhone = phone.startsWith('0') ? '92' + phone.slice(1) : phone.startsWith('92') ? phone : '92' + phone;
@@ -680,7 +729,7 @@ export default function AdminClient() {
                             <div>
                               <p className="admin-card-name">{order.customer?.name}</p>
                               <p className="admin-card-slug">{order.customer?.whatsapp}</p>
-                              <p className="admin-card-slug">{order.customer?.area}</p>
+                              <p className="admin-card-slug">{order.customer?.city || order.customer?.area}</p>
                             </div>
                           </td>
                           <td>
@@ -868,10 +917,82 @@ export default function AdminClient() {
                 </div>
               </div>
 
+              {/* Add-on Events */}
+              <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.5rem' }}>
+                Add-on Event Cards <span className="admin-optional">(Optional — e.g. Nikkah, Valima)</span>
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#12100A', padding: '0.875rem', borderRadius: '10px', border: '1px solid rgba(201,169,110,0.18)', marginBottom: '0.75rem' }}>
+                {MAIN_EVENTS.filter(ev => ev !== customForm.main_event).map(evt => {
+                  const addon = customForm.addon_events.find(a => a.event_type === evt);
+                  const enabled = !!addon;
+                  return (
+                    <div key={evt} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: '#EDE5D8', fontWeight: enabled ? 600 : 400 }}>
+                        <input
+                          type="checkbox"
+                          checked={enabled}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setCustomForm(f => ({ ...f, addon_events: [...f.addon_events, { event_type: evt, quantity: customForm.quantity || '100' }] }));
+                            } else {
+                              setCustomForm(f => ({ ...f, addon_events: f.addon_events.filter(a => a.event_type !== evt) }));
+                            }
+                          }}
+                          style={{ accentColor: '#C9A96E', width: 16, height: 16, cursor: 'pointer' }}
+                        />
+                        <span>{evt} Card</span>
+                      </label>
+                      {enabled && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                          <input
+                            className="admin-input"
+                            type="number"
+                            min={1}
+                            style={{ width: '110px', padding: '0.35rem 0.6rem', fontSize: '0.8125rem' }}
+                            value={addon.quantity}
+                            onChange={e => {
+                              const q = e.target.value;
+                              setCustomForm(f => ({
+                                ...f,
+                                addon_events: f.addon_events.map(a => a.event_type === evt ? { ...a, quantity: q } : a)
+                              }));
+                            }}
+                            placeholder="Qty"
+                          />
+                          <span style={{ fontSize: '0.75rem', color: '#8a7a6a' }}>cards</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
               {/* Pricing */}
               <p className="admin-label" style={{ color: '#C9A96E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.25rem' }}>Pricing</p>
 
               <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Subtotal (PKR)</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={customForm.subtotal}
+                    onChange={e => handleCustomPricing(e.target.value, customForm.discount_amount, customForm.total, customForm.payment_method, 'subtotal')}
+                    placeholder="e.g. 35000"
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Discount Amount (PKR) <span className="admin-optional">(optional)</span></label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={customForm.discount_amount}
+                    onChange={e => handleCustomPricing(customForm.subtotal, e.target.value, customForm.total, customForm.payment_method, 'discount')}
+                    placeholder="e.g. 5000"
+                  />
+                </div>
                 <div className="admin-field">
                   <label className="admin-label">Order Total (PKR) <span className="admin-required">*</span></label>
                   <input
@@ -879,8 +1000,8 @@ export default function AdminClient() {
                     type="number"
                     min={0}
                     value={customForm.total}
-                    onChange={e => handleCustomTotalOrMethod(e.target.value, customForm.payment_method)}
-                    placeholder="e.g. 35000"
+                    onChange={e => handleCustomPricing(customForm.subtotal, customForm.discount_amount, e.target.value, customForm.payment_method, 'total')}
+                    placeholder="e.g. 30000"
                   />
                   {customErrors.total && <p className="admin-field-error">{customErrors.total}</p>}
                 </div>
@@ -889,7 +1010,7 @@ export default function AdminClient() {
                   <select
                     className="admin-select"
                     value={customForm.payment_method}
-                    onChange={e => handleCustomTotalOrMethod(customForm.total, e.target.value as 'full' | 'deposit')}
+                    onChange={e => handleCustomPricing(customForm.subtotal, customForm.discount_amount, customForm.total, e.target.value as 'full' | 'deposit', 'method')}
                   >
                     <option value="full">💰 Full Payment</option>
                     <option value="deposit">💳 50% Deposit</option>
@@ -947,16 +1068,16 @@ export default function AdminClient() {
                   {customErrors.customer_whatsapp && <p className="admin-field-error">{customErrors.customer_whatsapp}</p>}
                 </div>
                 <div className="admin-field">
-                  <label className="admin-label">Area (Karachi) <span className="admin-required">*</span></label>
+                  <label className="admin-label">City <span className="admin-required">*</span></label>
                   <select
-                    className={`admin-select${customErrors.customer_area ? ' admin-input--error' : ''}`}
-                    value={customForm.customer_area}
-                    onChange={e => setCustomForm(f => ({ ...f, customer_area: e.target.value }))}
+                    className={`admin-select${customErrors.customer_city ? ' admin-input--error' : ''}`}
+                    value={customForm.customer_city}
+                    onChange={e => setCustomForm(f => ({ ...f, customer_city: e.target.value }))}
                   >
-                    <option value="">— Select area —</option>
-                    {KARACHI_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                    <option value="">— Select city —</option>
+                    {PAKISTAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
-                  {customErrors.customer_area && <p className="admin-field-error">{customErrors.customer_area}</p>}
+                  {customErrors.customer_city && <p className="admin-field-error">{customErrors.customer_city}</p>}
                 </div>
                 <div className="admin-field">
                   <label className="admin-label">Address <span className="admin-optional">(optional)</span></label>

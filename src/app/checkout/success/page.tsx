@@ -30,7 +30,8 @@ interface OrderData {
   customer: {
     name: string;
     whatsapp: string;
-    area: string;
+    city?: string;
+    area?: string;
   };
   payment: {
     method: string;
@@ -152,7 +153,7 @@ function SuccessContent() {
             <div className="success-timeline__dot" />
             <div>
               <strong>Delivery</strong>
-              <span>Dispatched to {order.customer.area}, Karachi</span>
+              <span>Dispatched to {order.customer.city || order.customer.area}</span>
             </div>
           </div>
         </div>
@@ -199,7 +200,7 @@ function SuccessContent() {
         ))}
         <div className="success-row">
           <span>Delivery</span>
-          <span>{order.customer.area}, Karachi</span>
+          <span>{order.customer.city || order.customer.area}</span>
         </div>
         {/* Discount (promo code or bulk) */}
         {order.discount && order.discount.amount > 0 && (
@@ -231,7 +232,7 @@ function SuccessContent() {
         {isConfirmed ? (
           <>
             <span className="success-status__badge success-status__badge--confirmed">✓ Order Confirmed</span>
-            <span className="success-status__text">Estimated delivery: 7-10 working days to {order.customer.area}</span>
+            <span className="success-status__text">Estimated delivery: 7-10 working days to {order.customer.city || order.customer.area}</span>
           </>
         ) : (
           <>

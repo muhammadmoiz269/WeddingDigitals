@@ -13,12 +13,15 @@ import CheckoutStep1, {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const KARACHI_AREAS = [
-  'Gulshan-e-Iqbal', 'DHA', 'North Nazimabad', 'Clifton', 'PECHS',
-  'Saddar', 'Malir', 'Korangi', 'Nazimabad', 'Gulistan-e-Johar',
-  'Bahria Town', 'FB Area', 'Tariq Road', 'Liaquatabad', 'Orangi Town',
-  'Landhi', 'Shah Faisal', 'Scheme 33', 'North Karachi', 'Surjani Town',
-  'Garden', 'Lyari', 'Kemari', 'Bin Qasim', 'Other',
+const PAKISTAN_CITIES = [
+  'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',
+  'Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala',
+  'Hyderabad', 'Sukkur', 'Bahawalpur', 'Sargodha', 'Abbottabad',
+  'Mardan', 'Larkana', 'Mirpur', 'Muzaffarabad', 'Gujrat',
+  'Sheikhupura', 'Jhelum', 'Rahim Yar Khan', 'Dera Ghazi Khan', 'Kasur',
+  'Sahiwal', 'Okara', 'Mingora (Swat)', 'Nawabshah', 'Chiniot',
+  'Kamoke', 'Hafizabad', 'Kohat', 'Khanewal', 'Dera Ismail Khan',
+  'Turbat', 'Khuzdar', 'Gilgit', 'Skardu', 'Chitral', 'Hunza', 'Other',
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,7 +39,7 @@ interface FormData {
   // Step 2
   customerName: string;
   whatsapp: string;
-  area: string;
+  city: string;
   address: string;
   quantity: number;
   // Step 2 — payment preference
@@ -73,15 +76,11 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
     })),
     customerName: '',
     whatsapp: '',
-    area: '',
+    city: '',
     address: '',
     quantity: initialQty || 100,
     paymentMethod: 'deposit',
   });
-
-  const [areaSearch, setAreaSearch] = useState('');
-  const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
-  const areaRef = useRef<HTMLDivElement>(null);
 
   // ─── Promo code state ───────────────────────────────────────────────────────
   const [promoInput, setPromoInput] = useState('');
@@ -90,17 +89,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
   const [promoLoading, setPromoLoading] = useState(false);
   const appliedPromoRef = useRef(appliedPromo);
   useEffect(() => { appliedPromoRef.current = appliedPromo; }, [appliedPromo]);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (areaRef.current && !areaRef.current.contains(e.target as Node)) {
-        setAreaDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const breakdown = useMemo(
     () => calculatePrice(card.base_price, form.quantity, selectedAddOns),
@@ -215,7 +203,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
       } else if (form.whatsapp.replace(/[\s-]/g, '').length > 12) {
         errors.whatsapp = 'Phone number cannot exceed 12 digits';
       }
-      if (!form.area) errors.area = 'Please select your delivery area';
+      if (!form.city) errors.city = 'Please select your city';
       if (!form.address.trim()) {
         errors.address = 'Please enter your delivery address';
       } else if (form.address.trim().length > 500) {
@@ -276,7 +264,8 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
         customer: {
           name: form.customerName,
           whatsapp: form.whatsapp,
-          area: form.area,
+          city: form.city,
+          area: form.city,
           address: form.address,
         },
         payment: {
@@ -315,12 +304,6 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
       setSubmitting(false);
     }
   };
-
-  // ─── Filtered areas ─────────────────────────────────────────────────────────
-
-  const filteredAreas = KARACHI_AREAS.filter(a =>
-    a.toLowerCase().includes(areaSearch.toLowerCase())
-  );
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -437,34 +420,24 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
                 </div>
               </div>
 
-              {/* Area Dropdown */}
-              <div className="co-field" ref={areaRef}>
-                <label className="co-label">Delivery Area (Karachi) *</label>
-                <div className="co-select-wrap">
-                  <input
-                    className={`co-input ${fieldErrors.area ? 'co-input--error' : ''}`}
-                    placeholder="Search area…"
-                    value={areaDropdownOpen ? areaSearch : form.area || areaSearch}
-                    onChange={e => { setAreaSearch(e.target.value); setAreaDropdownOpen(true); setFieldErrors(fe => { const n = { ...fe }; delete n.area; return n; }); }}
-                    onFocus={() => setAreaDropdownOpen(true)}
-                  />
-                  {areaDropdownOpen && (
-                    <div className="co-dropdown">
-                      {filteredAreas.length > 0 ? filteredAreas.map(a => (
-                        <button
-                          key={a}
-                          className={`co-dropdown__item ${form.area === a ? 'co-dropdown__item--active' : ''}`}
-                          onClick={() => { setForm(f => ({ ...f, area: a })); setAreaSearch(''); setAreaDropdownOpen(false); setFieldErrors(fe => { const n = { ...fe }; delete n.area; return n; }); }}
-                        >
-                          {a}
-                        </button>
-                      )) : (
-                        <div className="co-dropdown__empty">No areas found</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {fieldErrors.area && <span className="co-field-error">{fieldErrors.area}</span>}
+              {/* City Dropdown */}
+              <div className="co-field">
+                <label className="co-label">City *</label>
+                <select
+                  className={`co-input ${fieldErrors.city ? 'co-input--error' : ''}`}
+                  value={form.city}
+                  onChange={e => {
+                    setForm(f => ({ ...f, city: e.target.value }));
+                    setFieldErrors(fe => { const n = { ...fe }; delete n.city; return n; });
+                  }}
+                  style={{ cursor: 'pointer', appearance: 'auto' }}
+                >
+                  <option value="">Select your city</option>
+                  {PAKISTAN_CITIES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                {fieldErrors.city && <span className="co-field-error">{fieldErrors.city}</span>}
               </div>
 
               {/* Delivery Address */}

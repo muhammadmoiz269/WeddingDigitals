@@ -39,8 +39,8 @@ export async function POST(request: Request) {
       if (!body.customization?.main_event) {
         return NextResponse.json({ success: false, error: "customization.main_event is required" }, { status: 400 });
       }
-      if (!body.customer?.name || !body.customer?.whatsapp || !body.customer?.area) {
-        return NextResponse.json({ success: false, error: "customer name, whatsapp, and area are required" }, { status: 400 });
+      if (!body.customer?.name || !body.customer?.whatsapp || (!body.customer?.city && !body.customer?.area)) {
+        return NextResponse.json({ success: false, error: "customer name, whatsapp, and city are required" }, { status: 400 });
       }
       if (body.payment?.method !== "full" && body.payment?.method !== "deposit") {
         return NextResponse.json({ success: false, error: "payment.method must be 'full' or 'deposit'" }, { status: 400 });
@@ -77,6 +77,20 @@ export async function POST(request: Request) {
         retries--;
       }
 
+      const addonEvents: { event_type: string; quantity: number }[] = Array.isArray(
+        body.customization?.addon_events
+      )
+        ? body.customization.addon_events
+            .map((e: { event_type: string; quantity: number }) => ({
+              event_type: String(e.event_type),
+              quantity: Number(e.quantity),
+            }))
+            .filter((e: { event_type: string; quantity: number }) => e.event_type && e.quantity > 0)
+        : [];
+
+      const discountAmount = Math.max(0, Number(body.discount_amount) || 0);
+      const subtotalBeforeDiscount = discountAmount > 0 ? total + discountAmount : total;
+
       const order = await Order.create({
         order_id: orderId,
         card_slug: cardSlug,
@@ -84,16 +98,18 @@ export async function POST(request: Request) {
         quantity: qty,
         base_price: basePrice,
         add_ons: [],
-        subtotal_before_discount: total,
+        subtotal_before_discount: subtotalBeforeDiscount,
+        ...(discountAmount > 0 ? { discount: { source: "quantity", amount: discountAmount } } : {}),
         total,
         customization: {
           main_event: body.customization.main_event,
-          addon_events: [],
+          addon_events: addonEvents,
         },
         customer: {
           name: (body.customer.name as string).trim(),
           whatsapp: (body.customer.whatsapp as string).trim(),
-          area: body.customer.area,
+          city: body.customer.city || body.customer.area || "",
+          area: body.customer.area || body.customer.city || "",
           address: body.customer.address || "",
         },
         payment: {
@@ -133,9 +149,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!body.customer?.name || !body.customer?.whatsapp || !body.customer?.area) {
+    if (!body.customer?.name || !body.customer?.whatsapp || (!body.customer?.city && !body.customer?.area)) {
       return NextResponse.json(
-        { success: false, error: "Customer details are required (name, whatsapp, area)" },
+        { success: false, error: "Customer details are required (name, whatsapp, city)" },
         { status: 400 }
       );
     }
@@ -273,7 +289,8 @@ export async function POST(request: Request) {
         customer: {
           name: body.customer.name,
           whatsapp: body.customer.whatsapp,
-          area: body.customer.area,
+          city: body.customer.city || body.customer.area || '',
+          area: body.customer.area || body.customer.city || '',
           address: body.customer.address || '',
         },
         payment: {

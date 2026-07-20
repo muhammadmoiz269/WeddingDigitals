@@ -68,7 +68,7 @@ function buildWhatsApp(order: any) {
     `• Names (bride & groom)\n` +
     `• Date, time & venue of each event\n` +
     `• Contact numbers to print on card\n\n` +
-    `Your cards will be designed, printed and dispatched to ${order.customer?.area}, Karachi within *7-10 working days* after design approval.\n\n` +
+    `Your cards will be designed, printed and dispatched to ${order.customer?.city || order.customer?.area} within *7-10 working days* after design approval.\n\n` +
     `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
   return `https://wa.me/${(order.customer?.whatsapp || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
 }
@@ -501,7 +501,7 @@ export default function OrderDetailPage() {
             <div className="od-fields">
               <Field label="Name" value={order.customer?.name} />
               <Field label="WhatsApp" value={order.customer?.whatsapp} mono />
-              <Field label="Area" value={`${order.customer?.area}, Karachi`} />
+              <Field label="City" value={order.customer?.city || order.customer?.area} />
               <Field label="Address" value={order.customer?.address} full />
             </div>
           </Section>

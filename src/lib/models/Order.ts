@@ -25,7 +25,8 @@ export interface IOrder extends Document {
   customer: {
     name: string;
     whatsapp: string;
-    area: string;
+    city?: string;
+    area?: string;
     address: string;
   };
 
@@ -83,7 +84,8 @@ const OrderSchema = new Schema<IOrder>(
     customer: {
       name: { type: String, required: true },
       whatsapp: { type: String, required: true },
-      area: { type: String, required: true },
+      city: { type: String },
+      area: { type: String },
       address: { type: String, default: '' },
     },
 

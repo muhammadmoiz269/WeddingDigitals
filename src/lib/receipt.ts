@@ -19,7 +19,7 @@ export interface ReceiptOrder {
     main_event: string;
     addon_events: { event_type: string; quantity: number; price_per_card?: number }[];
   };
-  customer: { name: string; whatsapp: string; area: string };
+  customer: { name: string; whatsapp: string; city?: string; area?: string };
   payment: { method: string; amount_due: number; status: string };
   created_at: string;
 }
@@ -100,7 +100,7 @@ export async function downloadReceipt(order: ReceiptOrder): Promise<void> {
   doc.text(`Date: ${placedOn}`, margin, y);
   doc.text(`WhatsApp: ${order.customer.whatsapp}`, 120, y);
   y += 5;
-  doc.text(`Delivery: ${order.customer.area}, Karachi`, 120, y);
+  doc.text(`Delivery: ${order.customer.city || order.customer.area}`, 120, y);
   y += 10;
 
   // ── Items table ──
