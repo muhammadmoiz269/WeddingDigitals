@@ -26,6 +26,9 @@ The seed script loads env from `.env.local` via `dotenv` and is upsert-safe (run
 - `MONGODB_URI` — Mongo connection string (Atlas in production).
 - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` / `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` — Cloudinary unsigned uploads happen in the browser via the Cloudinary upload widget (`https://upload-widget.cloudinary.com/global/all.js`), not server-side. There is no server-side Cloudinary SDK.
 - `GEMINI_API_KEY` — Google Gemini API key for the AI template-customization chat (Epic C). Required by `POST /api/einvitations/[slug]/customize`. SDK: `@google/genai`, model: `gemini-2.5-flash`.
+- `RESEND_API_KEY` — Resend API key for order notification emails.
+- `RESEND_FROM` — Verified sender address for Resend (e.g. `orders@paighaam.pk`; use `onboarding@resend.dev` for sandbox testing).
+- `NOTIFY_EMAIL_TO` — Admin recipient email address for new order notifications.
 
 ## Architecture
 

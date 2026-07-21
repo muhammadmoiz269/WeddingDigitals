@@ -54,3 +54,27 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ orderId: string }> }
+) {
+  try {
+    const { orderId } = await params;
+    await connectToDatabase();
+    const order = await Order.findOneAndDelete({ order_id: orderId }).lean();
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: "Order not found" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to delete order" },
+      { status: 500 }
+    );
+  }
+}

@@ -10,6 +10,8 @@ import {
   releasePromoRedemption,
   PROMO_ERROR_MESSAGES,
 } from "@/lib/server/promo";
+import { start } from "workflow/api";
+import { sendOrderNotification } from "@/workflows/order-notification";
 
 function generateOrderId(): string {
   const num = Math.floor(1000 + Math.random() * 9000);
@@ -300,6 +302,25 @@ export async function POST(request: Request) {
           status: body.payment.receipt_url ? "confirmed" : "pending_payment",
         },
       });
+
+      try {
+        start(sendOrderNotification, [{
+          order_id: String(order.order_id),
+          card_name: String(order.card_name),
+          quantity: Number(order.quantity),
+          total: Number(order.total),
+          main_event: String(order.customization.main_event),
+          customer_name: String(order.customer.name),
+          customer_whatsapp: String(order.customer.whatsapp),
+          customer_city: String(order.customer.city || ""),
+          customer_address: String(order.customer.address || ""),
+          payment_method: String(order.payment.method),
+          amount_due: Number(order.payment.amount_due),
+          payment_status: String(order.payment.status),
+        }]).catch((e: unknown) => console.error("order notification enqueue failed:", e));
+      } catch (e) {
+        console.error("order notification enqueue failed:", e);
+      }
 
       return NextResponse.json(
         { success: true, data: { order_id: order.order_id } },

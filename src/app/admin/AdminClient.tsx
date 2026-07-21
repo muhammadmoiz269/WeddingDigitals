@@ -93,6 +93,8 @@ export default function AdminClient() {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<CardDoc | null>(null);
+  const [deleteOrderTarget, setDeleteOrderTarget] = useState<{ order_id: string; customer_name: string } | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("All");
@@ -355,6 +357,26 @@ export default function AdminClient() {
   // ─── Modal helpers ──────────────────────────────────────────────────────────
 
   // ─── Delete ─────────────────────────────────────────────────────────────────
+
+  const handleDeleteOrder = async () => {
+    if (!deleteOrderTarget) return;
+    setDeletingOrder(true);
+    try {
+      const res = await fetch(`/api/orders/${deleteOrderTarget.order_id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        addToast('Order deleted', 'success');
+        setOrders(prev => prev.filter(o => o.order_id !== deleteOrderTarget.order_id));
+        setDeleteOrderTarget(null);
+      } else {
+        addToast(json.error || 'Failed to delete order', 'error');
+      }
+    } catch {
+      addToast('Network error — order not deleted', 'error');
+    } finally {
+      setDeletingOrder(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -760,6 +782,18 @@ export default function AdminClient() {
                                 </svg>
                                 View
                               </button>
+                              <button
+                                className="admin-btn admin-btn--danger"
+                                onClick={(e) => { e.stopPropagation(); setDeleteOrderTarget({ order_id: order.order_id, customer_name: order.customer?.name || order.order_id }); }}
+                                title="Delete order"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                  <path d="M10 11v6M14 11v6" />
+                                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                                </svg>
+                              </button>
                               {['confirmed', 'in_production'].includes(order.payment?.status) && (
                                 <a
                                   href={getWhatsAppConfirmLink(order)}
@@ -825,6 +859,33 @@ export default function AdminClient() {
       )}
 
 
+
+      {/* ── Delete Order Confirm Dialog ── */}
+      {deleteOrderTarget && (
+        <div className="admin-overlay">
+          <div className="admin-dialog">
+            <div className="admin-dialog__icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h3 className="admin-dialog__title">Delete Order?</h3>
+            <p className="admin-dialog__body">
+              Permanently delete order <strong>{deleteOrderTarget.order_id}</strong> for <strong>{deleteOrderTarget.customer_name}</strong>? This cannot be undone.
+            </p>
+            <div className="admin-dialog__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setDeleteOrderTarget(null)} disabled={deletingOrder}>
+                Cancel
+              </button>
+              <button className="admin-btn admin-btn--danger-solid" onClick={handleDeleteOrder} disabled={deletingOrder}>
+                {deletingOrder ? 'Deleting…' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Custom Order Modal ── */}
       {customOpen && (

@@ -1,8 +1,10 @@
+import { withWorkflow } from "workflow/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/webp", "image/avif"],
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",
@@ -13,4 +15,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withWorkflow(nextConfig);
