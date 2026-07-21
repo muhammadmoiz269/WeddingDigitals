@@ -19,11 +19,11 @@ export interface PlaceReviewData {
   totalRatings: number;
 }
 
-export const MAPS_URL = 'https://www.google.com/maps/place/Shahi+Bulawa/@29.2666503,70.6023149,16s%2Fg%2F11z7_btg93';
-
 // Hardcoded Place ID for Shahi Bulawa
 // const PLACE_ID = 'ChIJUU-GSEE_sz4RLLo-W55ciBE';
 const PLACE_ID = 'ChIJO4wfvx4RQY4RgMcRtiARFJM'
+
+export const MAPS_URL = `https://search.google.com/local/reviews?placeid=${PLACE_ID}`;
 const EMPTY: PlaceReviewData = { reviews: [], rating: 0, totalRatings: 0 };
 
 // ─── Fetch Place Details & Reviews (Places API New) ──────────────────────────
