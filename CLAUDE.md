@@ -29,6 +29,7 @@ The seed script loads env from `.env.local` via `dotenv` and is upsert-safe (run
 - `RESEND_API_KEY` — Resend API key for order notification emails.
 - `RESEND_FROM` — Verified sender address for Resend (e.g. `orders@paighaam.pk`; use `onboarding@resend.dev` for sandbox testing).
 - `NOTIFY_EMAIL_TO` — Admin recipient email address for new order notifications.
+- `NOTIFY_EMAIL_CC` — *(optional)* Comma-separated CC recipients for new-order notification emails (e.g. `muhammadmoiz269@gmail.com,muhammad.arbab.hussain.siddiqui@gmail.com`). Omitting the variable skips CC entirely.
 
 ## Architecture
 
