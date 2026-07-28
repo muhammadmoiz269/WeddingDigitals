@@ -8,7 +8,7 @@ export interface ICard extends Document {
   original_price?: number;
   /** Per-card price for small inner cards added for extra ceremonies (e.g. Valima, Nikkah) during checkout */
   inner_card_price?: number;
-  category: "Luxury" | "Classic" | "Modern" | "Minimalist" | "Floral" | "Textured";
+  category: "Luxury" | "Classic" | "Modern" | "Minimalist" | "Floral" | "Textured" | "Acrylic";
   description: string;
   images: string[];
   short_video_url?: string;
@@ -65,7 +65,7 @@ const CardSchema = new Schema<ICard>(
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"],
+      enum: ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured", "Acrylic"],
     },
     description: {
       type: String,
@@ -131,6 +131,10 @@ const CardSchema = new Schema<ICard>(
 // Indexes for fast queries
 CardSchema.index({ category: 1 });
 CardSchema.index({ is_bestseller: 1 });
+
+if (process.env.NODE_ENV === "development" && mongoose.models.Card) {
+  delete mongoose.models.Card;
+}
 
 const Card: Model<ICard> =
   mongoose.models.Card || mongoose.model<ICard>("Card", CardSchema);

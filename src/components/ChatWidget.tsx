@@ -48,7 +48,7 @@ const FAQ_DATA: FAQ[] = [
   },
   {
     keywords: ['category', 'categories', 'type', 'types', 'collection', 'kind'],
-    answer: 'We offer cards in these categories:\n\n🕌 **Nikkah** — Elegant & traditional\n💐 **Barat** — Grand & luxurious\n🎊 **Valima** — Modern & sophisticated\n🎨 **Mehndi** — Vibrant & festive\n✨ **Luxury** — Premium materials\n📐 **Minimalist** — Clean & modern',
+    answer: 'We offer cards in these categories:\n\n🕌 **Nikkah** — Elegant & traditional\n💐 **Barat** — Grand & luxurious\n🎊 **Valima** — Modern & sophisticated\n🎨 **Mehndi** — Vibrant & festive\n✨ **Luxury** — Premium materials\n💎 **Acrylic** — Transparent & ultra-modern\n📐 **Minimalist** — Clean & modern',
     followUp: ['Show me cards', 'Prices?'],
   },
   {

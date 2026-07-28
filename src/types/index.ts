@@ -19,6 +19,7 @@ export type Category =
   | "Minimalist"
   | "Floral"
   | "Textured"
+  | "Acrylic"
   | "Nikkah"
   | "Walima"
   | "Mehndi"

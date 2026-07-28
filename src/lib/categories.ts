@@ -107,6 +107,24 @@ export const CATEGORY_LANDING = [
       'embossed wedding invitation pakistan',
     ],
   },
+  {
+    slug: 'acrylic-wedding-cards-karachi',
+    category: 'Acrylic',
+    h1: 'Acrylic Wedding Cards in Karachi',
+    intro:
+      'Crystal-clear transparency meets modern luxury with our premium acrylic wedding card collection. Precision laser-engraved with metallic gold, silver, or white UV printing, these sleek 2mm–3mm transparent cards offer an extraordinary modern statement for your big day. Paired with custom velvet envelopes or wax-sealed folders, our acrylic invitations redefine elegance.',
+    metaTitle: 'Acrylic Wedding Cards in Karachi | Shahi Bulawa',
+    metaDescription:
+      'Premium transparent acrylic wedding invitations laser-engraved in Karachi. Gold & silver UV foil printing options from Shahi Bulawa. Request a mockup today.',
+    keywords: [
+      'acrylic wedding card karachi',
+      'transparent shadi card',
+      'acrylic wedding invitation pakistan',
+      'clear wedding card karachi',
+      'laser engraved acrylic card',
+      'glass wedding invitation karachi',
+    ],
+  },
 ] as const;
 
 export type CategoryLandingSlug = (typeof CATEGORY_LANDING)[number]['slug'];

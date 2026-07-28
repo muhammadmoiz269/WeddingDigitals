@@ -30,6 +30,7 @@ export const CATEGORIES = [
   "Minimalist",
   "Floral",
   "Textured",
+  "Acrylic",
 ] as const;
 
 export const SORT_OPTIONS = [

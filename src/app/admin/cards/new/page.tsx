@@ -14,7 +14,7 @@ interface CardForm {
   meta_title?: string; meta_description?: string; image_alt_text?: string;
 }
 
-const CATEGORIES = ['Luxury','Classic','Modern','Minimalist','Floral','Textured'] as const;
+const CATEGORIES = ['Luxury','Classic','Modern','Minimalist','Floral','Textured','Acrylic'] as const;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
 const EMPTY: CardForm = { slug:'',name:'',card_code:'',base_price:0,original_price:undefined,inner_card_price:undefined,category:'Luxury',description:'',images:[''],short_video_url:'',is_new:false,is_bestseller:false,min_order:50,add_ons:[],meta_title:'',meta_description:'',image_alt_text:'' };

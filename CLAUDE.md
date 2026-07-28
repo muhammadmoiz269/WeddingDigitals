@@ -53,9 +53,9 @@ Custom session-token auth (no NextAuth). `POST /api/auth/login` validates bcrypt
 
 Three different "Category" lists exist in the codebase and they do not agree:
 
-- `src/types/index.ts` Category: `All | Luxury | Minimalist | Nikkah | Walima | Mehndi | Baraat`
-- `src/lib/models/Card.ts` enum: `Luxury | Classic | Modern | Minimalist | Floral | Textured`
-- `src/scripts/seed.ts` enum: `Nikkah | Barat | Valima | Mehndi | Luxury | Minimalist`
+- `src/types/index.ts` Category: `All | Luxury | Classic | Modern | Minimalist | Floral | Textured | Acrylic | Nikkah | Walima | Mehndi | Baraat`
+- `src/lib/models/Card.ts` enum: `Luxury | Classic | Modern | Minimalist | Floral | Textured | Acrylic`
+- `src/scripts/seed.ts` enum: `Luxury | Classic | Modern | Minimalist | Floral | Textured | Acrylic`
 - `src/lib/constants.ts` `CATEGORIES` (used for filter UI): matches the Card model
 
 Mongoose validation is the source of truth at write time — adding a category requires updating the model enum, the constants list (for UI filters), and probably the TS Category union. Don't assume one of these alone is canonical.

@@ -35,7 +35,7 @@ interface CardDoc {
   created_at?: string;
 }
 
-const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured"] as const;
+const CATEGORIES = ["Luxury", "Classic", "Modern", "Minimalist", "Floral", "Textured", "Acrylic"] as const;
 
 const PAKISTAN_CITIES = [
   'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',

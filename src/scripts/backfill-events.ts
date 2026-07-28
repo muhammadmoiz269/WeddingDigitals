@@ -29,7 +29,7 @@ const CardSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Luxury', 'Classic', 'Modern', 'Minimalist', 'Floral', 'Textured'],
+      enum: ['Luxury', 'Classic', 'Modern', 'Minimalist', 'Floral', 'Textured', 'Acrylic'],
     },
     description: { type: String, required: true },
     images: { type: [String], required: true },
