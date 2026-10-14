@@ -12,7 +12,7 @@ const fadeUp: Variants = {
   }),
 };
 
-export default function Hero() {
+export default function Hero({ startingPrice }: { startingPrice: number }) {
   return (
     <section
       id="hero"
@@ -78,7 +78,7 @@ export default function Hero() {
           From dream to doorstep, beautifully crafted wedding invitations,
           printed with love in Karachi. Starting from{" "}
           <span className="font-semibold text-champagne-dark">
-            PKR 80/card
+            PKR {startingPrice}/card
           </span>
           .
         </motion.p>
@@ -134,8 +134,8 @@ export default function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-10"
         >
           {[
-            { value: "500+", label: "Happy Couples" },
-            { value: "60+", label: "Designs" },
+            { value: "300+", label: "Happy Couples" },
+            { value: "80+", label: "Designs" },
             { value: "4.7★", label: "Rating" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">

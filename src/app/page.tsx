@@ -14,6 +14,7 @@ import Card from "@/lib/models/Card";
 import type { CardProduct } from "@/types";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
 import { fetchGoogleReviews } from "@/lib/server/googleReviews";
+import { getPriceStats } from "@/lib/server/priceStats";
 
 async function fetchAllSlugs(): Promise<{ slug: string; name: string }[]> {
   try {
@@ -76,8 +77,8 @@ async function fetchInitialCards(): Promise<{
 }
 
 export default async function Home() {
-  const [{ cards: initialCards, total: initialTotal }, allSlugs, reviewData] =
-    await Promise.all([fetchInitialCards(), fetchAllSlugs(), fetchGoogleReviews()]);
+  const [{ cards: initialCards, total: initialTotal }, allSlugs, reviewData, prices] =
+    await Promise.all([fetchInitialCards(), fetchAllSlugs(), fetchGoogleReviews(), getPriceStats()]);
 
   console.log("REVIEWS", reviewData)
 
@@ -86,7 +87,7 @@ export default async function Home() {
       <JsonLd id="ld-faq-home" data={[faqPageLd(FAQ_HOME)]} />
       <Navbar />
       <main className="flex-1">
-        <Hero />
+        <Hero startingPrice={prices.from} />
         <InfiniteProductGrid
           initialCards={initialCards}
           initialTotal={initialTotal}

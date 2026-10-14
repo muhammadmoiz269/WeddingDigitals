@@ -33,9 +33,9 @@ const STEPS = [
     title: "Confirm Wedding Details",
     body: (
       <>
-        In the WhatsApp group, we will{" "}
-        <strong>ask for the content</strong> for the card design and will send
-        you soft copy of the design for your approval before printing.
+        In the WhatsApp group, we will <strong>ask for the content</strong> for
+        the card design and will send you soft copy of the design for your
+        approval before printing.
       </>
     ),
   },
@@ -56,7 +56,9 @@ const STEPS = [
     body: (
       <>
         Order will go into printing and will be dispatched in{" "}
-        <strong>5 to 7 working days</strong>.
+        <strong>3 to 4 working days</strong>. Within Karachi, we send it via
+        Bykea or inDrive the same day it&apos;s ready; outside Karachi, Leopards
+        Courier delivers in <strong>3 to 4 days</strong>.
       </>
     ),
   },
@@ -111,28 +113,29 @@ function AccordionSection({
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 const howToLd = {
-  '@context': 'https://schema.org',
-  '@type': 'HowTo',
-  name: 'How to Order Wedding Cards from Shahi Bulawa',
-  description: 'Order custom wedding cards in Karachi in 3 simple steps via WhatsApp.',
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "How to Order Wedding Cards from Shahi Bulawa",
+  description:
+    "Order custom wedding cards in Karachi in 3 simple steps via WhatsApp.",
   step: [
     {
-      '@type': 'HowToStep',
+      "@type": "HowToStep",
       position: 1,
-      name: 'Browse & Choose Your Design',
-      text: 'Explore our collection of floral, luxury, minimalist and classic wedding card designs. Filter by category or event type to find the perfect match for your occasion.',
+      name: "Browse & Choose Your Design",
+      text: "Explore our collection of floral, luxury, minimalist and classic wedding card designs. Filter by category or event type to find the perfect match for your occasion.",
     },
     {
-      '@type': 'HowToStep',
+      "@type": "HowToStep",
       position: 2,
-      name: 'Customise via WhatsApp',
-      text: 'Message us on WhatsApp with your preferred card, event details, guest names and any customisation requests. We will send a free digital proof within 24 hours.',
+      name: "Customise via WhatsApp",
+      text: "Message us on WhatsApp with your preferred card, event details, guest names and any customisation requests. We will send a free digital proof within 24 hours.",
     },
     {
-      '@type': 'HowToStep',
+      "@type": "HowToStep",
       position: 3,
-      name: 'Approve Proof & Receive Delivery',
-      text: 'Review and approve your digital proof, then confirm your order. Cards are printed and dispatched within 3–7 business days. We deliver across Karachi and nationwide.',
+      name: "Approve Proof & Receive Delivery",
+      text: "Review and approve your digital proof, then confirm your order. Cards are printed and dispatched within 3–4 business days. Karachi orders are delivered the same day they are ready via Bykea or inDrive; orders outside Karachi arrive in 3–4 days via Leopards Courier.",
     },
   ],
 };
@@ -221,8 +224,11 @@ export default function HowToOrder() {
           isLast
         >
           <p className="acc-text">
-            Shipping is possible within <strong>07 working days</strong>, after
-            the final design is confirmed.
+            Shipping is possible within <strong>3 to 4 working days</strong>, after
+            the final design is confirmed. Within Karachi, your order is
+            dispatched via Bykea or inDrive <strong>the same day </strong>{" "}
+            it&apos;s ready. Outside Karachi, we ship via Leopards Courier and
+            delivery takes <strong>3 to 4 days</strong>.
           </p>
         </AccordionSection>
       </div>

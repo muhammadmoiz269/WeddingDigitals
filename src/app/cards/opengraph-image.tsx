@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { BRAND } from '@/lib/site';
+import { BRAND, PRICE_RANGE } from '@/lib/site';
 
 export const runtime = 'nodejs';
 export const alt = `All Wedding Cards — ${BRAND.name}`;
@@ -109,7 +109,7 @@ export default async function OG() {
         </div>
 
         <div style={{ display: 'flex', fontSize: 26, color: '#8B6F3D', marginTop: 20 }}>
-          {BRAND.name} · Starting From 80 PKR/card
+          {`${BRAND.name} · Starting From ${PRICE_RANGE.from} PKR/card`}
         </div>
       </div>
     ),
