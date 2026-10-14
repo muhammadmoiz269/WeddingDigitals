@@ -193,7 +193,7 @@ export default function ProductPageClient({
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  5-7 days delivery
+                  Same-day Karachi delivery · 3–4 days nationwide
                 </div>
                 <div className="flex items-center gap-1.5">
                   <svg

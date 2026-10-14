@@ -211,8 +211,9 @@ export default async function ProductPage({
           shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PK', addressRegion: ['SD'] },
           deliveryTime: {
             '@type': 'ShippingDeliveryTime',
-            handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
-            transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+            handlingTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 4, unitCode: 'DAY' },
+            // Karachi: Bykea / inDrive, same day the order is ready
+            transitTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 0, unitCode: 'DAY' },
           },
         },
         {
@@ -221,8 +222,9 @@ export default async function ProductPage({
           shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PK' },
           deliveryTime: {
             '@type': 'ShippingDeliveryTime',
-            handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
-            transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' },
+            handlingTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 4, unitCode: 'DAY' },
+            // Outside Karachi: Leopards Courier
+            transitTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 4, unitCode: 'DAY' },
           },
         },
       ],

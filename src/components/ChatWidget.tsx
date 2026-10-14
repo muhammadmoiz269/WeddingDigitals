@@ -28,7 +28,7 @@ const FAQ_DATA: FAQ[] = [
   },
   {
     keywords: ['delivery', 'shipping', 'deliver', 'time', 'days', 'kitne din', 'kab tak', 'how long'],
-    answer: 'Standard delivery takes **7-10 working days** from order confirmation. We offer **express delivery in 4-5 days** for urgent orders (additional charges apply). Delivery is available across Pakistan!',
+    answer: 'Once your cards are ready, **Karachi** orders are delivered **the same day** via Bykea or inDrive. **Outside Karachi**, we ship via **Leopards Courier** and delivery takes **3-4 days**. Delivery is available across Pakistan!',
     followUp: ['Delivery charges?', 'Do you deliver outside Karachi?'],
   },
   {

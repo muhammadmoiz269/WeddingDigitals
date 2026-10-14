@@ -1,10 +1,22 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shahibulawa.com').replace(/\/+$/, '');
 
+/**
+ * Catalogue-wide per-card price range, used in static copy that can't query
+ * the DB (root metadata, manifest, LocalBusiness JSON-LD, OG images). Event
+ * and category pages compute their own ranges live via getPriceStats().
+ * Keep in sync with the cheapest / most expensive card in the admin panel.
+ */
+export const PRICE_RANGE = {
+  from: 80,
+  typicalLow: 110,
+  typicalHigh: 130,
+  to: 300,
+} as const;
+
 export const BRAND = {
   name: 'Shahi Bulawa',
   legalName: 'Shahi Bulawa Wedding Cards',
-  description:
-    'Premium wedding cards crafted in Karachi. Nikkah, Valima, Mehndi & Baraat invitations with transparent pricing from PKR 120/card.',
+  description: `Premium wedding cards crafted in Karachi. Nikkah, Valima, Mehndi & Baraat invitations with transparent pricing from PKR ${PRICE_RANGE.from}/card.`,
   foundingYear: 2026,
 } as const;
 

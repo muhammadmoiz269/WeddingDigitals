@@ -20,7 +20,7 @@ export const features: Feature[] = [
     icon: "🚀",
     title: "Fast Karachi Delivery",
     description:
-      "Same-week delivery across Karachi. From Clifton to North Nazimabad — we deliver to your doorstep, on time.",
+      "Same-day delivery across Karachi via Bykea or inDrive once your cards are ready. From Clifton to North Nazimabad — we deliver to your doorstep, on time.",
   },
   {
     id: "custom-designs",
