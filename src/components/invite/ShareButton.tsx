@@ -16,16 +16,16 @@ export default function ShareButton({ slug, coupleName }: Props) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({ title: `${coupleName} — Wedding Invitation`, url });
-      } catch {
-        // User cancelled share sheet — do nothing
+      } catch (err) {
+        console.error('[ShareButton] navigator.share failed or was cancelled:', err);
       }
     } else {
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // Clipboard API blocked — silently ignore
+      } catch (err) {
+        console.error('[ShareButton] Clipboard write failed:', err);
       }
     }
   };

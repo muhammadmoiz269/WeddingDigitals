@@ -59,7 +59,8 @@ export default function EInviteList() {
         month: "short",
         year: "numeric",
       });
-    } catch {
+    } catch (err) {
+      console.error('[EInviteList] Failed to format date:', err);
       return "—";
     }
   };

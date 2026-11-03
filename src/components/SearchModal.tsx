@@ -84,7 +84,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         setResults(json.results);
         setSuggestions(json.suggestions);
       }
-    } catch {
+    } catch (err) {
+      console.error('[SearchModal] Search request failed:', err);
       setResults([]);
       setSuggestions([]);
     } finally {

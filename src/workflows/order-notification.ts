@@ -1,5 +1,3 @@
-import { FatalError } from "workflow";
-
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
   pending_payment: "Pending Payment",
   confirmed: "Confirmed",
@@ -29,13 +27,10 @@ export interface OrderNotifyPayload {
 }
 
 export async function sendOrderNotification(order: OrderNotifyPayload) {
-  "use workflow";
-
   await emailOrderNotification(order);
 }
 
 async function emailOrderNotification(order: OrderNotifyPayload) {
-  "use step";
 
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;
@@ -46,9 +41,7 @@ async function emailOrderNotification(order: OrderNotifyPayload) {
     .filter(Boolean);
 
   if (!apiKey || !from || !to) {
-    throw new FatalError(
-      "Missing RESEND_API_KEY, RESEND_FROM, or NOTIFY_EMAIL_TO env vars"
-    );
+    throw new Error("Missing RESEND_API_KEY, RESEND_FROM, or NOTIFY_EMAIL_TO env vars");
   }
 
   const subject = `🎉 New Order Received — ${order.order_id} (${order.quantity} cards)`;

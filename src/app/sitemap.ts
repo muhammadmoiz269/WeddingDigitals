@@ -19,8 +19,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     await connectToDatabase();
     cards = await Card.find({}, 'slug category events updated_at').lean();
-  } catch {
-    // DB unreachable — return static URLs only
+  } catch (err) {
+    console.error('[Sitemap] Failed to fetch cards from DB — returning static URLs only:', err);
   }
 
   // Latest product update per category/event, so listing pages reflect real

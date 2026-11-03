@@ -66,8 +66,8 @@ export default function InfiniteCardGrid({
         return merged;
       });
       setNextPage((p) => p + 1);
-    } catch {
-      // silently fail — the user can trigger again by scrolling
+    } catch (err) {
+      console.error('[InfiniteCardGrid] Failed to load more cards:', err);
     } finally {
       setIsLoadingMore(false);
     }

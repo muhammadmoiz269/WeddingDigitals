@@ -90,7 +90,8 @@ export default function ProductGrid({
         setCurrentPageCards(cards);
         setTotalCount(json.total ?? 0);
         setTotalPages(json.totalPages ?? 0);
-      } catch {
+      } catch (err) {
+        console.error('[ProductGrid] Failed to fetch card page:', err);
         setCurrentPageCards([]);
       } finally {
         setLoading(false);

@@ -57,7 +57,8 @@ async function fetchCategorySlugs(
     await connectToDatabase();
     const docs = await Card.find({ category }, 'slug name').lean();
     return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
-  } catch {
+  } catch (err) {
+    console.error('[Category] fetchCategorySlugs failed:', err);
     return [];
   }
 }
@@ -102,7 +103,8 @@ async function fetchCategoryCards(
     })) as CardProduct[];
 
     return { cards, total };
-  } catch {
+  } catch (err) {
+    console.error('[Category] fetchCategoryCards failed:', err);
     return { cards: [], total: 0 };
   }
 }

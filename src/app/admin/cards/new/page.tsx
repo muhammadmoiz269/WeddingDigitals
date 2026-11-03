@@ -52,7 +52,7 @@ export default function NewCardPage() {
       if (!res.ok||!json.success) throw new Error(json.error||'Unknown error');
       showToast('Card created!','success');
       setTimeout(()=>router.push('/admin'),1200);
-    } catch(e) { showToast(e instanceof Error?e.message:'Save failed','error'); }
+    } catch(e) { console.error('[NewCard] Failed to save card:', e); showToast(e instanceof Error?e.message:'Save failed','error'); }
     finally { setSaving(false); }
   };
 

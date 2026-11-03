@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import EInviteList from "./einvitations/EInviteList";
 import PromoCodesTab from "./PromoCodesTab";
+import NotificationsTab from "./NotificationsTab";
 import RichTextEditor from "@/components/RichTextEditor";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -104,7 +105,7 @@ export default function AdminClient() {
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("admin_sidebar_collapsed") === "1");
     const saved = localStorage.getItem("admin_active_tab");
-    if (saved === 'orders' || saved === 'einvites' || saved === 'promos') {
+    if (saved === 'orders' || saved === 'einvites' || saved === 'promos' || saved === 'notifications') {
       setActiveTab(saved);
     }
   }, []);
@@ -116,8 +117,8 @@ export default function AdminClient() {
     });
 
   // ─── Orders state ─────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'cards' | 'orders' | 'einvites' | 'promos'>('cards');
-  const switchTab = (tab: 'cards' | 'orders' | 'einvites' | 'promos') => {
+  const [activeTab, setActiveTab] = useState<'cards' | 'orders' | 'einvites' | 'promos' | 'notifications'>('cards');
+  const switchTab = (tab: 'cards' | 'orders' | 'einvites' | 'promos' | 'notifications') => {
     localStorage.setItem("admin_active_tab", tab);
     setActiveTab(tab);
   };
@@ -279,7 +280,8 @@ export default function AdminClient() {
       } else {
         addToast(json.error || 'Failed to create order', 'error');
       }
-    } catch {
+    } catch (err) {
+      console.error('[AdminClient] Failed to create custom order:', err);
       addToast('Network error — order not created', 'error');
     } finally {
       setCustomSaving(false);
@@ -343,7 +345,8 @@ export default function AdminClient() {
       const res = await fetch("/api/cards");
       const json = await res.json();
       setCards(json.data || []);
-    } catch {
+    } catch (err) {
+      console.error('[AdminClient] Failed to fetch cards:', err);
       addToast("Failed to load cards", "error");
     } finally {
       setLoading(false);
@@ -371,7 +374,8 @@ export default function AdminClient() {
       } else {
         addToast(json.error || 'Failed to delete order', 'error');
       }
-    } catch {
+    } catch (err) {
+      console.error('[AdminClient] Failed to delete order:', err);
       addToast('Network error — order not deleted', 'error');
     } finally {
       setDeletingOrder(false);
@@ -389,6 +393,7 @@ export default function AdminClient() {
       setDeleteTarget(null);
       fetchCards();
     } catch (err: unknown) {
+      console.error('[AdminClient] Failed to delete card:', err);
       const msg = err instanceof Error ? err.message : "Delete failed";
       addToast(msg, "error");
     } finally {
@@ -491,6 +496,13 @@ export default function AdminClient() {
               </svg>
               <span className="admin-nav__label">Promo Codes</span>
             </button>
+            <button onClick={() => switchTab('notifications')} title={sidebarCollapsed ? 'Push Notifications' : undefined} className={`admin-nav__item ${activeTab === 'notifications' ? 'admin-nav__item--active' : ''}`}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 01-3.46 0" />
+              </svg>
+              <span className="admin-nav__label">Notifications</span>
+            </button>
           </nav>
           <div className="admin-sidebar__footer">
             <a href="/" target="_blank" title={sidebarCollapsed ? 'View Site' : undefined} className="admin-view-site">
@@ -514,7 +526,9 @@ export default function AdminClient() {
 
         {/* ── Main ── */}
         <main className="admin-main">
-          {activeTab === 'einvites' ? (
+          {activeTab === 'notifications' ? (
+            <NotificationsTab addToast={addToast} />
+          ) : activeTab === 'einvites' ? (
             <EInviteList />
           ) : activeTab === 'promos' ? (
             <PromoCodesTab addToast={addToast} />

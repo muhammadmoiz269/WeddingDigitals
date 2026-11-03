@@ -44,7 +44,8 @@ async function fetchAllCardLinks(): Promise<CardLink[]> {
       base_price: doc.base_price,
       images: doc.images ?? [],
     }));
-  } catch {
+  } catch (err) {
+    console.error('[Cards] fetchAllCardLinks failed:', err);
     return [];
   }
 }

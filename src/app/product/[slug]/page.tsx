@@ -21,7 +21,8 @@ export async function generateStaticParams() {
     await connectToDatabase();
     const docs = await Card.find({}, 'slug').lean();
     return docs.map((doc) => ({ slug: doc.slug }));
-  } catch {
+  } catch (err) {
+    console.error('[Product] generateStaticParams failed:', err);
     return [];
   }
 }
@@ -97,8 +98,8 @@ async function fetchAllCards(): Promise<CardProduct[]> {
         image_alt_text: doc.image_alt_text,
       })) as CardProduct[];
     }
-  } catch {
-    // silently fall back
+  } catch (err) {
+    console.error('[Product] fetchAllCards failed:', err);
   }
   return [];
 }

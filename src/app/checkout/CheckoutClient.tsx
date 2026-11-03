@@ -149,7 +149,8 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
       }
       setAppliedPromo({ code: json.data.code, discount_amount: json.data.discount_amount });
       setPromoInput('');
-    } catch {
+    } catch (err) {
+      console.error('[Checkout] Promo code validation request failed:', err);
       setPromoError('Could not validate the code. Please try again.');
     } finally {
       setPromoLoading(false);
@@ -298,6 +299,7 @@ export default function CheckoutClient({ card, initialQty, initialAddOnIds }: Ch
 
       router.push(`/checkout/success?orderId=${json.data.order_id}`);
     } catch (e: unknown) {
+      console.error('[Checkout] Order submission failed:', e);
       const msg = e instanceof Error ? e.message : 'Order failed';
       setError(msg);
     } finally {
