@@ -1,4 +1,4 @@
-import { BRAND, NAP, SITE_URL, SOCIAL } from '@/lib/site';
+import { BRAND, NAP, PRICE_RANGE, SITE_URL, SOCIAL } from '@/lib/site';
 
 export function organizationLd(): Record<string, unknown> {
   return {
@@ -35,7 +35,7 @@ export function localBusinessLd(): Record<string, unknown> {
     image: `${SITE_URL}/images/logo.ico.png`,
     url: SITE_URL,
     telephone: NAP.phone,
-    priceRange: 'PKR 120–500',
+    priceRange: `PKR ${PRICE_RANGE.from}–${PRICE_RANGE.to}`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: NAP.street,

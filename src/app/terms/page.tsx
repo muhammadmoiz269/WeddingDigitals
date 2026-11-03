@@ -78,9 +78,10 @@ export default function TermsPage() {
                 </h2>
                 <p>
                   We print and dispatch from our {NAP.city} studio with a typical turnaround of
-                  3–7 working days from design approval, depending on quantity and finish.
-                  Delivery timelines for areas outside {NAP.city} may vary and will be
-                  confirmed at the time of order.
+                  3–4 working days from design approval, depending on quantity and finish.
+                  Within {NAP.city}, orders are dispatched via Bykea or inDrive on the same
+                  day they are ready. Orders outside {NAP.city} are shipped via Leopards
+                  Courier and typically arrive within 3–4 days of dispatch.
                 </p>
               </div>
 

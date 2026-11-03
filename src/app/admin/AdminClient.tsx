@@ -297,7 +297,10 @@ export default function AdminClient() {
       `• Names (bride & groom)\n` +
       `• Date, time & venue of each event\n` +
       `• Contact numbers to print on card\n\n` +
-      `Your cards will be designed, printed and dispatched to ${order.customer.city || order.customer.area} within *7-10 working days* after design approval.\n\n` +
+      `Your cards will be designed, printed and dispatched to ${order.customer.city || order.customer.area} within *3-4 working days* after design approval.\n` +
+      (!order.customer.city || order.customer.city.trim().toLowerCase() === 'karachi'
+        ? `🚚 *Delivery:* Same day via Bykea / inDrive once your cards are ready.\n\n`
+        : `🚚 *Delivery:* Via Leopards Courier, 3-4 days after dispatch.\n\n`) +
       `We'll share a mockup for your approval before printing. Thank you for choosing Shahi Bulawa! 🤍`;
     const phone = order.customer.whatsapp.replace(/[^\d]/g, '');
     const fullPhone = phone.startsWith('0') ? '92' + phone.slice(1) : phone.startsWith('92') ? phone : '92' + phone;

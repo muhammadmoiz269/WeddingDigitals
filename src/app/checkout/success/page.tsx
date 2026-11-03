@@ -81,6 +81,9 @@ function SuccessContent() {
   }, [orderId]);
 
   const isConfirmed = order?.payment.status === 'confirmed';
+  // Older orders only have a Karachi `area`, no `city`
+  const city = order?.customer.city?.trim();
+  const isKarachi = !city || city.toLowerCase() === 'karachi';
 
   if (loading) {
     return (
@@ -146,14 +149,18 @@ function SuccessContent() {
             <div className="success-timeline__dot" />
             <div>
               <strong>Design & Printing</strong>
-              <span>Your cards are being prepared — 5-7 working days</span>
+              <span>Your cards are being prepared — 3-4 working days</span>
             </div>
           </div>
           <div className="success-timeline__step">
             <div className="success-timeline__dot" />
             <div>
               <strong>Delivery</strong>
-              <span>Dispatched to {order.customer.city || order.customer.area}</span>
+              <span>
+                {isKarachi
+                  ? 'Same day via Bykea / inDrive once your cards are ready'
+                  : `Via Leopards Courier to ${city} — 3-4 days after dispatch`}
+              </span>
             </div>
           </div>
         </div>
@@ -232,7 +239,11 @@ function SuccessContent() {
         {isConfirmed ? (
           <>
             <span className="success-status__badge success-status__badge--confirmed">✓ Order Confirmed</span>
-            <span className="success-status__text">Estimated delivery: 7-10 working days to {order.customer.city || order.customer.area}</span>
+            <span className="success-status__text">
+              {isKarachi
+                ? 'Estimated delivery: same day your cards are ready (3-4 working days), via Bykea / inDrive'
+                : `Estimated delivery: 3-4 days after your cards are ready (3-4 working days), via Leopards Courier to ${city}`}
+            </span>
           </>
         ) : (
           <>

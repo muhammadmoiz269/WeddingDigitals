@@ -5,7 +5,10 @@ import { SITE_URL } from '@/lib/site';
 import { CATEGORY_LANDING } from '@/lib/categories';
 import { EVENT_LANDING } from '@/lib/events';
 
-export const revalidate = 3600;
+// Render on every request. With `revalidate`, Vercel served the build-time
+// sitemap as a static file indefinitely, so cards added in the admin panel
+// never appeared until the next deploy. The query is one small projection.
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

@@ -7,6 +7,7 @@ import Card from '@/lib/models/Card';
 import type { CardProduct } from '@/types';
 import { SITE_URL } from '@/lib/site';
 import { ITEMS_PER_PAGE } from '@/lib/constants';
+import { getPriceStats, fillPrices } from '@/lib/server/priceStats';
 import JsonLd from '@/components/JsonLd';
 import { collectionPageLd, breadcrumbLd, faqPageLd } from '@/lib/jsonld';
 import Link from 'next/link';
@@ -32,11 +33,14 @@ export async function generateMetadata({
   const cat = CATEGORY_LANDING.find((c) => c.slug === slug);
   if (!cat) return { title: 'Not Found' };
 
+  const prices = await getPriceStats({ category: cat.category });
+  const description = fillPrices(cat.metaDescription, prices);
+
   return {
     // metaTitle is already fully composed ("... | Shahi Bulawa"), so use
     // `absolute` to skip the root layout's "%s | Shahi Bulawa" template.
     title: { absolute: cat.metaTitle },
-    description: cat.metaDescription,
+    description,
     keywords: [...cat.keywords],
     alternates: {
       canonical: `/category/${slug}`,
@@ -44,7 +48,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title: cat.metaTitle,
-      description: cat.metaDescription,
+      description,
       url: `${SITE_URL}/category/${slug}`,
     },
   };
@@ -116,10 +120,13 @@ export default async function CategoryPage({
   const cat = CATEGORY_LANDING.find((c) => c.slug === slug);
   if (!cat) notFound();
 
-  const [{ cards, total }, allSlugs] = await Promise.all([
+  const [{ cards, total }, allSlugs, prices] = await Promise.all([
     fetchCategoryCards(cat.category),
     fetchCategorySlugs(cat.category),
+    getPriceStats({ category: cat.category }),
   ]);
+  const intro = fillPrices(cat.intro, prices);
+  const metaDescription = fillPrices(cat.metaDescription, prices);
   const siblings = CATEGORY_LANDING.filter((c) => c.slug !== slug);
 
   const pageUrl = `${SITE_URL}/category/${slug}`;
@@ -132,7 +139,7 @@ export default async function CategoryPage({
         data={[
           collectionPageLd({
             name: cat.h1,
-            description: cat.metaDescription,
+            description: metaDescription,
             url: pageUrl,
             itemUrls: cards.map((c) => `${SITE_URL}/product/${c.slug}`),
           }),
@@ -176,7 +183,7 @@ export default async function CategoryPage({
             </h1>
             <div className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6" />
             <p className="text-charcoal/60 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-              {cat.intro}
+              {intro}
             </p>
           </div>
         </section>

@@ -8,6 +8,7 @@ import Card from '@/lib/models/Card';
 import type { CardProduct } from '@/types';
 import { SITE_URL } from '@/lib/site';
 import { ITEMS_PER_PAGE } from '@/lib/constants';
+import { getPriceStats, fillPrices } from '@/lib/server/priceStats';
 import JsonLd from '@/components/JsonLd';
 import { collectionPageLd, breadcrumbLd, faqPageLd } from '@/lib/jsonld';
 import Link from 'next/link';
@@ -31,11 +32,14 @@ export async function generateMetadata({
   const entry = EVENT_LANDING.find((e) => e.slug === slug);
   if (!entry) return { title: 'Not Found' };
 
+  const prices = await getPriceStats({ events: entry.event });
+  const description = fillPrices(entry.metaDescription, prices);
+
   return {
     // metaTitle is already fully composed ("... | Shahi Bulawa"), so use
     // `absolute` to skip the root layout's "%s | Shahi Bulawa" template.
     title: { absolute: entry.metaTitle },
-    description: entry.metaDescription,
+    description,
     keywords: [...entry.keywords],
     alternates: {
       canonical: `/event/${slug}`,
@@ -43,7 +47,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title: entry.metaTitle,
-      description: entry.metaDescription,
+      description,
       url: `${SITE_URL}/event/${slug}`,
     },
   };
@@ -115,10 +119,17 @@ export default async function EventPage({
   const event = EVENT_LANDING.find((e) => e.slug === slug);
   if (!event) notFound();
 
-  const [{ cards, total }, allSlugs] = await Promise.all([
+  const [{ cards, total }, allSlugs, prices] = await Promise.all([
     fetchEventCards(event.event),
     fetchEventSlugs(event.event),
+    getPriceStats({ events: event.event }),
   ]);
+  const intro = fillPrices(event.intro, prices);
+  const metaDescription = fillPrices(event.metaDescription, prices);
+  const faqs = event.faqs.map((faq) => ({
+    question: faq.question,
+    answer: fillPrices(faq.answer, prices),
+  }));
   const pageUrl = `${SITE_URL}/event/${slug}`;
 
   return (
@@ -129,7 +140,7 @@ export default async function EventPage({
         data={[
           collectionPageLd({
             name: event.h1,
-            description: event.metaDescription,
+            description: metaDescription,
             url: pageUrl,
             itemUrls: cards.map((c) => `${SITE_URL}/product/${c.slug}`),
           }),
@@ -138,7 +149,7 @@ export default async function EventPage({
             { name: 'Wedding Cards', url: SITE_URL },
             { name: event.h1, url: pageUrl },
           ]),
-          faqPageLd([...event.faqs]),
+          faqPageLd(faqs),
         ]}
       />
       <main className="pt-20">
@@ -173,7 +184,7 @@ export default async function EventPage({
             </h1>
             <div className="w-20 h-0.5 bg-gradient-to-r from-champagne to-champagne-light mx-auto mb-6" />
             <p className="text-charcoal/60 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-              {event.intro}
+              {intro}
             </p>
           </div>
         </section>
@@ -214,14 +225,14 @@ export default async function EventPage({
         </section>
 
         {/* FAQ Section */}
-        {event.faqs.length > 0 && (
+        {faqs.length > 0 && (
           <section className="section-padding bg-cream/30">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="font-heading text-2xl sm:text-3xl font-bold text-charcoal-dark text-center mb-10">
                 Frequently Asked Questions
               </h2>
               <div className="space-y-6">
-                {event.faqs.map((faq) => (
+                {faqs.map((faq) => (
                   <div key={faq.question} className="border-b border-cream-dark pb-6">
                     <h3 className="font-semibold text-charcoal-dark mb-2">
                       {faq.question}

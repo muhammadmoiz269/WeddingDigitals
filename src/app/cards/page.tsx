@@ -10,18 +10,24 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import { collectionPageLd, breadcrumbLd } from '@/lib/jsonld';
+import { getPriceStats, fillPrices } from '@/lib/server/priceStats';
 
 export const revalidate = 1800;
 
-export const metadata: Metadata = {
-  title: 'All Wedding Cards',
-  description:
-    'Browse every wedding card design from Shahi Bulawa — Nikkah, Valima, Mehndi & Baraat invitations in every style, printed in Karachi from PKR 120/card.',
-  alternates: {
-    canonical: '/cards',
-    languages: { 'en-PK': '/cards', 'x-default': '/cards' },
-  },
-};
+const DESCRIPTION =
+  'Browse every wedding card design from Shahi Bulawa — Nikkah, Valima, Mehndi & Baraat invitations in every style, printed in Karachi from PKR {from}/card.';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const prices = await getPriceStats();
+  return {
+    title: 'All Wedding Cards',
+    description: fillPrices(DESCRIPTION, prices),
+    alternates: {
+      canonical: '/cards',
+      languages: { 'en-PK': '/cards', 'x-default': '/cards' },
+    },
+  };
+}
 
 interface CardLink {
   slug: string;
@@ -50,7 +56,7 @@ async function fetchAllCardLinks(): Promise<CardLink[]> {
 }
 
 export default async function AllCardsPage() {
-  const cards = await fetchAllCardLinks();
+  const [cards, prices] = await Promise.all([fetchAllCardLinks(), getPriceStats()]);
   const pageUrl = `${SITE_URL}/cards`;
 
   return (
@@ -61,7 +67,7 @@ export default async function AllCardsPage() {
         data={[
           collectionPageLd({
             name: 'All Wedding Cards',
-            description: metadata.description as string,
+            description: fillPrices(DESCRIPTION, prices),
             url: pageUrl,
             itemUrls: cards.map((c) => absoluteUrl(`/product/${c.slug}`)),
           }),
