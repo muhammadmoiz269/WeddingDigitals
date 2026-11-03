@@ -60,7 +60,8 @@ async function fetchEventSlugs(
     await connectToDatabase();
     const docs = await Card.find({ events: eventName }, 'slug name').lean();
     return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
-  } catch {
+  } catch (err) {
+    console.error('[Event] fetchEventSlugs failed:', err);
     return [];
   }
 }
@@ -105,7 +106,8 @@ async function fetchEventCards(
     })) as CardProduct[];
 
     return { cards, total };
-  } catch {
+  } catch (err) {
+    console.error('[Event] fetchEventCards failed:', err);
     return { cards: [], total: 0 };
   }
 }

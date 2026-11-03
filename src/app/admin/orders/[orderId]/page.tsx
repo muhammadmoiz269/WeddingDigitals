@@ -123,7 +123,8 @@ export default function OrderDetailPage() {
       const json = await res.json();
       if (json.success) setOrder(json.data);
       else setError(json.error || 'Order not found');
-    } catch {
+    } catch (err) {
+      console.error('[OrderDetail] Failed to fetch order:', err);
       setError('Failed to load order');
     } finally {
       setLoading(false);
@@ -143,8 +144,10 @@ export default function OrderDetailPage() {
       const json = await res.json();
       if (json.success) { setOrder(json.data); showToast('Status updated!'); }
       else showToast('Failed to update status');
-    } catch { showToast('Error updating status'); }
-    finally { setSaving(false); }
+    } catch (err) {
+      console.error('[OrderDetail] Failed to update order status:', err);
+      showToast('Error updating status');
+    } finally { setSaving(false); }
   };
 
   const openEdit = () => {
@@ -193,7 +196,8 @@ export default function OrderDetailPage() {
       } else {
         showToast('Failed to save changes');
       }
-    } catch {
+    } catch (err) {
+      console.error('[OrderDetail] Failed to save order edits:', err);
       showToast('Error saving changes');
     } finally {
       setEditSaving(false);

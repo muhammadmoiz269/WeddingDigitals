@@ -66,6 +66,7 @@ export default function PromoCodesTab({ addToast }: Props) {
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to load promo codes");
       setPromos(json.data || []);
     } catch (err: unknown) {
+      console.error('[PromoCodesTab] Failed to fetch promo codes:', err);
       addToast(err instanceof Error ? err.message : "Failed to load promo codes", "error");
     } finally {
       setLoading(false);
@@ -141,6 +142,7 @@ export default function PromoCodesTab({ addToast }: Props) {
       setModalOpen(false);
       fetchPromos();
     } catch (err: unknown) {
+      console.error('[PromoCodesTab] Failed to save promo code:', err);
       setFormError(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSaving(false);
@@ -167,6 +169,7 @@ export default function PromoCodesTab({ addToast }: Props) {
       addToast(`Code ${promo.code} ${!promo.active ? "activated" : "deactivated"}`, "success");
       fetchPromos();
     } catch (err: unknown) {
+      console.error('[PromoCodesTab] Failed to toggle promo code active state:', err);
       addToast(err instanceof Error ? err.message : "Update failed", "error");
     }
   };
@@ -182,6 +185,7 @@ export default function PromoCodesTab({ addToast }: Props) {
       setDeleteTarget(null);
       fetchPromos();
     } catch (err: unknown) {
+      console.error('[PromoCodesTab] Failed to delete promo code:', err);
       addToast(err instanceof Error ? err.message : "Delete failed", "error");
     } finally {
       setDeleting(false);

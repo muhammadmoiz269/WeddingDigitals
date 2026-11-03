@@ -89,7 +89,8 @@ export default function InfiniteProductGrid({
         setTotalCount(total);
         setNextPage(2);
         setHasMore(fetched.length < total);
-      } catch {
+      } catch (err) {
+        console.error('[InfiniteProductGrid] Failed to fetch filtered cards:', err);
         if (filterKeyRef.current !== key) return;
         setCards([]);
         setTotalCount(0);
@@ -135,8 +136,8 @@ export default function InfiniteProductGrid({
       });
       setTotalCount(total);
       setNextPage((p) => p + 1);
-    } catch {
-      // silently fail — the user can scroll up/down to retry
+    } catch (err) {
+      console.error('[InfiniteProductGrid] Failed to load more cards:', err);
     } finally {
       if (filterKeyRef.current === key) {
         setIsLoadingMore(false);

@@ -40,8 +40,8 @@ export default async function OG({ params }: { params: Promise<{ slug: string }>
         imageUrl = cld(doc.media.image_url, 'f_auto,q_auto,w_500,h_630,c_fill,g_face');
       }
     }
-  } catch {
-    // fall through to generic layout
+  } catch (err) {
+    console.error('[OG:invite] Failed to fetch invitation for OG image:', err);
   }
 
   const hasPhoto  = !!imageUrl;

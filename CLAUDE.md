@@ -30,6 +30,9 @@ The seed script loads env from `.env.local` via `dotenv` and is upsert-safe (run
 - `RESEND_FROM` — Verified sender address for Resend (e.g. `orders@paighaam.pk`; use `onboarding@resend.dev` for sandbox testing).
 - `NOTIFY_EMAIL_TO` — Admin recipient email address for new order notifications.
 - `NOTIFY_EMAIL_CC` — *(optional)* Comma-separated CC recipients for new-order notification emails (e.g. `muhammadmoiz269@gmail.com,muhammad.arbab.hussain.siddiqui@gmail.com`). Omitting the variable skips CC entirely.
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — VAPID public key. Exposed to the browser for `pushManager.subscribe` and also read server-side by the push workflow. Generate once: `npx web-push generate-vapid-keys`.
+- `VAPID_PRIVATE_KEY` — VAPID private key (never expose client-side).
+- `NOTIFY_EMAIL_TO` — also used as the VAPID subject (`mailto:<value>`) — no separate `VAPID_SUBJECT` needed.
 
 ## Architecture
 
@@ -44,6 +47,27 @@ This is **Paighaam**, a Karachi-based wedding card e-commerce site. The order fl
   - `Card` — products. Uses `mongoose.models.Card || mongoose.model(...)` pattern.
   - `Order` — customer orders. **Intentionally** runs `delete mongoose.models.Order` before redefining the model so schema edits apply on hot reload. Don't "fix" this to match the other two models without checking.
   - `Admin` — single admin user, bcrypt-hashed password + a `session_token` column written on login.
+  - `PushSubscription` — one doc per opted-in device. Holds endpoint + encryption keys, device metadata (UA, IP, geo), `last_seen`, and engagement counters. Unique index on `endpoint`.
+  - `PushCampaign` — one doc per notification sent by the admin. Holds heading/description/banner/CTA/segment and aggregate delivered/opened stats.
+  - `PushDelivery` — one doc per device per campaign. Unique compound index `{ campaign, subscription }` — used for deduped open tracking.
+
+### Web Push Notifications
+
+Browser Web Push (works when site is closed) via the browser Push API + VAPID + service worker.
+
+- **Opt-in**: `src/components/PushOptIn.tsx` — Gesture-gated; no visible UI on Android/desktop (returns `null`). When `permission === 'default'`, attaches a one-shot `pointerdown` listener — the first tap anywhere on the page fires the native permission dialog. On dismissal (permission stays `default`) it retries up to 3× with 8 s between attempts. A hard `denied` is respected. On grant it subscribes and POSTs to `/api/push/subscribe`. iOS Safari (not installed as a standalone PWA) shows a dismissible bottom banner pointing the user to "Add to Home Screen" (iOS only delivers web push from installed PWAs); once installed and the user taps, the normal gesture-gate flow runs. When `permission === 'granted'` on load, the existing subscription is refreshed immediately (no gesture needed). Already mounted in `src/app/layout.tsx`.
+- **Service worker**: `public/sw.js` — extended with `push` (show notification + track delivery) and `notificationclick` (track open + open CTA URL) handlers. Registration is already handled by `ServiceWorkerRegistrar`.
+- **API routes** (`src/app/api/push/`):
+  - `subscribe/` — public POST, upserts subscription with device metadata, keeps `last_seen` fresh on every visit.
+  - `unsubscribe/` — public POST, marks subscription expired.
+  - `track/` — public POST, records delivered/opened events (deduplicated).
+  - `campaigns/` — admin-guarded GET/POST.
+  - `campaigns/[id]/send/` — admin-guarded POST, counts segment, kicks off background `sendPushCampaign` workflow, returns immediately.
+  - `subscribers/` — admin-guarded GET, returns aggregate stats + segment reach estimates.
+- **Broadcast workflow**: `src/workflows/push-campaign.ts` — `sendPushCampaign` (runs via `start()` from `workflow/api`). Iterates subscriptions, calls `web-push`, on HTTP 410/404 **auto-prunes** the dead subscription. Sets campaign `status: 'sent'` on completion.
+- **Admin UI**: Notifications tab in `src/app/admin/NotificationsTab.tsx` — Subscribers overview (total / active 30·60·90d / by country / by device), Compose (with Cloudinary banner upload, live preview, audience selector + live reach estimate), History (campaign list with open-rate %).
+- **Staleness strategy**: Segment targeting (`All active` / last 30/60/90 days) keeps promos away from long-gone devices. Auto-prune on 410/404 keeps the list clean automatically.
+- **Geo data**: Populated from Vercel request headers (`x-vercel-ip-country` etc.) — available in production/preview, empty in local `npm run dev`.
 
 ### Auth
 

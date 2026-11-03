@@ -14,7 +14,7 @@ function toSlug(s: string) {
 
 function toDatetimeLocal(iso: string) {
   if (!iso) return '';
-  try { return new Date(iso).toISOString().slice(0, 16); } catch { return ''; }
+  try { return new Date(iso).toISOString().slice(0, 16); } catch (err) { console.error('[EInviteForm] Failed to parse date for input:', iso, err); return ''; }
 }
 
 interface Props { initialData?: Partial<EInvitation>; }
@@ -194,6 +194,7 @@ export default function EInviteForm({ initialData }: Props) {
       const savedSlug = json.data?.slug ?? editSlug;
       setTimeout(() => router.push(`/admin/einvitations/${savedSlug}/preview`), 1000);
     } catch (e) {
+      console.error('[EInviteForm] Failed to save invitation:', e);
       showToast(e instanceof Error ? e.message : 'Save failed', 'error');
     } finally {
       setSaving(false);

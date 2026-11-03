@@ -54,8 +54,8 @@ export async function downloadReceipt(order: ReceiptOrder): Promise<void> {
     const w = (logo.width / logo.height) * h;
     doc.addImage(logo, "PNG", (pageW - w) / 2, y, w, h);
     y += h + 8;
-  } catch {
-    // Logo missing/unreadable — the text header below still identifies the brand
+  } catch (err) {
+    console.error('[Receipt] Failed to load logo image:', err);
     y += 4;
   }
 

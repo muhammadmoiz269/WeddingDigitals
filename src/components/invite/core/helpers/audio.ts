@@ -17,6 +17,8 @@ export function playWASound() {
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
       osc.start(t);
       osc.stop(t + 0.2);
-    } catch { /* audio not supported */ }
+    } catch (err) {
+      console.error('[audio] Chime playback failed (browser may not support Web Audio):', err);
+    }
   });
 }

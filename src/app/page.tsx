@@ -21,7 +21,8 @@ async function fetchAllSlugs(): Promise<{ slug: string; name: string }[]> {
     await connectToDatabase();
     const docs = await Card.find({}, "slug name").lean();
     return docs.map((doc) => ({ slug: doc.slug, name: doc.name }));
-  } catch {
+  } catch (err) {
+    console.error('[Home] fetchAllSlugs failed:', err);
     return [];
   }
 }
@@ -71,7 +72,8 @@ async function fetchInitialCards(): Promise<{
     }));
 
     return { cards, total };
-  } catch {
+  } catch (err) {
+    console.error('[Home] fetchInitialCards failed:', err);
     return { cards: [], total: 0 };
   }
 }

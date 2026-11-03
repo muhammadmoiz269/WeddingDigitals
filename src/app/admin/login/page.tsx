@@ -31,7 +31,8 @@ export default function AdminLoginPage() {
       }
 
       router.push("/admin");
-    } catch {
+    } catch (err) {
+      console.error('[Login] Login request failed:', err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

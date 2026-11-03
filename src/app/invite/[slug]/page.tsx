@@ -19,7 +19,8 @@ const fetchInvitation = cache(async (slug: string): Promise<EInvitation | null> 
     if (!doc) return null;
     // JSON round-trip strips Mongoose internals and converts ObjectId / Date to strings
     return JSON.parse(JSON.stringify(doc)) as EInvitation;
-  } catch {
+  } catch (err) {
+    console.error('[Invite] fetchInvitation failed:', err);
     return null;
   }
 });

@@ -4,6 +4,7 @@ import { BRAND, SITE_URL, GSC_VERIFICATION, BING_VERIFICATION, GA_MEASUREMENT_ID
 import JsonLd from "@/components/JsonLd";
 import { organizationLd, localBusinessLd, websiteLd } from "@/lib/jsonld";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import PushOptIn from "@/components/PushOptIn";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -88,6 +89,11 @@ export const metadata: Metadata = {
     other: BING_VERIFICATION ? { "msvalidate.01": BING_VERIFICATION } : undefined,
   },
   category: "shopping",
+  appleWebApp: {
+    capable: true,
+    title: BRAND.name,
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
@@ -112,6 +118,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-ivory text-charcoal">
         <ServiceWorkerRegistrar />
+        <PushOptIn />
         <JsonLd
           id="ld-org"
           data={[organizationLd(), localBusinessLd(), websiteLd()]}

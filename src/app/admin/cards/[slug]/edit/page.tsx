@@ -223,6 +223,7 @@ export default function EditCardPage() {
       showToast("Card updated!", "success");
       setTimeout(() => router.push("/admin"), 1200);
     } catch (e) {
+      console.error('[EditCard] Failed to update card:', e);
       showToast(e instanceof Error ? e.message : "Save failed", "error");
     } finally {
       setSaving(false);

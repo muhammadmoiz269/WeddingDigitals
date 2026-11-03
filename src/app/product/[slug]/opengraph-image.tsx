@@ -31,8 +31,8 @@ export default async function OG({ params }: { params: Promise<{ slug: string }>
       price = `From PKR ${doc.base_price.toLocaleString()} / card`;
       imageUrl = doc.images?.[0] ? cld(doc.images[0], 'f_auto,q_auto,w_500,h_630,c_fill') : '';
     }
-  } catch {
-    // fallback to generic
+  } catch (err) {
+    console.error('[OG:product] Failed to fetch card for OG image:', err);
   }
 
   return new ImageResponse(
